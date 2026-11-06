@@ -7,14 +7,17 @@ Campagne du 2026-11-06 : portage de WPKG Express NG de PHP 5.6 / CakePHP 1.3 ver
 | Domaine | Résultat |
 |---|---|
 | PHPUnit | 89 tests, 294 assertions, aucun échec, aucune dépréciation |
+| Tests unitaires de `wpkg.js` | 47 tests : 46 réussis, 1 `todo` documentant un bug de la version 1.3.1 |
 | PSR-12 | 0 erreur, 20 avertissements de longueur de ligne dans les tests |
-| Flux XML par rapport à l'application d'origine | Identiques, hors écarts volontaires (section 3) |
+| Flux XML par rapport à l'application d'origine | Identiques, hors écarts volontaires (section 4) |
 | Migration MySQL 5.5 vers 26.10 | Répétée sur données de test, deux cas d'encodage |
 | Bout en bout sur Windows 10 | Installation, mise à niveau, désinstallation validées |
-| Scénarios de panne | 8 scénarios, un seul destructeur (section 7) |
+| Scénarios de panne | 8 scénarios, un seul destructeur (section 8) |
 | Base de production | **Non testée** |
 
 Environnement : PHP 8.5.12, CakePHP 5.4.4, PHPUnit 13.4.6, MySQL 26.10.0 (`mysql:latest`), Apache 2.4.69, `wpkg.js` 1.3.1, Windows 10 22H2 (build 19045) sous QEMU.
+
+Les deux jobs de `.gitlab-ci.yml` ont été rejoués localement depuis un clone neuf du dépôt, avec les commandes extraites du fichier : `php` (image `php:8.5.12-cli`, service `mysql:latest`) et `wpkg-js` (image `node:22-alpine`) réussissent.
 
 ## 2. Tests automatisés PHP
 
@@ -41,7 +44,36 @@ docker compose --profile tools run --rm tools vendor/bin/phpunit
 
 Vérification des tests : une mutation de la `revision` dans `PackagesFeed` provoque 4 échecs, ce qui confirme que la comparaison détecte un écart réel.
 
-## 3. Comparaison avec l'application d'origine
+## 3. Tests unitaires de `wpkg.js`
+
+Exécution, sous Node.js 20 ou plus, sans dépendance :
+
+```shell
+cd wpkg-client && npm test
+```
+
+Le client est un script JScript pour Windows Script Host. `tests/harness.js` charge le fichier livré, non modifié, dans une VM Node.js avec des bouchons de `WScript`, `ActiveXObject`, du registre, des fichiers et de l'environnement. Seul l'appel de `main()` au chargement est retiré.
+
+| Fichier | Tests | Couverture |
+|---|---:|---|
+| `checks.test.js` | 18 | Vérifications `logical`, `file`, `registry`, `host`, types inconnus |
+| `packages.test.js` | 12 | Attributs des paquets, tri par priorité, listes, dates |
+| `hosts.test.js` | 7 | Correspondance d'hôtes, regex, ordre du flux, `applyMultiple` |
+| `removal.test.js` | 6 | Décision de désinstallation |
+| `versions.test.js` | 4 | Comparaison de versions |
+
+Vérification des tests : inverser le test `!found` de `getPackagesRemoved()` provoque 6 échecs. Le fichier a été restauré ensuite, somme de contrôle vérifiée.
+
+Comportements établis par ces tests :
+
+- `atleast` sans valeur lève `requires a value`, ce qui justifie l'obligation côté application.
+- Un profil valide sans paquets marque tout pour suppression.
+- Renommer un paquet revient à le supprimer.
+- La première entrée du flux gagne, même si une entrée suivante porte le nom exact du poste.
+
+**Bug réel dans `wpkg.js` 1.3.1 :** `trim()` n'enlève les espaces que d'un seul côté, car son expression régulière n'a pas le drapeau `g`. Le test correspondant est marqué `todo`. Le fichier n'a pas été modifié.
+
+## 4. Comparaison avec l'application d'origine
 
 Une pile PHP 5.6 / MySQL 5.5 figée (`legacy/`) a servi de référence. Un jeu de données conçu pour couvrir toutes les branches des gabarits a été capturé en trois configurations : par défaut, sans mise en forme, avec éléments désactivés. Il contient 11 paquets, 29 vérifications, les six types de vérification et les pièges d'échappement (`&`, `<`, `>`, guillemets, apostrophes, `--`, accents).
 
@@ -66,7 +98,7 @@ Défauts de l'application d'origine confirmés à l'exécution :
 | « Protect XML » sans effet | `protectxml=1`, requête anonyme servie en 200 |
 | Élément désactivé servi vide | Document réduit à l'en-tête XML |
 
-## 4. Recette HTTP sur Apache
+## 5. Recette HTTP sur Apache
 
 | Vérification | Résultat |
 |---|---|
@@ -82,7 +114,7 @@ Défauts de l'application d'origine confirmés à l'exécution :
 | `Host: evil.example` | 400 |
 | Envoi de fichiers par `/admin` | Import de 2 paquets, 1 profil, 1 hôte |
 
-## 5. Migration de données
+## 6. Migration de données
 
 Dump depuis MySQL 5.5, restauration sur MySQL 26.10, migration `ConvertToUtf8mb4`, puis `bin/cake compare_feeds` contre les flux d'origine.
 
@@ -92,7 +124,7 @@ Dump depuis MySQL 5.5, restauration sur MySQL 26.10, migration `ConvertToUtf8mb4
 | Connexion latin1 sans clé `encoding` | `--default-character-set=utf8` | **Rejeté** : `Éditeur été` devient `Ã‰diteur Ã©tÃ©`, 6 différences détectées |
 | Connexion latin1 sans clé `encoding` | `--default-character-set=latin1 --skip-set-charset` | Identique |
 
-## 6. Bout en bout sur Windows
+## 7. Bout en bout sur Windows
 
 Client réel `cscript wpkg.js` sur la VM `wpkg-test-client`, flux servis par l'application en HTTP. Données envoyées par le formulaire `/admin`, modifications faites par l'interface web.
 
@@ -113,7 +145,7 @@ Exécution réelle de `wpkg.js` sur la VM, en dry-run, sur des paquets déjà in
 
 ![wpkg.js lit les flux de l'application](docs/screenshots/10-wpkg-dryrun.png)
 
-## 7. Scénarios de panne
+## 8. Scénarios de panne
 
 Deux paquets installés, `quitonerror=false`, `wpkg.js` 1.3.1.
 
@@ -130,7 +162,7 @@ Deux paquets installés, `quitonerror=false`, `wpkg.js` 1.3.1.
 
 Le dernier scénario justifie le contrôle `bin/cake compare_feeds` avant toute bascule.
 
-## 8. Contrôle visuel
+## 9. Contrôle visuel
 
 Pages ouvertes dans Edge sur la VM, version finale, avec le jeu de données E2E.
 
@@ -146,7 +178,7 @@ Pages ouvertes dans Edge sur la VM, version finale, avec le jeu de données E2E.
 | Paquets d'un profil | ![Paquets d'un profil](docs/screenshots/08-profile-packages.png) |
 | Administration | ![Administration](docs/screenshots/09-admin.png) |
 
-## 9. Anomalies trouvées pendant la campagne
+## 10. Anomalies trouvées pendant la campagne
 
 Dans le code porté, toutes corrigées :
 
@@ -172,7 +204,7 @@ Dans l'environnement de test :
 | Volumes refusés par SELinux | Option `:z` sur les montages |
 | `log_file_path` du `config.xml` de test mal échappé (`Z:wpkglogs`) | Non corrigé, repli sur le journal local du client |
 
-## 10. Limites
+## 11. Limites
 
 - La base de production n'a pas été testée.
 - HTTPS et `WPKG_FORCE_SSL` n'ont pas été éprouvés de bout en bout.

@@ -57,9 +57,12 @@ Si `WPKG_XML_PROTECT=true`, les URL prennent la forme `http://USER:PASS@SERVEUR/
 ```shell
 docker compose --profile tools run --rm tools vendor/bin/phpunit
 docker run --rm -u "$(id -u):$(id -g)" -v "$PWD/web:/opt/project:z" -w /opt/project jakzal/phpqa:latest /tools/phpcs
+cd wpkg-client && npm test
 ```
 
-Les tests de bout en bout sur la VM Windows sont décrits dans `wpkg-test/README.md`.
+La CI GitLab exécute PHPUnit et les tests de `wpkg.js`. Les tests de `wpkg.js` tournent sous Node.js, sans dépendance, avec des bouchons du Windows Script Host.
+
+Les tests de bout en bout sur la VM Windows sont décrits dans `wpkg-test/README.md`. Les résultats sont dans `TESTS.md`.
 
 ## Migration depuis l'application d'origine
 

@@ -1,0 +1,12 @@
+{
+    "name": "wpkg-client-tests",
+    "private": true,
+    "description": "Unit tests of wpkg.js, run on Node.js with stubs of the Windows Script Host",
+    "license": "GPL-2.0-or-later",
+    "scripts": {
+        "test": "node --test"
+    },
+    "engines": {
+        "node": ">=20"
+    }
+}

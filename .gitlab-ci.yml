@@ -1,0 +1,56 @@
+# Unit tests only: wpkg.js on Node.js, the PHP application on PHPUnit.
+stages:
+  - test
+
+# Branch and tag pipelines only, so an open merge request does not run everything twice.
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - when: always
+
+wpkg-js:
+  stage: test
+  image: node:22-alpine
+  script:
+    - cd wpkg-client
+    - npm test
+
+php:
+  stage: test
+  image: php:8.5.12-cli
+  services:
+    - name: mysql:latest
+      alias: mysql
+  variables:
+    MYSQL_ROOT_PASSWORD: ci-root-password
+    MYSQL_DATABASE: wpkg_test
+    MYSQL_USER: wpkg
+    MYSQL_PASSWORD: ci-password
+    DATABASE_URL: "mysql://wpkg:ci-password@mysql/wpkg_test?encoding=utf8mb4"
+    DATABASE_TEST_URL: "mysql://wpkg:ci-password@mysql/wpkg_test?encoding=utf8mb4"
+    SECURITY_SALT: ci-only-salt-0123456789abcdef0123456789abcdef
+    COMPOSER_ALLOW_SUPERUSER: "1"
+    COMPOSER_CACHE_DIR: "$CI_PROJECT_DIR/.composer-cache"
+  cache:
+    key:
+      files:
+        - web/composer.lock
+    paths:
+      - .composer-cache
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y -qq --no-install-recommends libicu-dev libzip-dev unzip > /dev/null
+    - docker-php-ext-install intl pdo_mysql zip > /dev/null
+    - curl -sSL -o /usr/local/bin/composer https://getcomposer.org/download/latest-2.x/composer.phar
+    - chmod +x /usr/local/bin/composer
+    - cd web
+    - composer install --no-interaction --no-progress
+    # MySQL accepts connections a few seconds after its port opens.
+    - |
+      for attempt in $(seq 1 30); do
+        php -r 'new PDO("mysql:host=mysql;dbname=wpkg_test", "wpkg", "ci-password");' 2>/dev/null && break
+        sleep 2
+      done
+  script:
+    - vendor/bin/phpunit

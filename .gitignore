@@ -16,3 +16,4 @@ samba-conf/shared/wpkg/logs/*
 legacy/wpkg-express-ng/
 # Local chat export, not project content.
 2026-07-17-*.txt
+.composer-cache/
