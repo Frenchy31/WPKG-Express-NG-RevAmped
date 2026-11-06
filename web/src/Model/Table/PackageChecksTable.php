@@ -65,9 +65,11 @@ class PackageChecksTable extends Table
             ->allowEmptyString('path')
             ->maxLength('path', 200)
             // wpkg.js throws on an atleast or atmost check without a count.
-            ->allowEmptyString('value', 'Logical atleast and atmost checks need a count.', function (array $context): bool {
-                return !self::isCountedCondition($context['data']['condition'] ?? null);
-            })
+            ->allowEmptyString(
+                'value',
+                'Logical atleast and atmost checks need a count.',
+                fn(array $context): bool => !self::isCountedCondition($context['data']['condition'] ?? null),
+            )
             ->add('value', 'count', [
                 'rule' => function (mixed $value, array $context): bool {
                     return !self::isCountedCondition($context['data']['condition'] ?? null)
