@@ -17,7 +17,7 @@ Campagne du 2026-11-06 : portage de WPKG Express NG de PHP 5.6 / CakePHP 1.3 ver
 
 Environnement : PHP 8.5.12, CakePHP 5.4.4, PHPUnit 13.4.6, MySQL 26.10.0 (`mysql:latest`), Apache 2.4.69, `wpkg.js` 1.3.1, Windows 10 22H2 (build 19045) sous QEMU.
 
-Les deux jobs de `.gitlab-ci.yml` ont été rejoués localement depuis un clone neuf du dépôt, avec les commandes extraites du fichier : `php` (image `php:8.5.12-cli`, service `mysql:latest`) et `wpkg-js` (image `node:22-alpine`) réussissent.
+Les deux jobs de `.gitlab-ci.yml` ont été rejoués localement depuis un clone neuf du dépôt, puis exécutés sur GitLab : le pipeline 2328 réussit, avec `php` en 143 s et `wpkg-js` en 7 s.
 
 ## 2. Tests automatisés PHP
 
