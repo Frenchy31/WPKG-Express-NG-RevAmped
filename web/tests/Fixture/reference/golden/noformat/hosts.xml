@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8" ?><wpkg><host name="room2-pc.+" profile-id="office"><variable name="ROOM" value="room2" /></host><host name="room1-pc.+" profile-id="base"><variable name="ROOM" value="room1" /><profile id="dev" /><profile id="office" /></host><host name="^dev-[0-9]+$" profile-id="dev"><profile id="office" /></host><host name=".+" profile-id="base" /></wpkg>

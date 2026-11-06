@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<profiles>
+    <profile id="base">
+        <variable name="SOFTWARE" value="\\server\wpkg\software" />
+        <package package-id="7zip" />
+        <package package-id="plain" />
+    </profile>
+    <profile id="dev">
+        <variable name="DEV" value="1" />
+        <depends profile-id="base" />
+        <package package-id="amp" />
+        <package package-id="dep-child" />
+        <package package-id="var-rev" />
+    </profile>
+    <profile id="office">
+        <depends profile-id="base" />
+        <package package-id="all-checks" />
+        <package package-id="accent" />
+    </profile>
+</profiles>

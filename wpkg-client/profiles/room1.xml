@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<profiles:profiles xmlns:profiles="http://www.wpkg.org/profiles"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.wpkg.org/profiles ../xsd/profiles.xsd">
+
+	<profile id="room1">
+		<!-- firefox/thunderbird/AdobeReader9/AdobeReader10 removed from this
+			profile: their install commands point at software paths
+			(e.g. "%SOFTWARE%\Firefox\...") that don't exist anywhere in this
+			repo (AdobeReader9/10 aren't even defined under packages/ at all),
+			so they'd always fail. package/firefox.xml and
+			package/thunderbird.xml are left untouched as reference samples.
+			7zip is a real, working package used to test wpkg.js end-to-end. -->
+		<package package-id="7zip" />
+	</profile>
+
+</profiles:profiles>

@@ -1,0 +1,133 @@
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    environment:
+      # Local development values. Replace them before any shared deployment.
+      MYSQL_ROOT_PASSWORD: your_root_password
+      MYSQL_DATABASE: wpkg
+      MYSQL_USER: wpkg
+      MYSQL_PASSWORD: your_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d:ro,z
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uwpkg", "-pyour_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      - backend
+
+  samba:
+    image: dperson/samba
+    container_name: samba
+    environment:
+      # Test-only account matching smb.conf's "valid users = administrateur".
+      # dperson/samba's entrypoint creates this user/password on every start
+      # regardless of the custom smb.conf mounted below. Change/remove for
+      # anything beyond local testing.
+      USER_1: "administrateur;wpkgtest"
+    ports:
+      - "139:139"
+      - "445:445"
+    volumes:
+      - ./samba-conf/smb.conf:/etc/samba/smb.conf:ro,z
+      - ./samba-conf/shared:/home/WPKG:z
+    networks:
+      backend:
+        ipv4_address: 172.19.0.4
+
+  wpkg:
+    image: my-wpkg
+    build:
+      context: .
+      target: prod
+    environment: &wpkg-environment
+      DEBUG: "false"
+      # Local development values. Replace them before any shared deployment.
+      SECURITY_SALT: "dev-only-salt-0123456789abcdef0123456789abcdef"
+      APP_FULL_BASE_URL: "http://localhost"
+      # Every name clients use in hosts_path, profiles_path and packages_path.
+      WPKG_ALLOWED_HOSTS: "wpkg,172.19.0.5"
+      DATABASE_URL: "mysql://wpkg:your_password@mysql/wpkg?encoding=utf8mb4"
+      DATABASE_TEST_URL: "mysql://wpkg:your_password@mysql/wpkg_test?encoding=utf8mb4"
+      WPKG_ADMIN_USER: admin
+      # bin/cake hash_password generates this value. "$" must be doubled here.
+      WPKG_ADMIN_PASSWORD_HASH: "${WPKG_ADMIN_PASSWORD_HASH:-}"
+      WPKG_XML_FORMAT: "true"
+      WPKG_XML_EXPORT_DISABLED: "false"
+      WPKG_XML_PROTECT: "${WPKG_XML_PROTECT:-false}"
+      WPKG_XML_USER: wpkg
+      WPKG_XML_PASSWORD_HASH: "${WPKG_XML_PASSWORD_HASH:-}"
+      WPKG_FORCE_SSL: "false"
+    ports:
+      - "80:80"
+    volumes:
+      - ./apache-conf/sites:/etc/apache2/sites-available:z
+      - ./apache-conf/certificates:/etc/apache2/ssl:z
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      backend:
+        ipv4_address: 172.19.0.5
+
+  # Test-only: composer, migrations, PHPUnit against the mounted sources.
+  tools:
+    image: my-wpkg-tools
+    build:
+      context: .
+      target: dev
+    profiles: ["tools"]
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      <<: *wpkg-environment
+      HOME: /tmp
+      COMPOSER_HOME: /tmp/composer
+    volumes:
+      - ./web:/var/www/html:z
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - backend
+
+  # Test-only: a real Windows VM (via QEMU/KVM, not a native Windows container --
+  # those require a Windows Docker host) used to exercise wpkg-client/wpkg.js
+  # end-to-end against the samba share. Change PASSWORD before relying on this
+  # for anything beyond local testing. See wpkg-test/README.md.
+  wpkg-test-client:
+    image: dockurr/windows
+    container_name: wpkg-test-client
+    environment:
+      VERSION: "10"
+      RAM_SIZE: "6G"
+      CPU_CORES: "2"
+      DISK_SIZE: "48G"
+      HOSTNAME: "room1-pc-test"
+      USERNAME: "Administrator"
+      PASSWORD: "changeme-test"
+    devices:
+      - /dev/kvm
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "8006:8006"
+      - "3389:3389"
+    volumes:
+      - ./wpkg-test/storage:/storage:z
+      - ./wpkg-test/oem:/oem:z
+    networks:
+      - backend
+    stop_grace_period: 2m
+
+networks:
+  backend:
+    # install.bat on the test VM and the hosts_path of clients use fixed addresses.
+    ipam:
+      config:
+        - subnet: 172.19.0.0/16
+
+volumes:
+  mysql_data:

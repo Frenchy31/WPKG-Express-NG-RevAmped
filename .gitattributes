@@ -1,0 +1,4 @@
+# Windows files keep their exact bytes: vendored client, its copy on the share, VM first-boot script.
+wpkg-client/** -text
+samba-conf/shared/wpkg/** -text
+wpkg-test/oem/** -text

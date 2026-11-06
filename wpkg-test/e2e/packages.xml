@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- End-to-end data set: uploaded through /admin, then served to the Windows VM by the CakePHP application. -->
+<packages>
+    <package id="e2e-marker" name="E2E marker file" revision="1.0" priority="20" reboot="false">
+        <variable name="MARKER" value="C:\wpkg-e2e-marker.txt"/>
+        <check type="logical" condition="atleast" value="1">
+            <check type="file" condition="exists" path="C:\wpkg-e2e-marker.txt"/>
+            <check type="file" condition="exists" path="C:\does-not-exist.txt"/>
+        </check>
+        <install cmd='%ComSpec% /c echo first &gt; "%MARKER%" &amp; echo second &gt;&gt; "%MARKER%"'>
+            <exit code="0"/>
+        </install>
+        <remove cmd='%ComSpec% /c del "%MARKER%"'/>
+    </package>
+    <package id="7zip" name="7-Zip" revision="23.01" priority="10" reboot="false">
+        <check type="uninstall" condition="exists" path="7-Zip.*"/>
+        <install cmd='%ComSpec% /c curl.exe -sSL -o "%TEMP%\7zsetup.exe" https://www.7-zip.org/a/7z2301-x64.exe &amp; "%TEMP%\7zsetup.exe" /S'/>
+        <remove cmd='%ComSpec% /c "%ProgramFiles%\7-Zip\Uninstall.exe" /S'/>
+    </package>
+</packages>

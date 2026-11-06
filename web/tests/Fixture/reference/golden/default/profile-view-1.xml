@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<profile id="base">
+    <variable name="SOFTWARE" value="\\server\wpkg\software" />
+    <package package-id="7zip" />
+    <package package-id="plain" />
+</profile>

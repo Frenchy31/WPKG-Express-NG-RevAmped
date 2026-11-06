@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wpkg>
+    <host name="room1-pc.+" profile-id="room1"/>
+    <!-- Actual hostname of the current test VM. -->
+    <host name="adminis-.+" profile-id="room1"/>
+</wpkg>

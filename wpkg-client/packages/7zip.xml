@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+	Real, working package definition (unlike the legacy samples in this folder,
+	whose install sources no longer exist) used to exercise wpkg.js end-to-end
+	against the wpkg-test-client Windows VM: it downloads the genuine 7-Zip
+	installer and runs a real silent install/upgrade/remove.
+
+	Bump PKG_VERSION/PKG_URL_* when 7-zip.org publishes a newer release.
+-->
+<packages:packages
+		xmlns:packages="http://www.wpkg.org/packages" xmlns:wpkg="http://www.wpkg.org/wpkg" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://www.wpkg.org/packages ../xsd/packages.xsd" >
+
+	<package id="7zip"
+			name="7-Zip"
+			revision="23.01"
+			reboot="false"
+			priority="50">
+
+		<variable name="PKG_VERSION" value="23.01" />
+		<variable name="PKG_URL"     value="https://www.7-zip.org/a/7z2301-x64.exe" architecture="x64" />
+		<variable name="PKG_URL"     value="https://www.7-zip.org/a/7z2301.exe"     architecture="x86" />
+
+		<!-- Matches the "7-Zip" uninstall entry 7-Zip's installer registers,
+			regardless of the exact architecture suffix it uses. -->
+		<check type="uninstall" condition="exists" path="7-Zip.*" />
+
+		<install cmd='"%TEMP%\7zip\7zsetup.exe" /S'>
+			<download url="%PKG_URL%" target="7zip\7zsetup.exe" />
+		</install>
+
+		<upgrade include="install" />
+
+		<remove cmd='%ComSpec% /c "%ProgramFiles%\7-Zip\Uninstall.exe" /S' />
+	</package>
+</packages:packages>

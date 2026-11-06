@@ -1,0 +1,6 @@
+*
+!web
+!docker
+web/vendor
+web/tmp
+web/logs

@@ -1,0 +1,18 @@
+# Frozen reference stack (PHP 5.6 + MySQL 5.5). Used only to capture golden XML feeds.
+name: wpkg-legacy
+services:
+  legacy-db:
+    image: mysql:5.5
+    environment:
+      MYSQL_ROOT_PASSWORD: legacy
+      MYSQL_DATABASE: wpkg
+      MYSQL_USER: wpkg
+      MYSQL_PASSWORD: wpkg
+    volumes:
+      - ./seed:/docker-entrypoint-initdb.d:ro,z
+  legacy-web:
+    build: .
+    ports:
+      - "127.0.0.1:8081:80"
+    depends_on:
+      - legacy-db

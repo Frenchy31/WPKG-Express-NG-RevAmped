@@ -1,0 +1,18 @@
+.env
+.idea/
+.phpcs-cache
+node_modules/
+web/vendor/
+web/tmp/*
+!web/tmp/.gitkeep
+web/logs/*
+!web/logs/.gitkeep
+web/.phpunit.cache/
+# Disk images of the Windows VM.
+wpkg-test/storage/
+samba-conf/shared/wpkg/logs/*
+!samba-conf/shared/wpkg/logs/.gitkeep
+# Original application, fetched on demand: see legacy/README.md.
+legacy/wpkg-express-ng/
+# Local chat export, not project content.
+2026-07-17-*.txt

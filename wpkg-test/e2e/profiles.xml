@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profiles>
+    <profile id="room1">
+        <variable name="ROOM" value="room1"/>
+        <package package-id="e2e-marker"/>
+        <package package-id="7zip"/>
+    </profile>
+</profiles>

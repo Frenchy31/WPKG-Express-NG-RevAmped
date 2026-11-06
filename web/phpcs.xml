@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<ruleset name="App">
+    <rule ref="PSR12">
+        <!-- CakePHP mandates these property names: $_accessible, $_defaultConfig. -->
+        <exclude name="PSR2.Classes.PropertyDeclaration.Underscore"/>
+    </rule>
+
+    <arg name="extensions" value="php"/>
+    <file>src/</file>
+    <file>config/Migrations/</file>
+    <file>tests/TestCase/</file>
+    <file>tests/Support/</file>
+</ruleset>
