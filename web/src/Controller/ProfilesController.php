@@ -39,6 +39,30 @@ class ProfilesController extends AppController
     }
 
     /**
+     * Lists the hosts attached to a profile, as main or additional profile, in matching order.
+     *
+     * @param int $id Profile id.
+     * @return void
+     */
+    public function hosts(int $id): void
+    {
+        $this->request->allowMethod(['get']);
+        $profile = $this->Profiles->get($id, contain: ['MainHosts', 'Hosts']);
+
+        $attachedHosts = [];
+        foreach ($profile->hosts as $host) {
+            $attachedHosts[$host->id] = ['host' => $host, 'link' => 'Additional'];
+        }
+        foreach ($profile->main_hosts as $host) {
+            $attachedHosts[$host->id] = ['host' => $host, 'link' => 'Main'];
+        }
+        uasort($attachedHosts, fn(array $left, array $right): int => [$left['host']->position, $left['host']->id]
+            <=> [$right['host']->position, $right['host']->id]);
+
+        $this->set(compact('profile', 'attachedHosts'));
+    }
+
+    /**
      * Adds a profile.
      *
      * @return \Cake\Http\Response|null
