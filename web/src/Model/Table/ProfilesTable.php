@@ -16,6 +16,7 @@ use Cake\Validation\Validator;
  * @property \App\Model\Table\PackagesTable&\Cake\ORM\Association\BelongsToMany $Packages
  * @property \App\Model\Table\ProfilesTable&\Cake\ORM\Association\BelongsToMany $ProfileDependencies
  * @property \App\Model\Table\HostsTable&\Cake\ORM\Association\HasMany $MainHosts
+ * @property \App\Model\Table\HostsTable&\Cake\ORM\Association\BelongsToMany $Hosts
  * @property \App\Model\Table\VariablesTable&\Cake\ORM\Association\HasMany $Variables
  */
 class ProfilesTable extends Table
@@ -57,6 +58,11 @@ class ProfilesTable extends Table
             'className' => 'Hosts',
             'foreignKey' => 'mainprofile_id',
             'sort' => ['MainHosts.name' => 'ASC'],
+        ]);
+        $this->belongsToMany('Hosts', [
+            'joinTable' => 'hosts_profiles',
+            'foreignKey' => 'profile_id',
+            'targetForeignKey' => 'host_id',
         ]);
         $this->hasMany('Variables', [
             'foreignKey' => 'ref_id',

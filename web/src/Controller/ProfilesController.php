@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Model\Entity\Host;
+use App\Model\Entity\Profile;
 use Cake\Http\Response;
 
 /**
@@ -36,6 +38,82 @@ class ProfilesController extends AppController
     public function view(int $id): void
     {
         $this->set('profile', $this->Profiles->get($id, contain: ['ProfileDependencies', 'Packages']));
+    }
+
+    /**
+     * Lists the hosts attached to a profile, as main or additional profile, in matching order.
+     *
+     * @param int $id Profile id.
+     * @return void
+     */
+    public function hosts(int $id): void
+    {
+        $this->request->allowMethod(['get']);
+        $profile = $this->Profiles->get($id, contain: ['MainHosts', 'Hosts']);
+
+        $attachedHosts = [];
+        foreach ($profile->hosts as $host) {
+            $attachedHosts[$host->id] = ['host' => $host, 'link' => 'Additional'];
+        }
+        foreach ($profile->main_hosts as $host) {
+            $attachedHosts[$host->id] = ['host' => $host, 'link' => 'Main'];
+        }
+        uasort($attachedHosts, fn(array $left, array $right): int => [$left['host']->position, $left['host']->id]
+            <=> [$right['host']->position, $right['host']->id]);
+
+        $availableHosts = $profile->enabled ? $this->hostsOutside(array_keys($attachedHosts)) : [];
+
+        $this->set(compact('profile', 'attachedHosts', 'availableHosts'));
+    }
+
+    /**
+     * Attaches a host to a profile as an additional profile.
+     *
+     * @param int $id Profile id.
+     * @return \Cake\Http\Response|null
+     */
+    public function addHost(int $id): ?Response
+    {
+        $this->request->allowMethod(['post']);
+        $profile = $this->Profiles->get($id);
+        $host = $this->Profiles->Hosts->get((int)$this->request->getData('host_id'));
+
+        $blocker = $this->addHostBlocker($profile, $host);
+        if ($blocker !== null) {
+            $this->Flash->error($blocker);
+        } else {
+            $this->Profiles->Hosts->link($profile, [$host]);
+            $this->Flash->success(sprintf("Host '%s' added to Profile '%s'.", $host->name, $profile->id_text));
+        }
+
+        return $this->redirect(['action' => 'hosts', $id]);
+    }
+
+    /**
+     * Detaches a host from a profile. A main profile is mandatory, so it only changes on the host.
+     *
+     * @param int $id Profile id.
+     * @param int $hostId Host id.
+     * @return \Cake\Http\Response|null
+     */
+    public function removeHost(int $id, int $hostId): ?Response
+    {
+        $this->request->allowMethod(['post', 'delete']);
+        $profile = $this->Profiles->get($id);
+        $host = $this->Profiles->Hosts->get($hostId);
+
+        if ($host->mainprofile_id === $id) {
+            $this->Flash->error(sprintf(
+                "The Profile '%s' is the main profile of Host '%s': change it on the host.",
+                $profile->id_text,
+                $host->name,
+            ));
+        } else {
+            $this->Profiles->Hosts->unlink($profile, [$host]);
+            $this->Flash->success(sprintf("Host '%s' removed from Profile '%s'.", $host->name, $profile->id_text));
+        }
+
+        return $this->redirect(['action' => 'hosts', $id]);
     }
 
     /**
@@ -208,6 +286,53 @@ class ProfilesController extends AppController
         }
 
         return $this->redirect(['action' => 'index']);
+    }
+
+    /**
+     * Lists the hosts that can still be attached, as id => name, in matching order.
+     *
+     * @param array<int> $attachedIds Hosts already attached.
+     * @return array<int, string>
+     */
+    private function hostsOutside(array $attachedIds): array
+    {
+        $query = $this->Profiles->Hosts->find('list')->orderBy(['Hosts.position' => 'ASC', 'Hosts.id' => 'ASC']);
+        if ($attachedIds) {
+            $query->where(['Hosts.id NOT IN' => $attachedIds]);
+        }
+
+        return $query->toArray();
+    }
+
+    /**
+     * Explains why a host cannot be attached to a profile.
+     *
+     * @param \App\Model\Entity\Profile $profile Profile.
+     * @param \App\Model\Entity\Host $host Host.
+     * @return string|null Message, null when nothing blocks.
+     */
+    private function addHostBlocker(Profile $profile, Host $host): ?string
+    {
+        if (!$profile->enabled) {
+            return sprintf("The Profile '%s' is disabled: clients would ignore this link.", $profile->id_text);
+        }
+        if ($host->mainprofile_id === $profile->id) {
+            return sprintf(
+                "The Profile '%s' is already the main profile of Host '%s'.",
+                $profile->id_text,
+                $host->name,
+            );
+        }
+        // hosts_profiles has no unique key, so link() alone would store a duplicate.
+        $isLinked = $this->Profiles->Hosts->junction()->exists([
+            'host_id' => $host->id,
+            'profile_id' => $profile->id,
+        ]);
+        if ($isLinked) {
+            return sprintf("Host '%s' is already attached to Profile '%s'.", $host->name, $profile->id_text);
+        }
+
+        return null;
     }
 
     /**

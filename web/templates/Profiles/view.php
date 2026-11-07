@@ -15,6 +15,7 @@ foreach ($profile->profile_dependencies as $dependency) {
 <style>label {width: 114px;}</style>
 <h2>Profile Details for '<?= h($profile->id_text) ?>' - [
     <?= $this->Wpkg->icon('pencil.png', ['action' => 'edit', $profile->id], 'Edit') ?>
+    <?= $this->Wpkg->icon('hosts.png', ['action' => 'hosts', $profile->id], 'Hosts') ?>
     <?= $this->Wpkg->icon('var.png', ['controller' => 'Variables', 'action' => 'view', 'profile', $profile->id], 'Variables') ?>
     <?= $this->Wpkg->postIcon('delete.png', ['action' => 'delete', $profile->id], 'Delete', sprintf("Delete Profile '%s'?", $profile->id_text)) ?>
 ]</h2><hr class="hbar" />
