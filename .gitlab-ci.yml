@@ -1,4 +1,4 @@
-# Unit tests only: wpkg.js on Node.js, the PHP application on PHPUnit.
+# Unit tests only: wpkg.js on Node.js, the agent on Pester, the PHP application on PHPUnit.
 stages:
   - test
 
@@ -15,6 +15,12 @@ wpkg-js:
   script:
     - cd wpkg-client
     - npm test
+
+wpkg-agent:
+  stage: test
+  image: mcr.microsoft.com/powershell:latest
+  script:
+    - pwsh -NoProfile -File wpkg-agent/tests/run.ps1
 
 php:
   stage: test

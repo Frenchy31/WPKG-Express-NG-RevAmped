@@ -17,3 +17,5 @@ legacy/wpkg-express-ng/
 # Local chat export, not project content.
 2026-07-17-*.txt
 .composer-cache/
+# Copy of wpkg-agent/ for the Windows VM.
+samba-conf/shared/wpkg/agent/

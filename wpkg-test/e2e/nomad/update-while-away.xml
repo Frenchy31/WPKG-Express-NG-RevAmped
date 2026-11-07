@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Published while the laptop is away. The file it writes names the account that installed it. -->
+<packages>
+    <package id="nomad-update" name="Update published while away" revision="1" priority="50" reboot="false">
+        <check type="file" condition="exists" path="C:\wpkg-nomad-marker.txt"/>
+        <install cmd='%ComSpec% /c whoami &gt; C:\wpkg-nomad-marker.txt'/>
+        <remove cmd='%ComSpec% /c del C:\wpkg-nomad-marker.txt'/>
+    </package>
+</packages>

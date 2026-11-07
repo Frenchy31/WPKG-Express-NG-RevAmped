@@ -68,6 +68,10 @@ Les tests de bout en bout sur la VM Windows sont décrits dans `wpkg-test/README
 
 **Attention :** un profil valide privé de ses paquets désinstalle ces paquets sur tous les postes concernés. `bin/cake compare_feeds` doit réussir avant qu'un poste ne lise la nouvelle application.
 
+## Postes nomades
+
+`wpkg-agent/` met à jour les portables en arrière-plan dès leur retour sur le réseau, sans droits pour l'utilisateur. Voir `wpkg-agent/README.md`, notamment l'obligation de HTTPS.
+
 ## Licence
 
 GPL-3.0, voir `web/LICENSE`. Basé sur wpkgExpress-ng (Probesys) et wpkgExpress (Brian White).
