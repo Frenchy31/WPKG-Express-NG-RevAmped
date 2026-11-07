@@ -10,8 +10,8 @@ Pile : PHP 8.5, CakePHP 5.4, MySQL, Apache, Docker Compose. Le code est dans `we
 1. Créer `.env` à partir de `.env.example`.
 2. Générer le hash du mot de passe administrateur, puis le coller dans `.env` entre apostrophes :
    ```shell
-   docker compose --profile tools run --rm tools composer install --no-scripts
-   docker compose --profile tools run --rm tools bin/cake hash_password 'mot-de-passe'
+   docker compose --profile tools run --rm --no-deps tools composer install --no-scripts
+   docker compose --profile tools run --rm --no-deps tools bin/cake hash_password 'mot-de-passe'
    ```
 3. Démarrer la pile et créer les tables :
    ```shell
@@ -55,7 +55,7 @@ Si `WPKG_XML_PROTECT=true`, les URL prennent la forme `http://USER:PASS@SERVEUR/
 ## Tests
 
 ```shell
-docker compose --profile tools run --rm tools vendor/bin/phpunit
+docker compose --profile tools run --rm --no-deps tools vendor/bin/phpunit
 docker run --rm -u "$(id -u):$(id -g)" -v "$PWD/web:/opt/project:z" -w /opt/project jakzal/phpqa:latest /tools/phpcs
 cd wpkg-client && npm test
 ```

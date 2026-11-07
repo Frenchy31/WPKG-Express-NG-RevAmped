@@ -24,7 +24,7 @@ Les deux jobs de `.gitlab-ci.yml` ont été rejoués localement depuis un clone 
 Exécution :
 
 ```shell
-docker compose --profile tools run --rm tools vendor/bin/phpunit
+docker compose --profile tools run --rm --no-deps tools vendor/bin/phpunit
 ```
 
 | Classe | Tests | Couverture |

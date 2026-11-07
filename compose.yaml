@@ -99,8 +99,6 @@ services:
   # for anything beyond local testing. See wpkg-test/README.md.
   wpkg-test-client:
     image: dockurr/windows
-    # Without a profile, `docker compose run tools` boots this 6 GB VM as a side effect.
-    profiles: ["e2e"]
     container_name: wpkg-test-client
     environment:
       VERSION: "10"
