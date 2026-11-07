@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Deploys the agent with WPKG itself. Import it through /admin, set both variables, then add the
+    package to the profile of the laptops. AGENT_SOURCE must be readable by the account running WPKG.
+    Removal also runs from AGENT_SOURCE: a standard user can plant files in a ProgramData folder that
+    install.ps1 refused, and the check below would then report the package as installed.
+-->
+<packages>
+    <package id="wpkg-agent" name="WPKG background agent" revision="1" priority="100" reboot="false">
+        <variable name="AGENT_SOURCE" value="\\server\wpkg\agent"/>
+        <variable name="WPKG_SERVER" value="https://wpkg.example.org"/>
+        <check type="file" condition="exists" path="%ProgramData%\WpkgAgent\run.ps1"/>
+        <install cmd='powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%AGENT_SOURCE%\install.ps1" -ServerUrl %WPKG_SERVER%'/>
+        <upgrade cmd='powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%AGENT_SOURCE%\install.ps1" -ServerUrl %WPKG_SERVER%'/>
+        <remove cmd='powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%AGENT_SOURCE%\uninstall.ps1"'/>
+    </package>
+</packages>

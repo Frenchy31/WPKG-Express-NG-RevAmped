@@ -72,6 +72,22 @@ The results of the PHP 8 validation, failure scenarios included, are in `TESTS.m
 
 **Warning:** a valid profile that loses its packages uninstalls them. Do not try this outside the VM.
 
+## Testing the nomad agent
+
+`e2e/nomad/` deploys `wpkg-agent` through WPKG itself. Copy the agent to the share first:
+
+```
+mkdir -p samba-conf/shared/wpkg/agent && cp wpkg-agent/*.ps1 wpkg-agent/*.psm1 samba-conf/shared/wpkg/agent/
+```
+
+The virtual cable is unplugged from the host, through the QEMU monitor of the container:
+
+```
+docker exec wpkg-test-client sh -c 'printf "set_link net0 off\n" | timeout 2 nc -U /run/shm/monitor.sock'
+```
+
+Use `on` to plug it back. Windows then sees `Media disconnected`, then a real network connection.
+
 ## Tearing down
 
 ```

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Agent deployed by WPKG itself. Plain HTTP is only accepted here because the test stack has no TLS. -->
+<packages>
+    <package id="wpkg-agent" name="WPKG background agent" revision="1" priority="100" reboot="false">
+        <variable name="AGENT_SOURCE" value="\\172.19.0.4\wpkg\wpkg\agent"/>
+        <variable name="WPKG_SERVER" value="http://172.19.0.5"/>
+        <check type="file" condition="exists" path="%ProgramData%\WpkgAgent\run.ps1"/>
+        <install cmd='powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%AGENT_SOURCE%\install.ps1" -ServerUrl %WPKG_SERVER% -AllowInsecureHttp -MinIntervalMinutes 0 -RepeatMinutes 15'/>
+        <remove cmd='powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%AGENT_SOURCE%\uninstall.ps1"'/>
+    </package>
+</packages>
