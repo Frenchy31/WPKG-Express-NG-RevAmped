@@ -55,7 +55,7 @@ function Get-AgentDecision {
     if ($IsWpkgRunning) {
         return 'SkipAlreadyRunning'
     }
-    if ($null -ne $LastSuccess -and ($Now - $LastSuccess).TotalMinutes -lt $MinIntervalMinutes) {
+    if ($null -ne $LastSuccess -and $LastSuccess -le $Now -and ($Now - $LastSuccess).TotalMinutes -lt $MinIntervalMinutes) {
         return 'SkipRecentRun'
     }
     if (-not (& $TestServer)) {
