@@ -54,6 +54,10 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/search', 'Home::search');
         $builder->connect('/login', 'Auth::login');
         $builder->connect('/logout', 'Auth::logout');
+        $builder->connect('/reports', 'Reports::index');
+        $builder->connect('/reports/{hostname}', 'Reports::view')
+            ->setPatterns(['hostname' => '[A-Za-z0-9._-]+'])
+            ->setPass(['hostname']);
 
         // Read by wpkg.js through hosts_path, profiles_path and packages_path: these URLs are a contract.
         $builder->connect('/hosts.xml', 'Feeds::hosts');

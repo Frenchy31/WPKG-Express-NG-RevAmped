@@ -431,6 +431,8 @@ return [
      * - forceSsl: redirect plain HTTP requests to HTTPS.
      * - allowedHosts: comma separated host names accepted besides the host of App.fullBaseUrl.
      *   Every name used by clients in hosts_path must be listed, or their requests are refused.
+     * - reportsPath: directory where workstations copy their wpkg.xml and log as <HOSTNAME>.xml and
+     *   <HOSTNAME>.log, read by the Reports page. Empty disables the page.
      */
     'Wpkg' => [
         'allowedHosts' => env('WPKG_ALLOWED_HOSTS', ''),
@@ -444,6 +446,7 @@ return [
             'passwordHash' => env('WPKG_XML_PASSWORD_HASH', ''),
         ],
         'forceSsl' => filter_var(env('WPKG_FORCE_SSL', false), FILTER_VALIDATE_BOOLEAN),
+        'reportsPath' => env('WPKG_REPORTS_PATH', ''),
     ],
 
     /**

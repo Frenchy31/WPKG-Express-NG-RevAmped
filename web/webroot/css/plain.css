@@ -117,6 +117,12 @@
       background: url(../img/hosts.png) no-repeat left center;
     }
 
+    #headerRight a.reports:hover {
+      margin-left: 0;
+      padding-left: 20px;
+      background: url(../img/tick.png) no-repeat left center;
+    }
+
     #headerRight a.admin:hover {
       margin-left: 0;
       padding-left: 20px;
@@ -571,3 +577,74 @@
     /* Sort indicators of table headers. */
     a.asc::before { content: url(../img/asc.gif); margin-right: 3px; }
     a.desc::before { content: url(../img/desc.gif); margin-right: 3px; }
+
+    /* Reports: status colors of the workstations and of their log entries. */
+    .report-group, .report {
+      margin: 0 0 6px 0;
+      border-left: 6px solid #9E9E9E;
+      background-color: #F4F4F4;
+    }
+
+    .report-group > .report {
+      margin: 4px 8px 4px 24px;
+      background-color: #FFFFFF;
+    }
+
+    .report-group > summary, .report > summary {
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+
+    .status-success { border-left-color: #2E7D32; }
+    .status-warning { border-left-color: #EF6C00; }
+    .status-failed { border-left-color: #C62828; }
+    .status-unknown { border-left-color: #9E9E9E; }
+
+    .report-badge {
+      display: inline-block;
+      min-width: 60px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      color: #FFFFFF;
+      font-weight: bold;
+      text-align: center;
+      background-color: #9E9E9E;
+    }
+
+    .report-badge.status-success { background-color: #2E7D32; }
+    .report-badge.status-warning { background-color: #EF6C00; }
+    .report-badge.status-failed { background-color: #C62828; }
+    .report-badge.stale { min-width: 0; background-color: #616161; }
+
+    .report-note {
+      margin-left: 10px;
+      color: #757575;
+    }
+
+    .report-details {
+      display: grid;
+      grid-template-columns: max-content auto;
+      gap: 2px 12px;
+      margin: 4px 8px 8px 24px;
+    }
+
+    .report-details dt { font-weight: bold; }
+    .report-details dd { margin: 0; }
+    .report-details ul, .report-details li:hover { float: none; margin: 0; padding-left: 16px; list-style-image: none; }
+    .report-details li { white-space: pre-wrap; }
+    .report-errors li { color: #C62828; }
+    .report-warnings li { color: #EF6C00; }
+
+    .report-log {
+      padding-left: 50px;
+      font-family: monospace;
+      font-size: 11px;
+    }
+
+    .report-log .report-entry { display: flex; gap: 8px; }
+    .report-log .report-time { flex: none; color: #757575; }
+    .report-log .report-level { flex: none; width: 60px; font-weight: bold; }
+    .report-log .report-message { flex: 1; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .report-log .level-error { color: #C62828; }
+    .report-log .level-warning { color: #EF6C00; }
+    .report-log .level-debug { color: #757575; }

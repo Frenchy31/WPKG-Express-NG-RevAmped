@@ -64,3 +64,8 @@ $yesNo = fn(mixed $flag): string => $flag ? 'Yes' : 'No';
         <div class="inputwrap"><label>Username:</label><?= h($settings['xml']['user']) ?></div>
     <?php endif; ?>
 </fieldset>
+<br />
+<fieldset class="reportsettings" style="margin-left: 30px; width: 500px">
+    <legend>Reports</legend>
+    <div class="inputwrap"><label>Directory:</label><?= $settings['reportsPath'] === '' ? 'Not configured' : h($settings['reportsPath']) ?></div>
+</fieldset>

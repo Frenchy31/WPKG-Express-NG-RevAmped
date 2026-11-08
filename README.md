@@ -52,6 +52,35 @@ Les postes lisent les flux via `config.xml` :
 
 Si `WPKG_XML_PROTECT=true`, les URL prennent la forme `http://USER:PASS@SERVEUR/hosts.xml`.
 
+## Rapports des postes
+
+La page `/reports` affiche la dernière exécution de `wpkg.js` sur chaque poste. Elle lit, dans le dossier `WPKG_REPORTS_PATH`, les deux fichiers que chaque poste y copie à chaque exécution :
+
+| Fichier | Contenu |
+|---|---|
+| `<POSTE>.log` | journal de l'exécution |
+| `<POSTE>.xml` | base locale des paquets (`wpkg.xml`) |
+
+Un paquet exécuté en dernier sur les postes réalise la copie. Exemple de commandes d'installation, avec `settings_file_path` à `C:\admin` :
+
+```
+%COMSPEC% /C if exist c:\admin\wpkg.xml copy c:\admin\wpkg.xml %SOFTWARE%\..\logs\%COMPUTERNAME%.xml /Y
+%COMSPEC% /C if exist C:\admin\wpkg-%COMPUTERNAME%.log copy /Y C:\admin\wpkg-%COMPUTERNAME%.log %SOFTWARE%\..\logs\%COMPUTERNAME%.log
+```
+
+Le dossier `logs` du partage est monté en lecture seule dans le conteneur `wpkg`. En local, il s'agit de `samba-conf/shared/wpkg/logs`.
+
+Les postes sont regroupés sous la première entrée d'hôte active qui les reconnaît, avec la règle de `wpkg.js`. Couleurs :
+
+| Statut | Signification |
+|---|---|
+| Failed (rouge) | au moins une entrée `ERROR` dans le journal |
+| Warning (orange) | au moins une entrée `WARNING`, aucune `ERROR` |
+| Success (vert) | ni `ERROR` ni `WARNING` |
+| Unknown (gris) | journal absent ou illisible |
+
+Un rapport de plus de 24 h porte le badge « Stale » : le poste n'a pas tourné depuis. Un clic sur le nom du poste affiche son journal complet.
+
 ## Tests
 
 ```shell

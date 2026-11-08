@@ -43,6 +43,9 @@ services:
     build:
       context: .
       target: prod
+    # Password hashes come from .env (see .env.example). Unlike "${VAR}" interpolation,
+    # env_file is not overridden by a variable of the shell that runs docker compose.
+    env_file: .env
     environment: &wpkg-environment
       DEBUG: "false"
       # Local development values. Replace them before any shared deployment.
@@ -53,18 +56,18 @@ services:
       DATABASE_URL: "mysql://wpkg:your_password@mysql/wpkg?encoding=utf8mb4"
       DATABASE_TEST_URL: "mysql://wpkg:your_password@mysql/wpkg_test?encoding=utf8mb4"
       WPKG_ADMIN_USER: admin
-      # bin/cake hash_password generates this value. "$" must be doubled here.
-      WPKG_ADMIN_PASSWORD_HASH: "${WPKG_ADMIN_PASSWORD_HASH:-}"
       WPKG_XML_FORMAT: "true"
       WPKG_XML_EXPORT_DISABLED: "false"
       WPKG_XML_PROTECT: "${WPKG_XML_PROTECT:-false}"
       WPKG_XML_USER: wpkg
-      WPKG_XML_PASSWORD_HASH: "${WPKG_XML_PASSWORD_HASH:-}"
       WPKG_FORCE_SSL: "false"
+      # <HOSTNAME>.xml and <HOSTNAME>.log copied by the workstations, read by the Reports page.
+      WPKG_REPORTS_PATH: /var/lib/wpkg/reports
     ports:
       - "80:80"
     volumes:
       - ./apache-conf/sites:/etc/apache2/sites-available:z
+      - ./samba-conf/shared/wpkg/logs:/var/lib/wpkg/reports:ro,z
       - ./apache-conf/certificates:/etc/apache2/ssl:z
     depends_on:
       mysql:
@@ -81,6 +84,7 @@ services:
       target: dev
     profiles: ["tools"]
     user: "${UID:-1000}:${GID:-1000}"
+    env_file: .env
     environment:
       <<: *wpkg-environment
       HOME: /tmp

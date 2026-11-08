@@ -1,0 +1,3 @@
+2026-11-08 04:00:00, DEBUG   : WPKG 1.3.1 starting...
+2026-11-08 04:00:02, WARNING : Invalid regular expression for host name matching: 'lab('.
+2026-11-08 04:00:03, INFO    : Processing (upgrade) of Firefox successful.
