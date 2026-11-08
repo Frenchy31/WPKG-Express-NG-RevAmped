@@ -61,10 +61,13 @@ services:
       WPKG_XML_PROTECT: "${WPKG_XML_PROTECT:-false}"
       WPKG_XML_USER: wpkg
       WPKG_FORCE_SSL: "false"
+      # <HOSTNAME>.xml and <HOSTNAME>.log copied by the workstations, read by the Reports page.
+      WPKG_REPORTS_PATH: /var/lib/wpkg/reports
     ports:
       - "80:80"
     volumes:
       - ./apache-conf/sites:/etc/apache2/sites-available:z
+      - ./samba-conf/shared/wpkg/logs:/var/lib/wpkg/reports:ro,z
       - ./apache-conf/certificates:/etc/apache2/ssl:z
     depends_on:
       mysql:

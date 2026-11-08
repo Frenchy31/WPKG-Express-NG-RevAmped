@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wpkg:wpkg xmlns:wpkg="http://www.wpkg.org/settings" hostname="dev-7" architecture="x86" os="windows 10" ipaddresses="10.0.0.7" domainname="">
+    <checkResults/>
+</wpkg:wpkg>

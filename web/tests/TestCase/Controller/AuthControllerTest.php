@@ -37,7 +37,11 @@ class AuthControllerTest extends TestCase
      */
     public function testPagesRedirectAnonymousVisitorsToLogin(): void
     {
-        foreach (['/', '/packages', '/profiles', '/hosts', '/admin', '/search?q=a', '/variables/view/host/1'] as $url) {
+        $urls = [
+            '/', '/packages', '/profiles', '/hosts', '/admin', '/reports', '/reports/PC1', '/search?q=a',
+            '/variables/view/host/1',
+        ];
+        foreach ($urls as $url) {
             $this->get($url);
             $this->assertRedirectContains('/login');
         }

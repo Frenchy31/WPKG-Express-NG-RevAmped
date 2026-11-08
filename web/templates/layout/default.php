@@ -23,6 +23,7 @@
                 <?= $this->Html->link('Packages', '/packages', ['title' => 'Manage packages and associated information', 'class' => 'packages ' . $this->Wpkg->navigationClass('/packages')]) ?>
                 <?= $this->Html->link('Profiles', '/profiles', ['title' => 'Manage profiles', 'class' => 'profiles ' . $this->Wpkg->navigationClass('/profiles')]) ?>
                 <?= $this->Html->link('Hosts', '/hosts', ['title' => 'Manage hosts', 'class' => 'hosts ' . $this->Wpkg->navigationClass('/hosts')]) ?>
+                <?= $this->Html->link('Reports', '/reports', ['title' => 'Review the last run of each workstation', 'class' => 'reports ' . $this->Wpkg->navigationClass('/reports')]) ?>
                 <?= $this->Html->link('Admin', '/admin', ['title' => 'Perform other administrative tasks', 'class' => 'admin ' . $this->Wpkg->navigationClass('/admin')]) ?>
                 <?= $this->Form->postLink('Logout', ['controller' => 'Auth', 'action' => 'logout'], ['title' => 'Log out of the current session', 'class' => 'logout']) ?>
             </div>

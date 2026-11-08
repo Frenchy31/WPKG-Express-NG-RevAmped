@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wpkg:wpkg xmlns:wpkg="http://www.wpkg.org/settings" hostname="room1-pc01" architecture="x64"
+           os="microsoft windows 11 éducation, , , 10.0.26200" ipaddresses="192.168.1.21" domainname="example.org"
+           groups="" lcid="40c" lcidOS="40c">
+    <checkResults>
+        <check type="uninstall" condition="exists" path="7-Zip.*" result="true"/>
+    </checkResults>
+    <package id="7zip" name="7-Zip" revision="2606" priority="50" reboot="false"/>
+    <package id="firefox" name="Firefox" revision="140" priority="50" reboot="false"/>
+</wpkg:wpkg>
