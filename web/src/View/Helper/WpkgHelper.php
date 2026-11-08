@@ -16,6 +16,7 @@ use DateTimeInterface;
  *
  * @property \Cake\View\Helper\FormHelper $Form
  * @property \Cake\View\Helper\HtmlHelper $Html
+ * @property \Cake\View\Helper\UrlHelper $Url
  */
 class WpkgHelper extends Helper
 {
@@ -24,7 +25,7 @@ class WpkgHelper extends Helper
      *
      * @var array<string>
      */
-    protected array $helpers = ['Form', 'Html'];
+    protected array $helpers = ['Form', 'Html', 'Url'];
 
     /**
      * Formats a timestamp.
@@ -59,34 +60,56 @@ class WpkgHelper extends Helper
     }
 
     /**
-     * Renders an image linking to a page.
+     * Renders a symbol of the SVG sprite, coloured by the text colour of its parent.
      *
-     * @param string $image Image file name.
-     * @param array<string, mixed> $url Target.
-     * @param string $alt Alternative text.
+     * @param string $name Symbol identifier in `webroot/img/icons.svg`.
      * @return string
      */
-    public function icon(string $image, array $url, string $alt): string
+    public function symbol(string $name): string
     {
-        return $this->Html->image($image, ['alt' => $alt, 'title' => $alt, 'url' => $url]);
+        return sprintf(
+            '<svg class="icon" aria-hidden="true" focusable="false"><use href="%s#%s"/></svg>',
+            h($this->Url->image('icons.svg')),
+            h($name),
+        );
     }
 
     /**
-     * Renders an image submitting a POST request, for actions changing data.
+     * Renders an icon linking to a page.
      *
-     * @param string $image Image file name.
+     * @param string $name Symbol identifier.
      * @param array<string, mixed> $url Target.
-     * @param string $alt Alternative text.
+     * @param string $alt Accessible name and tooltip.
+     * @return string
+     */
+    public function icon(string $name, array $url, string $alt): string
+    {
+        return $this->Html->link($this->symbol($name), $url, [
+            'escape' => false,
+            'title' => $alt,
+            'aria-label' => $alt,
+            'class' => 'icon-link icon-' . $name,
+        ]);
+    }
+
+    /**
+     * Renders an icon submitting a POST request, for actions changing data.
+     *
+     * @param string $name Symbol identifier.
+     * @param array<string, mixed> $url Target.
+     * @param string $alt Accessible name and tooltip.
      * @param string|null $confirm Confirmation question.
      * @return string
      */
-    public function postIcon(string $image, array $url, string $alt, ?string $confirm = null): string
+    public function postIcon(string $name, array $url, string $alt, ?string $confirm = null): string
     {
-        return $this->Form->postLink(
-            $this->Html->image($image, ['alt' => $alt, 'title' => $alt]),
-            $url,
-            ['escapeTitle' => false, 'confirm' => $confirm],
-        );
+        return $this->Form->postLink($this->symbol($name), $url, [
+            'escapeTitle' => false,
+            'title' => $alt,
+            'aria-label' => $alt,
+            'class' => 'icon-link icon-' . $name,
+            'confirm' => $confirm,
+        ]);
     }
 
     /**
@@ -98,9 +121,8 @@ class WpkgHelper extends Helper
     public function moveIcons(array $url): string
     {
         $icons = [];
-        $images = ['top' => 'go-top.png', 'up' => 'go-up.png', 'down' => 'go-down.png', 'bottom' => 'go-bottom.png'];
-        foreach ($images as $direction => $image) {
-            $icons[] = $this->postIcon($image, [...$url, $direction], 'Move ' . $direction);
+        foreach (['top', 'up', 'down', 'bottom'] as $direction) {
+            $icons[] = $this->postIcon('go-' . $direction, [...$url, $direction], 'Move ' . $direction);
         }
 
         return implode('&nbsp;', $icons);
