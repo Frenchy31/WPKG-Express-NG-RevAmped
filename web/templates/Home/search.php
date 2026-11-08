@@ -19,7 +19,7 @@ $total = array_sum(array_map('count', $results));
             <?php foreach ($records as $record) : ?>
                 <li>
                     <?= $this->Html->link($record->get($searchFields[$tableName][0]), ['controller' => $tableName, 'action' => 'view', $record->id]) ?>
-                    <ul style="list-style-type: none; list-style-image: none">
+                    <ul class="search-fields">
                         <?php foreach ($searchFields[$tableName] as $field) : ?>
                             <?php if (stripos((string)$record->get($field), $searchText) !== false) : ?>
                                 <li><b><?= $field === 'id_text' ? 'Id' : ucfirst($field) ?>:</b> <?= $this->Text->highlight(h($record->get($field)), h($searchText)) ?></li>

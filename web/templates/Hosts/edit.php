@@ -9,7 +9,6 @@ use App\View\Tooltip;
 
 $this->assign('title', 'Edit Host');
 ?>
-<style>label {width: 81px;}</style>
 <h2>Editing Host '<?= $this->Html->link($host->name, ['action' => 'view', $host->id]) ?>'</h2><hr class="hbar" />
 <?= $this->Form->create($host) ?>
 <?= $this->Form->control('enabled', ['type' => 'checkbox', 'nestedInput' => false, 'label' => $this->Wpkg->label('Enabled:', Tooltip::HOST_ENABLED)]) ?>

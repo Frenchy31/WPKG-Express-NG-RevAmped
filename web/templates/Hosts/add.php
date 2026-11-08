@@ -9,7 +9,6 @@ use App\View\Tooltip;
 
 $this->assign('title', 'Add Host');
 ?>
-<style>label {width: 81px;}</style>
 <h2>Add New Host</h2><hr class="hbar" />
 <?= $this->Form->create($host) ?>
 <?= $this->Form->control('name', ['type' => 'text', 'class' => 'input', 'size' => 40, 'label' => $this->Wpkg->label('Name:', Tooltip::HOST_NAME, true)]) ?>

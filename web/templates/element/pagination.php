@@ -3,7 +3,7 @@
  * @var \App\View\AppView $this
  */
 ?>
-<?= $this->Paginator->counter('Showing page {{page}} of {{pages}}, {{current}} record(s) out of {{count}} total') ?>
+<p class="counter"><?= $this->Paginator->counter('Showing page {{page}} of {{pages}}, {{current}} record(s) out of {{count}} total') ?></p>
 <?php if ($this->Paginator->hasPrev() || $this->Paginator->hasNext()) : ?>
     <div class="paging">
         <?= $this->Paginator->prev('<< previous') ?>

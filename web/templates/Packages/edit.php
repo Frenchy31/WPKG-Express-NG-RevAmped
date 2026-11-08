@@ -9,7 +9,6 @@ use App\View\Tooltip;
 
 $this->assign('title', 'Edit Package');
 ?>
-<style>label {width: 93px;}</style>
 <h2>Editing Package '<?= $this->Html->link($package->name, ['action' => 'view', $package->id]) ?>'</h2><hr class="hbar" />
 <?= $this->Form->create($package) ?>
 <?= $this->Form->control('enabled', ['type' => 'checkbox', 'nestedInput' => false, 'label' => $this->Wpkg->label('Enabled:', Tooltip::PACKAGE_ENABLED)]) ?>

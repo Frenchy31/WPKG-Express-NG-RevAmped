@@ -40,7 +40,7 @@ echo $this->Form->control('condition', [
 if ($fields['showPath']) {
     echo $this->Form->control('path', [
         'type' => 'text',
-        'class' => 'input',
+        'class' => 'input mono',
         'size' => 60,
         'label' => $this->Wpkg->label($fields['pathLabel'], Tooltip::PACKAGECHECK_PATH, true),
     ]);
@@ -48,7 +48,7 @@ if ($fields['showPath']) {
 if ($fields['showValue']) {
     echo $this->Form->control('value', [
         'type' => 'text',
-        'class' => 'input',
+        'class' => 'input mono',
         'size' => 30,
         'label' => $this->Wpkg->label($fields['valueLabel'], Tooltip::PACKAGECHECK_VALUE, true),
     ]);

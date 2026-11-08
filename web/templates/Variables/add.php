@@ -8,6 +8,5 @@
 $this->assign('title', 'Adding Variable');
 $ownerUrl = ['controller' => $variableType->tableName(), 'action' => 'view', $owner->get('id')];
 ?>
-<style>label {width: 80px;}</style>
 <h2>Adding Variable to <?= h($variableType->name) ?> '<?= $this->Html->link($owner->get($ownerDisplayField), $ownerUrl) ?>'</h2><hr class="hbar" />
 <?= $this->element('variable_form') ?>

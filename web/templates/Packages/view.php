@@ -25,11 +25,10 @@ foreach ($package->profiles as $profile) {
     $profileLinks[$profile->id_text] = ['controller' => 'Profiles', 'action' => 'view', $profile->id];
 }
 ?>
-<style>label {width: 114px;}</style>
 <h2>Package Details for '<?= h($package->name) ?>' - [
-    <?= $this->Wpkg->icon('pencil.png', ['action' => 'edit', $package->id], 'Edit') ?>
-    <?= $this->Wpkg->icon('var.png', ['controller' => 'Variables', 'action' => 'view', 'package', $package->id], 'Variables') ?>
-    <?= $this->Wpkg->postIcon('delete.png', ['action' => 'delete', $package->id], 'Delete', sprintf("Delete Package '%s'?", $package->name)) ?>
+    <?= $this->Wpkg->icon('pencil', ['action' => 'edit', $package->id], 'Edit') ?>
+    <?= $this->Wpkg->icon('var', ['controller' => 'Variables', 'action' => 'view', 'package', $package->id], 'Variables') ?>
+    <?= $this->Wpkg->postIcon('delete', ['action' => 'delete', $package->id], 'Delete', sprintf("Delete Package '%s'?", $package->name)) ?>
 ]</h2><hr class="hbar" />
 <div class="inputwrap"><label title="<?= h(Tooltip::PACKAGE_ENABLED) ?>">Enabled:</label><?= $package->enabled ? 'Yes' : 'No' ?></div>
 <div class="inputwrap"><label title="<?= h(Tooltip::PACKAGE_NAME) ?>">Name:</label><?= h($package->name) ?></div>
@@ -45,7 +44,7 @@ foreach ($package->profiles as $profile) {
 <div class="inputwrap"><label title="<?= h(Tooltip::PACKAGE_DEPENDEDONBY) ?>">Depended On By:</label><?= $this->element('link_list', ['links' => $packageLinks($package->depended_on_by)]) ?></div>
 <div class="inputwrap"><label title="<?= h(Tooltip::PACKAGE_PROFILES) ?>">Exists in Profiles:</label><?= $this->element('link_list', ['links' => $profileLinks]) ?></div>
 
-<h2>Package Checks - [ <?= $this->Wpkg->icon('add.png', ['controller' => 'PackageChecks', 'action' => 'add', $package->id], 'Add') ?> ]</h2><hr class="hbar" />
+<h2>Package Checks - [ <?= $this->Wpkg->icon('add', ['controller' => 'PackageChecks', 'action' => 'add', $package->id], 'Add') ?> ]</h2><hr class="hbar" />
 <div id="checks" class="clear">
     <?php if (!$checks) : ?>
         &lt;None&gt;
@@ -54,28 +53,30 @@ foreach ($package->profiles as $profile) {
     <?php endif; ?>
 </div>
 
-<h2>Package Actions - [ <?= $this->Wpkg->icon('add.png', ['controller' => 'PackageActions', 'action' => 'add', $package->id], 'Add') ?> ]</h2><hr class="hbar" />
+<h2>Package Actions - [ <?= $this->Wpkg->icon('add', ['controller' => 'PackageActions', 'action' => 'add', $package->id], 'Add') ?> ]</h2><hr class="hbar" />
 <div id="actions" class="clear">
     <?php if (!$package->package_actions) : ?>
         &lt;None&gt;
     <?php else : ?>
-        <table cellpadding="0" cellspacing="0">
-            <tr>
-                <th width="75">Type</th>
-                <th>Command</th>
-                <th width="105">Actions</th>
-            </tr>
-            <?php foreach ($package->package_actions as $action) : ?>
+        <div class="table-wrap">
+            <table>
                 <tr>
-                    <td><?= h(ActionType::tryFrom($action->type)?->name ?? 'Unknown') ?></td>
-                    <td><?= $this->Html->link($action->command, ['controller' => 'PackageActions', 'action' => 'view', $action->id]) ?></td>
-                    <td>
-                        <?= $this->Wpkg->moveIcons(['controller' => 'PackageActions', 'action' => 'move', $action->id]) ?>
-                        <?= $this->Wpkg->icon('pencil.png', ['controller' => 'PackageActions', 'action' => 'edit', $action->id], 'Edit') ?>
-                        <?= $this->Wpkg->postIcon('delete.png', ['controller' => 'PackageActions', 'action' => 'delete', $action->id], 'Delete', 'Delete this action?') ?>
-                    </td>
+                    <th scope="col">Type</th>
+                    <th scope="col">Command</th>
+                    <th scope="col" class="col-short">Actions</th>
                 </tr>
-            <?php endforeach; ?>
-        </table>
+                <?php foreach ($package->package_actions as $action) : ?>
+                    <tr>
+                        <td><?= h(ActionType::tryFrom($action->type)?->name ?? 'Unknown') ?></td>
+                        <td><?= $this->Html->link($action->command, ['controller' => 'PackageActions', 'action' => 'view', $action->id], ['class' => 'mono']) ?></td>
+                        <td class="col-short">
+                            <?= $this->Wpkg->moveIcons(['controller' => 'PackageActions', 'action' => 'move', $action->id]) ?>
+                            <?= $this->Wpkg->icon('pencil', ['controller' => 'PackageActions', 'action' => 'edit', $action->id], 'Edit') ?>
+                            <?= $this->Wpkg->postIcon('delete', ['controller' => 'PackageActions', 'action' => 'delete', $action->id], 'Delete', 'Delete this action?') ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </table>
+        </div>
     <?php endif; ?>
 </div>

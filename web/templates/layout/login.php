@@ -7,12 +7,13 @@
 <html lang="en">
 <head>
     <?= $this->Html->charset() ?>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>wpkgExpress-ng :: Login</title>
-    <?= $this->Html->css(['plain', 'installer']) ?>
+    <?= $this->Html->css('plain') ?>
 </head>
 <body>
 <div id="siteBox">
-    <div id="content">
+    <div id="content" class="narrow">
         <?= $this->Flash->render() ?>
         <?= $this->fetch('content') ?>
     </div>

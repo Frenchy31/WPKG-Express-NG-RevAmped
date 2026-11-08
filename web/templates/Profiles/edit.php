@@ -9,7 +9,6 @@ use App\View\Tooltip;
 
 $this->assign('title', 'Edit Profile');
 ?>
-<style>label {width: 93px;}</style>
 <h2>Editing Profile '<?= $this->Html->link($profile->id_text, ['action' => 'view', $profile->id]) ?>'</h2><hr class="hbar" />
 <?= $this->Form->create($profile) ?>
 <?= $this->Form->control('enabled', ['type' => 'checkbox', 'nestedInput' => false, 'label' => $this->Wpkg->label('Enabled:', Tooltip::PROFILE_ENABLED)]) ?>
