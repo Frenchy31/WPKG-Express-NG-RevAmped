@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Report\HostMatcher;
+use App\Report\ReportDirectory;
+use App\Report\ReportSummary;
 use Cake\ORM\Table;
+use DateTimeImmutable;
 
 /**
  * Dashboard and global search.
@@ -21,12 +25,22 @@ class HomeController extends AppController
     ];
 
     /**
-     * Shows counters and recent changes.
+     * Shows the state of the fleet, then counters and recent changes of the configuration.
      *
      * @return void
      */
     public function index(): void
     {
+        $directory = ReportDirectory::fromConfiguration();
+        $reports = $directory->all();
+        $now = new DateTimeImmutable();
+        $this->set([
+            'configured' => $directory->isConfigured(),
+            'readable' => $directory->isReadable(),
+            'groups' => (new HostMatcher())->group($reports),
+            'summary' => new ReportSummary($reports, $now),
+            'now' => $now,
+        ]);
         $this->set('statistics', [
             'Packages' => $this->statistics($this->fetchTable('Packages'), 'name'),
             'Profiles' => $this->statistics($this->fetchTable('Profiles'), 'id_text'),

@@ -54,4 +54,19 @@ final readonly class ReportGroup
             ReportStatus::Success,
         );
     }
+
+    /**
+     * Counts the workstations by status.
+     *
+     * @return array<string, int> Count by status value, only the statuses present.
+     */
+    public function countByStatus(): array
+    {
+        $counts = [];
+        foreach ($this->reports as $report) {
+            $counts[$report->status()->value] = ($counts[$report->status()->value] ?? 0) + 1;
+        }
+
+        return $counts;
+    }
 }

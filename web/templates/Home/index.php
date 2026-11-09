@@ -2,9 +2,23 @@
 /**
  * @var \App\View\AppView $this
  * @var array<string, array<string, mixed>> $statistics
+ * @var bool $configured
+ * @var bool $readable
+ * @var list<\App\Report\ReportGroup> $groups
+ * @var \App\Report\ReportSummary $summary
+ * @var \DateTimeImmutable $now
  */
 $this->assign('title', 'Summary');
 ?>
+<?php if (!$configured) : ?>
+    <div class="message">Workstation reports are off. Set WPKG_REPORTS_PATH to show the last run of each host.</div>
+<?php elseif (!$readable) : ?>
+    <div class="message">Reports directory cannot be read</div>
+<?php elseif ($groups === []) : ?>
+    <div class="message">No reports found</div>
+<?php else : ?>
+    <?= $this->element('fleet_dashboard', ['groups' => $groups, 'summary' => $summary, 'now' => $now]) ?>
+<?php endif; ?>
 <div id="stats-container">
     <?php foreach ($statistics as $tableName => $statistic) : ?>
         <div class="statsblock">
