@@ -752,7 +752,7 @@ hr {
   background-image: repeating-linear-gradient(
     45deg,
     transparent 0 3px,
-    color-mix(in srgb, var(--on-accent) 45%, transparent) 3px 5px
+    color-mix(in srgb, var(--on-status) 45%, transparent) 3px 5px
   );
 }
 
@@ -795,7 +795,7 @@ hr {
 .fleet-cell,
 .fleet-cell:visited,
 .fleet-cell:hover {
-  color: var(--on-accent);
+  color: var(--on-status);
   text-decoration: none;
 }
 
