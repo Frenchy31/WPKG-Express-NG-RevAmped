@@ -49,15 +49,15 @@ class PackageActionsTable extends Table
     {
         return $validator
             ->requirePresence('command', 'create')
-            ->notEmptyString('command', 'The package action command attribute is invalid.')
+            ->notEmptyString('command', __('The package action command attribute is invalid.'))
             ->maxLength('command', 500)
             ->requirePresence('type', 'create')
             ->add('type', 'validRange', [
                 'rule' => fn(mixed $type): bool => ActionType::tryFrom((int)$type) !== null,
-                'message' => 'The package action type attribute is invalid.',
+                'message' => __('The package action type attribute is invalid.'),
             ])
             ->allowEmptyString('timeout')
-            ->integer('timeout', 'The package action timeout attribute is invalid.')
+            ->integer('timeout', __('The package action timeout attribute is invalid.'))
             ->allowEmptyString('workdir')
             ->maxLength('workdir', 500);
     }

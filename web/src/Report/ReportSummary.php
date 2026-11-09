@@ -130,10 +130,10 @@ final class ReportSummary
         $message = match ($report->status()) {
             ReportStatus::Failed => $report->log?->errors()[0] ?? '',
             ReportStatus::Warning => $report->log?->warnings()[0] ?? '',
-            ReportStatus::Unknown => 'No readable log',
-            ReportStatus::Success => sprintf(
-                'No report for %d hours',
-                intdiv($this->now->getTimestamp() - $report->ranAt()->getTimestamp(), 3600),
+            ReportStatus::Unknown => __('No readable log'),
+            ReportStatus::Success => __(
+                'No report for {0} hours',
+                (string)intdiv($this->now->getTimestamp() - $report->ranAt()->getTimestamp(), 3600),
             ),
         };
 

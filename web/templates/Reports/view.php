@@ -4,15 +4,15 @@
  * @var \App\Report\HostReport $report
  * @var \DateTimeImmutable $now
  */
-$this->assign('title', 'Report ' . $report->hostname);
+$this->assign('title', __('Report {0}', $report->hostname));
 ?>
-<h2>Report - <?= h($report->hostname) ?> <?= $this->element('report_badges', ['report' => $report, 'now' => $now]) ?></h2><hr class="hbar" />
-<p><?= $this->Html->link('Back to reports', '/reports') ?></p>
+<h2><?= __('Report') ?> - <?= h($report->hostname) ?> <?= $this->element('report_badges', ['report' => $report, 'now' => $now]) ?></h2><hr class="hbar" />
+<p><?= $this->Html->link(__('Back to reports'), '/reports') ?></p>
 <?= $this->element('report_details', ['report' => $report]) ?>
 
-<h3>Last log</h3>
+<h3><?= __('Last log') ?></h3>
 <?php if ($report->log === null) : ?>
-    <div class="message">No log file for this host</div>
+    <div class="message"><?= __('No log file for this host') ?></div>
 <?php else : ?>
     <ol class="report-log">
         <?php foreach ($report->log->entries() as $entry) : ?>

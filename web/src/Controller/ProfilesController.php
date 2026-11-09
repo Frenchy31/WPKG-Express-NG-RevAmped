@@ -83,7 +83,7 @@ class ProfilesController extends AppController
             $this->Flash->error($blocker);
         } else {
             $this->Profiles->Hosts->link($profile, [$host]);
-            $this->Flash->success(sprintf("Host '%s' added to Profile '%s'.", $host->name, $profile->id_text));
+            $this->Flash->success(__('Host \'\'{0}\'\' added to Profile \'\'{1}\'\'.', $host->name, $profile->id_text));
         }
 
         return $this->redirect(['action' => 'hosts', $id]);
@@ -103,14 +103,16 @@ class ProfilesController extends AppController
         $host = $this->Profiles->Hosts->get($hostId);
 
         if ($host->mainprofile_id === $id) {
-            $this->Flash->error(sprintf(
-                "The Profile '%s' is the main profile of Host '%s': change it on the host.",
+            $this->Flash->error(__(
+                'The Profile \'\'{0}\'\' is the main profile of Host \'\'{1}\'\': change it on the host.',
                 $profile->id_text,
                 $host->name,
             ));
         } else {
             $this->Profiles->Hosts->unlink($profile, [$host]);
-            $this->Flash->success(sprintf("Host '%s' removed from Profile '%s'.", $host->name, $profile->id_text));
+            $this->Flash->success(
+                __('Host \'\'{0}\'\' removed from Profile \'\'{1}\'\'.', $host->name, $profile->id_text),
+            );
         }
 
         return $this->redirect(['action' => 'hosts', $id]);
@@ -127,11 +129,11 @@ class ProfilesController extends AppController
         if ($this->request->is('post')) {
             $profile = $this->Profiles->patchEntity($profile, $this->request->getData(), ['associated' => []]);
             if ($this->Profiles->save($profile)) {
-                $this->Flash->success('The Profile has been saved.');
+                $this->Flash->success(__('The Profile has been saved.'));
 
                 return $this->redirect(['action' => 'view', $profile->id]);
             }
-            $this->Flash->error('The Profile could not be saved. Please, try again.');
+            $this->Flash->error(__('The Profile could not be saved. Please, try again.'));
         }
         $this->set(compact('profile'));
 
@@ -161,11 +163,11 @@ class ProfilesController extends AppController
                 'associated' => ['ProfileDependencies' => ['onlyIds' => true]],
             ]);
             if ($this->Profiles->save($profile)) {
-                $this->Flash->success('The Profile has been saved.');
+                $this->Flash->success(__('The Profile has been saved.'));
 
                 return $this->redirect(['action' => 'view', $id]);
             }
-            $this->Flash->error('The Profile could not be saved. Please, try again.');
+            $this->Flash->error(__('The Profile could not be saved. Please, try again.'));
         }
 
         $this->set('profile', $profile);
@@ -188,7 +190,7 @@ class ProfilesController extends AppController
             $packages[$package->id] = sprintf('%s (%s)', $package->name, $package->id_text);
         }
         if (!$packages) {
-            $this->Flash->error('There are no Packages to add/remove');
+            $this->Flash->error(__('There are no Packages to add/remove'));
 
             return $this->redirect(['action' => 'view', $id]);
         }
@@ -199,11 +201,11 @@ class ProfilesController extends AppController
                 'associated' => ['Packages' => ['onlyIds' => true]],
             ]);
             if ($this->Profiles->save($profile)) {
-                $this->Flash->success('The Profile has been saved.');
+                $this->Flash->success(__('The Profile has been saved.'));
 
                 return $this->redirect(['action' => 'view', $id]);
             }
-            $this->Flash->error('The Profile could not be saved. Please, try again.');
+            $this->Flash->error(__('The Profile could not be saved. Please, try again.'));
         }
 
         $this->set(compact('profile', 'packages'));
@@ -225,7 +227,7 @@ class ProfilesController extends AppController
         $package = $this->Profiles->Packages->get($packageId);
 
         $this->Profiles->Packages->unlink($profile, [$package]);
-        $this->Flash->success(sprintf("Profile's association with Package '%s' deleted.", $package->name));
+        $this->Flash->success(__('Profile\'\'s association with Package \'\'{0}\'\' deleted.', $package->name));
 
         return $this->redirect(['action' => 'view', $id]);
     }
@@ -243,9 +245,9 @@ class ProfilesController extends AppController
         if ($blocker !== null) {
             $this->Flash->error($blocker);
         } elseif ($this->Profiles->delete($this->Profiles->get($id))) {
-            $this->Flash->success('Profile deleted.');
+            $this->Flash->success(__('Profile deleted.'));
         } else {
-            $this->Flash->error('The Profile could not be deleted. Please, try again.');
+            $this->Flash->error(__('The Profile could not be deleted. Please, try again.'));
         }
 
         return $this->redirect(['action' => 'index']);
@@ -314,11 +316,11 @@ class ProfilesController extends AppController
     private function addHostBlocker(Profile $profile, Host $host): ?string
     {
         if (!$profile->enabled) {
-            return sprintf("The Profile '%s' is disabled: clients would ignore this link.", $profile->id_text);
+            return __('The Profile \'\'{0}\'\' is disabled: clients would ignore this link.', $profile->id_text);
         }
         if ($host->mainprofile_id === $profile->id) {
-            return sprintf(
-                "The Profile '%s' is already the main profile of Host '%s'.",
+            return __(
+                'The Profile \'\'{0}\'\' is already the main profile of Host \'\'{1}\'\'.',
                 $profile->id_text,
                 $host->name,
             );
@@ -329,7 +331,7 @@ class ProfilesController extends AppController
             'profile_id' => $profile->id,
         ]);
         if ($isLinked) {
-            return sprintf("Host '%s' is already attached to Profile '%s'.", $host->name, $profile->id_text);
+            return __('Host \'\'{0}\'\' is already attached to Profile \'\'{1}\'\'.', $host->name, $profile->id_text);
         }
 
         return null;
@@ -348,9 +350,9 @@ class ProfilesController extends AppController
             return null;
         }
 
-        return sprintf(
-            "The Profile '%s' cannot be deleted or disabled because it is the main profile for the following "
-            . 'host(s): %s',
+        return __(
+            'The Profile \'\'{0}\'\' cannot be deleted or disabled because it is the main profile for the following '
+            . 'host(s): {1}',
             $profile->id_text,
             implode(', ', array_map(fn($host): string => $host->name, $profile->main_hosts)),
         );

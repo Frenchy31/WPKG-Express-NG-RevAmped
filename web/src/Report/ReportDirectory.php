@@ -136,7 +136,7 @@ final class ReportDirectory
     {
         $content = (string)file_get_contents($xmlPath);
         if (trim($content) === '') {
-            return [[], null, 'The file is empty.'];
+            return [[], null, __('The file is empty.')];
         }
 
         $previousErrorMode = libxml_use_internal_errors(true);
@@ -149,10 +149,10 @@ final class ReportDirectory
 
         $root = $document->documentElement;
         if (!$isLoaded || $root === null) {
-            $error = $errors === [] ? 'The file is not well-formed.' : sprintf(
-                '%s (line %d)',
+            $error = $errors === [] ? __('The file is not well-formed.') : __(
+                '{0} (line {1})',
                 trim($errors[0]->message),
-                $errors[0]->line,
+                (string)$errors[0]->line,
             );
 
             return [[], null, $error];

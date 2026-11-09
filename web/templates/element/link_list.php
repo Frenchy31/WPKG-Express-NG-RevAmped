@@ -4,7 +4,7 @@
  * @var array<string, array<string, mixed>> $links Label => URL.
  */
 if (!$links) {
-    echo '&lt;None&gt;';
+    echo h(__('<None>'));
 
     return;
 }

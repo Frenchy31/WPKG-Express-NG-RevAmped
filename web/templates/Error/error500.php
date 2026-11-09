@@ -5,4 +5,4 @@
  */
 $this->setLayout('error');
 ?>
-<h2>An internal error has occurred.</h2>
+<h2><?= __('An internal error has occurred.') ?></h2>

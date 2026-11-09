@@ -32,10 +32,10 @@ enum ExitCodeReboot: int
     public function label(): string
     {
         return match ($this) {
-            self::False => 'None',
-            self::True => 'Yes',
-            self::Delayed => 'Delayed',
-            self::Postponed => 'Postponed',
+            self::False => __('None'),
+            self::True => __('Yes'),
+            self::Delayed => __('Delayed'),
+            self::Postponed => __('Postponed'),
         };
     }
 

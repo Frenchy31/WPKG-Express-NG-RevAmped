@@ -6,7 +6,7 @@
 
 use App\Model\Enum\ActionType;
 
-$this->assign('title', 'Edit Exit Code');
+$this->assign('title', __('Edit Exit Code'));
 ?>
-<h2>Editing Exit Code for '<?= $this->Html->link(ActionType::tryFrom($action->type)?->name ?? 'Unknown', ['controller' => 'PackageActions', 'action' => 'view', $action->id], ['title' => $action->command]) ?>' Package Action</h2><hr class="hbar" />
+<h2><?= __('Editing Exit Code for \'\'{0}\'\' Package Action', $this->Html->link(ActionType::tryFrom($action->type)?->name ?? __('Unknown'), ['controller' => 'PackageActions', 'action' => 'view', $action->id], ['title' => $action->command])) ?></h2><hr class="hbar" />
 <?= $this->element('exit_code_form') ?>

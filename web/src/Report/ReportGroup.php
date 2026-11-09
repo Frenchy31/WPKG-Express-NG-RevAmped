@@ -28,7 +28,7 @@ final readonly class ReportGroup
      */
     public function label(): string
     {
-        return $this->host === null ? 'Unmatched' : (string)$this->host->get('name');
+        return $this->host === null ? __('Unmatched') : (string)$this->host->get('name');
     }
 
     /**

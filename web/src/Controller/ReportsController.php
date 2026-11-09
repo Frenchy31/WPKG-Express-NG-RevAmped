@@ -49,7 +49,7 @@ class ReportsController extends AppController
     {
         $report = ReportDirectory::fromConfiguration()->find($hostname);
         if ($report === null) {
-            throw new NotFoundException('No report found for this host.');
+            throw new NotFoundException(__('No report found for this host.'));
         }
 
         $this->set([
