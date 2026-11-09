@@ -37,7 +37,7 @@ Le plus simple est de passer par WPKG :
 2. Adapter `AGENT_SOURCE` et `WPKG_SERVER` dans `package.xml`, puis l'importer depuis `/admin`.
 3. Ajouter le paquet `wpkg-agent` au profil des portables.
 
-Le poste installe l'agent à sa prochaine exécution de WPKG, par exemple lancée une dernière fois par l'utilisateur en administrateur.
+Le poste installe l'agent à sa prochaine exécution de WPKG, par exemple lancée une dernière fois par l'utilisateur en administrateur. Procédure détaillée, vérification sur le poste et mise à jour de l'agent : [Déploiement de l'agent d'arrière-plan avec WPKG](../docs/wpkg-agent-package.md).
 
 Installation manuelle, en administrateur :
 
