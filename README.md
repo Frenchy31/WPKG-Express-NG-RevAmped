@@ -101,7 +101,7 @@ Les tests de bout en bout sur la VM Windows sont décrits dans `wpkg-test/README
 
 ## Postes nomades
 
-`wpkg-agent/` met à jour les portables en arrière-plan dès leur retour sur le réseau, sans droits pour l'utilisateur. Voir `wpkg-agent/README.md`, notamment l'obligation de HTTPS.
+`wpkg-agent/` met à jour les portables en arrière-plan dès leur retour sur le réseau, sans droits pour l'utilisateur. Voir `wpkg-agent/README.md`, notamment l'obligation de HTTPS. Son installation par WPKG est décrite dans [Déploiement de l'agent d'arrière-plan avec WPKG](docs/wpkg-agent-package.md).
 
 ## Licence et auteurs
 
