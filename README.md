@@ -7,6 +7,8 @@ Pile : PHP 8.5, CakePHP 5.4, MySQL, Apache, Docker Compose. Le code est dans `we
 
 ## Démarrage
 
+`./install.sh` installe tout depuis un clone neuf : `.env`, mot de passe administrateur, images, conteneurs et tables. Il vérifie d'abord que Docker est accessible et que les ports 80, 139 et 445, le sous-réseau `172.19.0.0/16` et les noms de conteneurs `mysql` et `samba` sont libres. Étapes manuelles équivalentes :
+
 1. Créer `.env` à partir de `.env.example`.
 2. Générer le hash du mot de passe administrateur, puis le coller dans `.env` entre apostrophes :
    ```shell
