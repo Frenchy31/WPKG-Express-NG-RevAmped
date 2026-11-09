@@ -48,7 +48,8 @@
     <div id="footerBox">
         <div id="footerLeft"><?= $this->element('theme_switch') ?></div>
         <div id="footerRight">
-            Copyright &copy; 2013 <?= $this->Html->link('Probesys', 'https://www.probesys.com', ['title' => 'Probesys - Open Source specialist']) ?> - Based on wpkgExpress by Brian White
+            &copy; 2026 Aubin Puyoou, based on wpkgExpress-ng (&copy; 2013 <?= $this->Html->link('Probesys', 'https://www.probesys.com', ['title' => 'Probesys - Open Source specialist']) ?>) and wpkgExpress (&copy; 2009 Brian White).
+            Free software under the <?= $this->Html->link('GPL-3.0', 'https://www.gnu.org/licenses/gpl-3.0.html', ['title' => 'GNU General Public License, version 3 or later']) ?>, without any warranty.
         </div>
     </div>
 </div>

@@ -4,6 +4,11 @@
     "license": "GPL-3.0-or-later",
     "type": "project",
     "homepage": "https://github.com/Frenchy31/WPKG-Express-NG-RevAmped",
+    "authors": [
+        {"name": "Aubin Puyoou", "role": "Developer of WPKG Express NG"},
+        {"name": "Probesys", "homepage": "https://www.probesys.com", "role": "Author of wpkgExpress-ng"},
+        {"name": "Brian White", "role": "Author of wpkgExpress"}
+    ],
     "require": {
         "php": ">=8.2",
         "cakephp/authentication": "^4.0",
