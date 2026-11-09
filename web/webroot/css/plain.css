@@ -104,7 +104,7 @@ ul.reg, ol.reg {
 
 .mono {
   font-family: var(--font-mono);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .small {
@@ -380,7 +380,7 @@ legend {
 .inputwrap {
   display: grid;
   grid-template-columns: 140px minmax(0, 1fr);
-  align-items: start;
+  align-items: baseline;
   gap: 4px 12px;
   margin-bottom: 8px;
 }
@@ -388,7 +388,6 @@ legend {
 .inputwrap > label {
   grid-row: 1;
   grid-column: 1;
-  padding-top: 5px;
   text-align: right;
   font-weight: 700;
 }
@@ -402,6 +401,7 @@ legend {
   margin: 8px 0 0;
 }
 
+.inputwrap > button,
 .inputwrap > select,
 .inputwrap > textarea,
 .inputwrap > input[type="text"],
@@ -409,16 +409,8 @@ legend {
   justify-self: start;
 }
 
-.inputwrap > .date,
-.inputwrap > a,
-.inputwrap > ul,
-.inputwrap > .notes {
-  padding-top: 5px;
-}
-
 .inputwrap > ul {
   margin: 0;
-  padding-top: 5px;
 }
 
 .inputwrap.inline {
@@ -427,16 +419,8 @@ legend {
   align-items: center;
 }
 
-.inputwrap.inline > label {
-  padding-top: 0;
-}
-
 fieldset.xmlsettings .inputwrap {
   grid-template-columns: 200px minmax(0, 1fr);
-}
-
-fieldset .inputwrap > label {
-  padding-top: 0;
 }
 
 .required {
@@ -516,7 +500,6 @@ hr {
 
 .profilesselect .inputwrap > label,
 .hostsselect .inputwrap > label {
-  padding-top: 0;
   text-align: left;
   font-weight: normal;
 }
@@ -650,19 +633,11 @@ hr {
 
   .inputwrap > label {
     grid-row: auto;
-    padding-top: 0;
     text-align: left;
   }
 
   .inputwrap > :not(label) {
     grid-column: 1;
-  }
-
-  .inputwrap > .date,
-  .inputwrap > a,
-  .inputwrap > ul,
-  .inputwrap > .notes {
-    padding-top: 0;
   }
 
   #content.narrow {
