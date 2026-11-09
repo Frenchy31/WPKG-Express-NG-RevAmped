@@ -49,7 +49,8 @@
         <div id="footerLeft"><?= $this->element('theme_switch') ?>
             <?= $this->element('language_switch') ?></div>
         <div id="footerRight">
-            <?= __('Copyright &copy; 2013 {0} - Based on wpkgExpress by Brian White', $this->Html->link('Probesys', 'https://www.probesys.com', ['title' => __('Probesys - Open Source specialist')])) ?>
+            <?= __('&copy; 2026 Aubin Puyoou, based on wpkgExpress-ng (&copy; 2013 {0}) and wpkgExpress (&copy; 2009 Brian White).', $this->Html->link('Probesys', 'https://www.probesys.com', ['title' => __('Probesys - Open Source specialist')])) ?>
+            <?= __('Free software under the {0}, without any warranty.', $this->Html->link('GPL-3.0', 'https://www.gnu.org/licenses/gpl-3.0.html', ['title' => __('GNU General Public License, version 3 or later')])) ?>
         </div>
     </div>
 </div>

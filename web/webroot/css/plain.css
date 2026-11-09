@@ -1,10 +1,33 @@
 /*
- * wpkgExpress-ng stylesheet.
+ * WPKG Express NG : A web-based frontend to wpkg
+ * Copyright (C) 2026 Aubin Puyoou
+ * Copyright (C) 2013 Probesys (wpkgExpress-ng)
+ * Copyright 2009 Brian White (wpkgExpress)
  *
- * Derived from cloudyDay.css (Pat Heard, 2005) and plain.css (Brian White, 2008),
- * rewritten for flex/grid layout. Every colour comes from the tokens below, so a theme only
- * has to redefine them. The server writes data-theme on <html> from the wpkg_theme cookie; without
- * it, prefers-color-scheme decides.
+ * This file is part of wpkgExpress.
+ *
+ * wpkgExpress is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * wpkgExpress is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with wpkgExpress.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Original stylesheets:
+ *   cloudyDay.css, Pat Heard (fullahead.org), 2005/04/30
+ *   plain.css, modifications by Brian White, 2008/12/19
+ *   installer.css, Brian White, 2009 (merged into this file)
+ *
+ * Modified in 2026 by Aubin Puyoou: rewritten for flex/grid layout, colour tokens, light and
+ * dark themes. Every colour comes from the tokens below, so a theme only has to redefine them.
+ * The server writes data-theme on <html> from the wpkg_theme cookie; without it,
+ * prefers-color-scheme decides.
  */
 
 @font-face {

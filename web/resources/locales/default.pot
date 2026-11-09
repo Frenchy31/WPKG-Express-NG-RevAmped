@@ -1182,7 +1182,13 @@ msgstr ""
 msgid "All"
 msgstr ""
 
-msgid "Copyright &copy; 2013 {0} - Based on wpkgExpress by Brian White"
+msgid "&copy; 2026 Aubin Puyoou, based on wpkgExpress-ng (&copy; 2013 {0}) and wpkgExpress (&copy; 2009 Brian White)."
+msgstr ""
+
+msgid "Free software under the {0}, without any warranty."
+msgstr ""
+
+msgid "GNU General Public License, version 3 or later"
 msgstr ""
 
 msgid "Probesys - Open Source specialist"

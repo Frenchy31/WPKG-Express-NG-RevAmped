@@ -1177,8 +1177,14 @@ msgstr "Fermer la session en cours"
 msgid "All"
 msgstr "Tous"
 
-msgid "Copyright &copy; 2013 {0} - Based on wpkgExpress by Brian White"
-msgstr "Copyright &copy; 2013 {0} - D'après wpkgExpress de Brian White"
+msgid "&copy; 2026 Aubin Puyoou, based on wpkgExpress-ng (&copy; 2013 {0}) and wpkgExpress (&copy; 2009 Brian White)."
+msgstr "&copy; 2026 Aubin Puyoou, d'après wpkgExpress-ng (&copy; 2013 {0}) et wpkgExpress (&copy; 2009 Brian White)."
+
+msgid "Free software under the {0}, without any warranty."
+msgstr "Logiciel libre sous licence {0}, sans aucune garantie."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "Licence publique générale GNU, version 3 ou ultérieure"
 
 msgid "Probesys - Open Source specialist"
 msgstr "Probesys - Spécialiste de l'open source"
