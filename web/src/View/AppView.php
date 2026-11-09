@@ -36,4 +36,14 @@ class AppView extends View
             'current' => '<span class="current">{{text}}</span> ',
         ]]);
     }
+
+    /**
+     * Theme stored in the visitor's cookie.
+     *
+     * @return \App\View\Theme
+     */
+    public function theme(): Theme
+    {
+        return Theme::fromCookie($this->getRequest()->getCookie(Theme::COOKIE));
+    }
 }

@@ -4,9 +4,10 @@
  */
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"<?= $this->theme()->htmlAttribute() ?>>
 <head>
     <?= $this->Html->charset() ?>
+    <meta name="color-scheme" content="light dark">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>wpkgExpress-ng :: <?= h($this->fetch('title')) ?></title>
     <?= $this->Html->css('plain') ?>
@@ -45,7 +46,7 @@
     </div>
 
     <div id="footerBox">
-        <div id="footerLeft"></div>
+        <div id="footerLeft"><?= $this->element('theme_switch') ?></div>
         <div id="footerRight">
             Copyright &copy; 2013 <?= $this->Html->link('Probesys', 'https://www.probesys.com', ['title' => 'Probesys - Open Source specialist']) ?> - Based on wpkgExpress by Brian White
         </div>
