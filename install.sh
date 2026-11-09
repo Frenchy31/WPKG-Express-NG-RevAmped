@@ -25,7 +25,7 @@ project=$(docker compose config | sed -n 's/^name: //p')
 # Fresh install only: the stack of this project may already hold these resources.
 if [ -z "$(docker compose ps -q)" ]; then
     for container in mysql samba; do
-        if owner=$(docker inspect --format '{{ index .Config.Labels "com.docker.compose.project" }}' "$container" 2>/dev/null) \
+        if owner=$(docker inspect --type container --format '{{ index .Config.Labels "com.docker.compose.project" }}' "$container" 2>/dev/null) \
             && [ "$owner" != "$project" ]; then
             fail "A container named '$container' already exists outside this project. Remove or rename it first."
         fi
