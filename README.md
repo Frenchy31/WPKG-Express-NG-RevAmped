@@ -63,7 +63,7 @@ La page `/reports` affiche la dernière exécution de `wpkg.js` sur chaque poste
 | `<POSTE>.log` | journal de l'exécution |
 | `<POSTE>.xml` | base locale des paquets (`wpkg.xml`) |
 
-Un paquet exécuté en dernier sur les postes réalise la copie. Exemple de commandes d'installation, avec `settings_file_path` à `C:\admin` :
+Un package exécuté en dernier sur les postes réalise la copie : sa définition complète, les pré-requis côté poste et côté serveur sont décrits dans [Copie des rapports des postes vers le partage](docs/client-log-package.md). Exemple de commandes d'installation, avec `settings_file_path` à `C:\admin` :
 
 ```
 %COMSPEC% /C if exist c:\admin\wpkg.xml copy c:\admin\wpkg.xml %SOFTWARE%\..\logs\%COMPUTERNAME%.xml /Y
