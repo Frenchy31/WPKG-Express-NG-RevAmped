@@ -57,7 +57,7 @@ class HostHeaderMiddleware implements MiddlewareInterface
 
         if ($allowedHosts && $requestHost && !in_array($requestHost, $allowedHosts, true)) {
             throw new BadRequestException(
-                'Invalid Host header. Request host does not match configured application host.',
+                __('Invalid Host header. Request host does not match configured application host.'),
             );
         }
 

@@ -27,11 +27,11 @@ class ExitCodesController extends AppController
             $exitCode = $this->ExitCodes->patchEntity($exitCode, $this->request->getData());
             $exitCode->package_action_id = $actionId;
             if ($this->ExitCodes->save($exitCode)) {
-                $this->Flash->success('The Exit Code has been saved.');
+                $this->Flash->success(__('The Exit Code has been saved.'));
 
                 return $this->redirect(['controller' => 'PackageActions', 'action' => 'view', $actionId]);
             }
-            $this->Flash->error('The Exit Code could not be saved. Please, try again.');
+            $this->Flash->error(__('The Exit Code could not be saved. Please, try again.'));
         }
         $this->set(compact('action', 'exitCode'));
 
@@ -52,7 +52,7 @@ class ExitCodesController extends AppController
                 'code', 'reboot',
             ]]);
             if ($this->ExitCodes->save($exitCode)) {
-                $this->Flash->success('The Exit Code has been saved.');
+                $this->Flash->success(__('The Exit Code has been saved.'));
 
                 return $this->redirect([
                     'controller' => 'PackageActions',
@@ -60,7 +60,7 @@ class ExitCodesController extends AppController
                     $exitCode->package_action_id,
                 ]);
             }
-            $this->Flash->error('The Exit Code could not be saved. Please, try again.');
+            $this->Flash->error(__('The Exit Code could not be saved. Please, try again.'));
         }
         $this->set('exitCode', $exitCode);
         $this->set('action', $exitCode->package_action);
@@ -79,9 +79,9 @@ class ExitCodesController extends AppController
         $this->request->allowMethod(['post', 'delete']);
         $exitCode = $this->ExitCodes->get($id);
         if ($this->ExitCodes->delete($exitCode)) {
-            $this->Flash->success('Package Exitcode deleted.');
+            $this->Flash->success(__('Package Exitcode deleted.'));
         } else {
-            $this->Flash->error('An error occurred while attempting to delete that Package Exitcode.');
+            $this->Flash->error(__('An error occurred while attempting to delete that Package Exitcode.'));
         }
 
         return $this->redirect(['controller' => 'PackageActions', 'action' => 'view', $exitCode->package_action_id]);

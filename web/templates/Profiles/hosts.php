@@ -5,46 +5,48 @@
  * @var array<int, array{host: \App\Model\Entity\Host, link: string}> $attachedHosts
  * @var array<int, string> $availableHosts
  */
-$this->assign('title', 'Hosts of Profile ' . $profile->id_text);
+$this->assign('title', __('Hosts of Profile {0}', $profile->id_text));
 ?>
-<h2>Hosts of Profile '<?= $this->Html->link($profile->id_text, ['action' => 'view', $profile->id]) ?>'</h2><hr class="hbar" />
+<h2><?= __('Hosts of Profile \'\'{0}\'\'', $this->Html->link($profile->id_text, ['action' => 'view', $profile->id])) ?></h2><hr class="hbar" />
 <?php if ($availableHosts) : ?>
     <?= $this->Form->create(null, ['url' => ['action' => 'addHost', $profile->id]]) ?>
-    <div class="inputwrap">
-        <label for="host-id" style="width: 70px">Add Host:</label>
+    <div class="inputwrap inline">
+        <label for="host-id"><?= __('Add Host:') ?></label>
         <?= $this->Form->select('host_id', $availableHosts, ['id' => 'host-id']) ?>
-        <?= $this->Form->button('Add') ?>
+        <?= $this->Form->button(__('Add')) ?>
     </div>
     <?= $this->Form->end() ?>
 <?php endif; ?>
 <?php if (!$attachedHosts) : ?>
-    <div class="message">No Hosts found</div>
+    <div class="message"><?= __('No Hosts found') ?></div>
 <?php else : ?>
-    <table cellpadding="0" cellspacing="0">
-        <tr>
-            <th width="68">Enabled</th>
-            <th width="70">Position</th>
-            <th>Name</th>
-            <th>Link</th>
-            <th>Last Modified</th>
-            <th width="55">Actions</th>
-        </tr>
-        <?php foreach ($attachedHosts as $attached) : ?>
-            <?php $host = $attached['host']; ?>
-            <tr<?= $host->enabled ? '' : ' class="disabled"' ?>>
-                <td><?= $host->enabled ? 'Yes' : 'No' ?></td>
-                <td><?= h($host->position) ?></td>
-                <td><?= $this->Html->link($host->name, ['controller' => 'Hosts', 'action' => 'view', $host->id]) ?></td>
-                <td><?= h($attached['link']) ?></td>
-                <td><div class="date"><?= $this->Wpkg->date($host->modified) ?></div></td>
-                <td>
-                    <?php if ($attached['link'] === 'Main') : ?>
-                        <?= $this->Wpkg->icon('pencil.png', ['controller' => 'Hosts', 'action' => 'edit', $host->id], 'Change the main profile') ?>
-                    <?php else : ?>
-                        <?= $this->Wpkg->postIcon('delete.png', ['action' => 'removeHost', $profile->id, $host->id], 'Remove', sprintf("Remove Host '%s' from Profile '%s'? At their next synchronization, clients uninstall the packages they only got from this profile.", $host->name, $profile->id_text)) ?>
-                    <?php endif; ?>
-                </td>
+    <div class="table-wrap">
+        <table>
+            <tr>
+                <th scope="col" class="col-short"><?= __('Enabled') ?></th>
+                <th scope="col" class="col-short"><?= __('Position') ?></th>
+                <th scope="col"><?= __('Name') ?></th>
+                <th scope="col"><?= __('Link') ?></th>
+                <th scope="col"><?= __('Last Modified') ?></th>
+                <th scope="col" class="col-short"><?= __('Actions') ?></th>
             </tr>
-        <?php endforeach; ?>
-    </table>
+            <?php foreach ($attachedHosts as $attached) : ?>
+                <?php $host = $attached['host']; ?>
+                <tr<?= $host->enabled ? '' : ' class="disabled"' ?>>
+                    <td class="col-short"><?= $host->enabled ? __('Yes') : __('No') ?></td>
+                    <td class="col-short"><?= h($host->position) ?></td>
+                    <td><?= $this->Html->link($host->name, ['controller' => 'Hosts', 'action' => 'view', $host->id]) ?></td>
+                    <td><?= $attached['link'] === 'Main' ? __('Main') : __('Additional') ?></td>
+                    <td><div class="date"><?= $this->Wpkg->date($host->modified) ?></div></td>
+                    <td class="col-short">
+                        <?php if ($attached['link'] === 'Main') : ?>
+                            <?= $this->Wpkg->icon('pencil', ['controller' => 'Hosts', 'action' => 'edit', $host->id], __('Change the main profile')) ?>
+                        <?php else : ?>
+                            <?= $this->Wpkg->postIcon('delete', ['action' => 'removeHost', $profile->id, $host->id], __('Remove'), __('Remove Host \'\'{0}\'\' from Profile \'\'{1}\'\'? At their next synchronization, clients uninstall the packages they only got from this profile.', $host->name, $profile->id_text)) ?>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
+    </div>
 <?php endif; ?>

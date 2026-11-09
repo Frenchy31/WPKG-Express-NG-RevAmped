@@ -48,7 +48,7 @@ class HostsController extends AppController
     public function add(): ?Response
     {
         if ($this->Hosts->MainProfiles->find()->count() === 0) {
-            $this->Flash->error('You must add at least one Profile first');
+            $this->Flash->error(__('You must add at least one Profile first'));
 
             return $this->redirect(['action' => 'index']);
         }
@@ -57,11 +57,11 @@ class HostsController extends AppController
         if ($this->request->is('post')) {
             $host = $this->Hosts->patchEntity($host, $this->request->getData());
             if ($this->Hosts->save($host)) {
-                $this->Flash->success('The Host has been saved');
+                $this->Flash->success(__('The Host has been saved'));
 
                 return $this->redirect(['action' => 'view', $host->id]);
             }
-            $this->Flash->error('The Host could not be saved. Please, try again.');
+            $this->Flash->error(__('The Host could not be saved. Please, try again.'));
         }
 
         $this->set('host', $host);
@@ -82,11 +82,11 @@ class HostsController extends AppController
         if ($this->request->is(['post', 'put', 'patch'])) {
             $host = $this->Hosts->patchEntity($host, $this->request->getData(), ['associated' => []]);
             if ($this->Hosts->save($host)) {
-                $this->Flash->success('The Host has been saved');
+                $this->Flash->success(__('The Host has been saved'));
 
                 return $this->redirect(['action' => 'view', $id]);
             }
-            $this->Flash->error('The Host could not be saved. Please, try again.');
+            $this->Flash->error(__('The Host could not be saved. Please, try again.'));
         }
 
         $extraProfileIds = array_map(fn($profile): int => $profile->id, $host->profiles);
@@ -107,7 +107,7 @@ class HostsController extends AppController
         $host = $this->Hosts->get($id, contain: ['Profiles']);
         $profiles = $this->Hosts->MainProfiles->enabledList([$host->mainprofile_id]);
         if (!$profiles) {
-            $this->Flash->error('There are no other Profiles to add/remove');
+            $this->Flash->error(__('There are no other Profiles to add/remove'));
 
             return $this->redirect(['action' => 'view', $id]);
         }
@@ -118,11 +118,11 @@ class HostsController extends AppController
                 'associated' => ['Profiles' => ['onlyIds' => true]],
             ]);
             if ($this->Hosts->save($host)) {
-                $this->Flash->success('The Host has been saved');
+                $this->Flash->success(__('The Host has been saved'));
 
                 return $this->redirect(['action' => 'view', $id]);
             }
-            $this->Flash->error('The Host could not be saved. Please, try again.');
+            $this->Flash->error(__('The Host could not be saved. Please, try again.'));
         }
 
         $this->set(compact('host', 'profiles'));
@@ -144,7 +144,7 @@ class HostsController extends AppController
         $profile = $this->Hosts->Profiles->get($profileId);
 
         $this->Hosts->Profiles->unlink($host, [$profile]);
-        $this->Flash->success(sprintf("Host's association with Profile '%s' deleted", $profile->id_text));
+        $this->Flash->success(__('Host\'\'s association with Profile \'\'{0}\'\' deleted', $profile->id_text));
 
         return $this->redirect(['action' => 'view', $id]);
     }
@@ -159,9 +159,9 @@ class HostsController extends AppController
     {
         $this->request->allowMethod(['post', 'delete']);
         if ($this->Hosts->delete($this->Hosts->get($id))) {
-            $this->Flash->success('Host deleted');
+            $this->Flash->success(__('Host deleted'));
         } else {
-            $this->Flash->error('The Host could not be deleted. Please, try again.');
+            $this->Flash->error(__('The Host could not be deleted. Please, try again.'));
         }
 
         return $this->redirect(['action' => 'index']);

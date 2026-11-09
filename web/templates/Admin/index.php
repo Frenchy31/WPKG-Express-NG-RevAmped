@@ -4,16 +4,17 @@
  * @var array<string, \App\Import\ImportReport> $reports
  * @var array<string, mixed> $settings
  */
-$this->assign('title', 'Admin');
-$messageGroups = ['errors' => 'Errors', 'warnings' => 'Warnings', 'notices' => 'Information'];
-$yesNo = fn(mixed $flag): string => $flag ? 'Yes' : 'No';
+$this->assign('title', __('Admin'));
+$messageGroups = ['errors' => __('Errors'), 'warnings' => __('Warnings'), 'notices' => __('Information')];
+$kindLabels = ['packages' => __('Packages'), 'profiles' => __('Profiles'), 'hosts' => __('Hosts')];
+$yesNo = fn(mixed $flag): string => $flag ? __('Yes') : __('No');
 ?>
 <?php foreach ($reports as $kind => $report) : ?>
     <div class="message">
         <?php if ($report->rejected) : ?>
-            Uploaded <?= h(ucfirst($kind)) ?> failed to pass XSD schema validation
+            <?= h(__('Uploaded {0} failed to pass XSD schema validation', $kindLabels[$kind])) ?>
         <?php else : ?>
-            <?= $report->saved ?> of <?= $report->total ?> uploaded <?= h(ucfirst($kind)) ?> were imported successfully
+            <?= h(__('{0} of {1} uploaded {2} were imported successfully', (string)$report->saved, (string)$report->total, $kindLabels[$kind])) ?>
         <?php endif; ?>
     </div>
     <div class="messagesList">
@@ -30,42 +31,39 @@ $yesNo = fn(mixed $flag): string => $flag ? 'Yes' : 'No';
     </div>
 <?php endforeach; ?>
 
-<h2>Tasks</h2><hr class="hbar" />
-<fieldset style="margin-left: 30px; width: 500px">
-    <legend>Import</legend>
+<h2><?= __('Tasks') ?></h2><hr class="hbar" />
+<fieldset>
+    <legend><?= __('Import') ?></legend>
     <?= $this->Form->create(null, ['type' => 'file']) ?>
-    <?= $this->Form->control('packages', ['type' => 'file', 'label' => 'Packages: ']) ?>
-    <?= $this->Form->control('profiles', ['type' => 'file', 'label' => 'Profiles: ']) ?>
-    <?= $this->Form->control('hosts', ['type' => 'file', 'label' => 'Hosts: ']) ?>
-    <?= $this->Form->button('Import') ?>
+    <?= $this->Form->control('packages', ['type' => 'file', 'label' => __('Packages: ')]) ?>
+    <?= $this->Form->control('profiles', ['type' => 'file', 'label' => __('Profiles: ')]) ?>
+    <?= $this->Form->control('hosts', ['type' => 'file', 'label' => __('Hosts: ')]) ?>
+    <?= $this->Form->button(__('Import')) ?>
     <?= $this->Form->end() ?>
 </fieldset>
-<br />
-<fieldset style="margin-left: 30px; width: 500px">
-    <legend>Export</legend>
-    <?= $this->Html->link('Packages', '/packages.xml') ?><br />
-    <?= $this->Html->link('Profiles', '/profiles.xml') ?><br />
-    <?= $this->Html->link('Hosts', '/hosts.xml') ?><br />
+<fieldset>
+    <legend><?= __('Export') ?></legend>
+    <?= $this->Html->link(__('Packages'), '/packages.xml') ?><br />
+    <?= $this->Html->link(__('Profiles'), '/profiles.xml') ?><br />
+    <?= $this->Html->link(__('Hosts'), '/hosts.xml') ?><br />
 </fieldset>
-<h2>Settings</h2><hr class="hbar" />
-<p style="margin-left: 30px">Settings come from environment variables and take effect when the application restarts.</p>
-<fieldset class="systemsettings" style="margin-left: 30px; width: 500px">
-    <legend>Web Authentication</legend>
-    <div class="inputwrap"><label>Username:</label><?= h($settings['adminUser']) ?></div>
-    <div class="inputwrap"><label>Force SSL:</label><?= $yesNo($settings['forceSsl']) ?></div>
+<h2><?= __('Settings') ?></h2><hr class="hbar" />
+<p><?= __('Settings come from environment variables and take effect when the application restarts.') ?></p>
+<fieldset class="systemsettings">
+    <legend><?= __('Web Authentication') ?></legend>
+    <div class="inputwrap"><label><?= __('Username:') ?></label><?= h($settings['adminUser']) ?></div>
+    <div class="inputwrap"><label><?= __('Force SSL:') ?></label><?= $yesNo($settings['forceSsl']) ?></div>
 </fieldset>
-<br />
-<fieldset class="xmlsettings" style="margin-left: 30px; width: 500px">
-    <legend>XML Feed</legend>
-    <div class="inputwrap"><label>Export disabled items:</label><?= $yesNo($settings['xml']['exportDisabled']) ?></div>
-    <div class="inputwrap"><label>Format XML output:</label><?= $yesNo($settings['xml']['format']) ?></div>
-    <div class="inputwrap"><label>Protect XML output:</label><?= $yesNo($settings['xml']['protect']) ?></div>
+<fieldset class="xmlsettings">
+    <legend><?= __('XML Feed') ?></legend>
+    <div class="inputwrap"><label><?= __('Export disabled items:') ?></label><?= $yesNo($settings['xml']['exportDisabled']) ?></div>
+    <div class="inputwrap"><label><?= __('Format XML output:') ?></label><?= $yesNo($settings['xml']['format']) ?></div>
+    <div class="inputwrap"><label><?= __('Protect XML output:') ?></label><?= $yesNo($settings['xml']['protect']) ?></div>
     <?php if ($settings['xml']['protect']) : ?>
-        <div class="inputwrap"><label>Username:</label><?= h($settings['xml']['user']) ?></div>
+        <div class="inputwrap"><label><?= __('Username:') ?></label><?= h($settings['xml']['user']) ?></div>
     <?php endif; ?>
 </fieldset>
-<br />
-<fieldset class="reportsettings" style="margin-left: 30px; width: 500px">
-    <legend>Reports</legend>
-    <div class="inputwrap"><label>Directory:</label><?= $settings['reportsPath'] === '' ? 'Not configured' : h($settings['reportsPath']) ?></div>
+<fieldset class="reportsettings">
+    <legend><?= __('Reports') ?></legend>
+    <div class="inputwrap"><label><?= __('Directory:') ?></label><?= $settings['reportsPath'] === '' ? __('Not configured') : h($settings['reportsPath']) ?></div>
 </fieldset>

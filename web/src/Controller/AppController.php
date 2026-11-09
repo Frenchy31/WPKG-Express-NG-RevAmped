@@ -58,7 +58,7 @@ class AppController extends Controller
     protected function assertMoveDirection(string $direction): void
     {
         if (!in_array($direction, ['top', 'up', 'down', 'bottom'], true)) {
-            throw new BadRequestException('Unknown move direction.');
+            throw new BadRequestException(__('Unknown move direction.'));
         }
     }
 }

@@ -7,10 +7,10 @@
 <ul>
     <?php foreach ($checks as $check) : ?>
         <li>
-            <?= h($this->Wpkg->checkSummary($check)) ?>
+            <span class="mono"><?= h($this->Wpkg->checkSummary($check)) ?></span>
             [ <?= $this->Wpkg->moveIcons(['controller' => 'PackageChecks', 'action' => 'move', $check->id]) ?>
-            <?= $this->Wpkg->icon('pencil.png', ['controller' => 'PackageChecks', 'action' => 'edit', $check->id], 'Edit') ?>
-            <?= $this->Wpkg->postIcon('delete.png', ['controller' => 'PackageChecks', 'action' => 'delete', $check->id], 'Delete', 'Delete this check and its children?') ?> ]<br />
+            <?= $this->Wpkg->icon('pencil', ['controller' => 'PackageChecks', 'action' => 'edit', $check->id], __('Edit')) ?>
+            <?= $this->Wpkg->postIcon('delete', ['controller' => 'PackageChecks', 'action' => 'delete', $check->id], __('Delete'), __('Delete this check and its children?')) ?> ]<br />
             <?php if ($check->children) : ?>
                 <?= $this->element('check_tree', ['checks' => $check->children]) ?>
             <?php endif; ?>

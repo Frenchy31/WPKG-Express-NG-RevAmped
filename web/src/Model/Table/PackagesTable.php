@@ -104,26 +104,30 @@ class PackagesTable extends Table
             ->regex(
                 'id_text',
                 ProfilesTable::ID_TEXT_PATTERN,
-                "The package's id must start with a letter or number and only contain: "
-                . 'letters, numbers, underscores, and hyphens.',
+                __(
+                    "The package's id must start with a letter or number and only contain: "
+                    . 'letters, numbers, underscores, and hyphens.',
+                ),
             )
             ->maxLength('revision', 35)
             ->regex(
                 'revision',
                 self::REVISION_PATTERN,
-                "The package's revision attribute is not formatted properly. It must start with a digit. "
-                . 'If it contains periods, you must have at least one digit after each.',
+                __(
+                    "The package's revision attribute is not formatted properly. It must start with a digit. "
+                    . 'If it contains periods, you must have at least one digit after each.',
+                ),
             )
-            ->integer('priority', "The package's priority attribute is not an integer.")
+            ->integer('priority', __("The package's priority attribute is not an integer."))
             ->add('reboot', 'validRange', [
                 'rule' => fn(mixed $reboot): bool => PackageReboot::tryFrom((int)$reboot) !== null,
-                'message' => "The package's reboot attribute is invalid.",
+                'message' => __("The package's reboot attribute is invalid."),
             ])
             ->add('execute', 'validRange', [
                 'rule' => fn(mixed $execute): bool => PackageExecute::tryFrom((int)$execute) !== null,
-                'message' => "The package's execute attribute is invalid.",
+                'message' => __("The package's execute attribute is invalid."),
             ])
-            ->boolean('notify', "The package's notify attribute must be true or false.");
+            ->boolean('notify', __("The package's notify attribute must be true or false."));
     }
 
     /**
@@ -134,7 +138,7 @@ class PackagesTable extends Table
      */
     public function buildRules(RulesChecker $rules): RulesChecker
     {
-        $rules->add($rules->isUnique(['id_text'], 'That package already exists.'));
+        $rules->add($rules->isUnique(['id_text'], __('That package already exists.')));
 
         return $rules;
     }

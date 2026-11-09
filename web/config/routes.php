@@ -54,6 +54,8 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/search', 'Home::search');
         $builder->connect('/login', 'Auth::login');
         $builder->connect('/logout', 'Auth::logout');
+        $builder->connect('/theme', 'Theme::update');
+        $builder->connect('/language', 'Language::update');
         $builder->connect('/reports', 'Reports::index');
         $builder->connect('/reports/{hostname}', 'Reports::view')
             ->setPatterns(['hostname' => '[A-Za-z0-9._-]+'])

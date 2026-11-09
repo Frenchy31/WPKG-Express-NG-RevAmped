@@ -87,8 +87,10 @@ class ProfilesTable extends Table
             ->regex(
                 'id_text',
                 self::ID_TEXT_PATTERN,
-                "The profile's id must start with a letter or number and only contain: "
-                . 'letters, numbers, underscores, and hyphens.',
+                __(
+                    "The profile's id must start with a letter or number and only contain: "
+                    . 'letters, numbers, underscores, and hyphens.',
+                ),
             );
     }
 
@@ -100,7 +102,7 @@ class ProfilesTable extends Table
      */
     public function buildRules(RulesChecker $rules): RulesChecker
     {
-        $rules->add($rules->isUnique(['id_text'], 'That profile already exists.'));
+        $rules->add($rules->isUnique(['id_text'], __('That profile already exists.')));
 
         return $rules;
     }

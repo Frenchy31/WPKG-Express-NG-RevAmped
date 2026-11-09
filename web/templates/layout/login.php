@@ -4,15 +4,17 @@
  */
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= $this->language()->value ?>"<?= $this->theme()->htmlAttribute() ?>>
 <head>
     <?= $this->Html->charset() ?>
-    <title>wpkgExpress-ng :: Login</title>
-    <?= $this->Html->css(['plain', 'installer']) ?>
+    <meta name="color-scheme" content="light dark">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>wpkgExpress-ng :: <?= __('Login') ?></title>
+    <?= $this->Html->css('plain') ?>
 </head>
 <body>
 <div id="siteBox">
-    <div id="content">
+    <div id="content" class="narrow">
         <?= $this->Flash->render() ?>
         <?= $this->fetch('content') ?>
     </div>

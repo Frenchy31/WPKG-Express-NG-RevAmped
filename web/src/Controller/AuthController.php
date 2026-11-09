@@ -37,7 +37,7 @@ class AuthController extends AppController
             return $this->redirect($this->Authentication->getLoginRedirect() ?? '/');
         }
         if ($this->request->is('post')) {
-            $this->Flash->error('Incorrect username or password');
+            $this->Flash->error(__('Incorrect username or password'));
         }
         $this->viewBuilder()->setLayout('login');
 
@@ -53,7 +53,7 @@ class AuthController extends AppController
     {
         $this->request->allowMethod(['post']);
         $this->Authentication->logout();
-        $this->Flash->success('Logged out successfully.');
+        $this->Flash->success(__('Logged out successfully.'));
 
         return $this->redirect(['action' => 'login']);
     }

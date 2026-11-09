@@ -5,9 +5,8 @@
  * @var string $ownerDisplayField
  * @var \App\Model\Enum\VariableType $variableType
  */
-$this->assign('title', 'Editing Variable');
+$this->assign('title', __('Editing Variable'));
 $ownerUrl = ['controller' => $variableType->tableName(), 'action' => 'view', $owner->get('id')];
 ?>
-<style>label {width: 80px;}</style>
-<h2>Editing Variable for <?= h($variableType->name) ?> '<?= $this->Html->link($owner->get($ownerDisplayField), $ownerUrl) ?>'</h2><hr class="hbar" />
+<h2><?= __('Editing Variable for {0} \'\'{1}\'\'', h($variableType->name), $this->Html->link($owner->get($ownerDisplayField), $ownerUrl)) ?></h2><hr class="hbar" />
 <?= $this->element('variable_form') ?>

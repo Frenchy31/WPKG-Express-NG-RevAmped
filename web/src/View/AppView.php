@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\View;
 
+use Cake\I18n\I18n;
 use Cake\View\View;
 
 /**
@@ -35,5 +36,25 @@ class AppView extends View
             'number' => '<a href="{{url}}">{{text}}</a> ',
             'current' => '<span class="current">{{text}}</span> ',
         ]]);
+    }
+
+    /**
+     * Theme stored in the visitor's cookie.
+     *
+     * @return \App\View\Theme
+     */
+    public function theme(): Theme
+    {
+        return Theme::fromCookie($this->getRequest()->getCookie(Theme::COOKIE));
+    }
+
+    /**
+     * Language of the displayed interface, English when the locale is not shipped.
+     *
+     * @return \App\View\Language
+     */
+    public function language(): Language
+    {
+        return Language::fromLocale(I18n::getLocale()) ?? Language::English;
     }
 }

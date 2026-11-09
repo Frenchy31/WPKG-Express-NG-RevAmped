@@ -101,6 +101,22 @@ Les tests de bout en bout sur la VM Windows sont décrits dans `wpkg-test/README
 
 `wpkg-agent/` met à jour les portables en arrière-plan dès leur retour sur le réseau, sans droits pour l'utilisateur. Voir `wpkg-agent/README.md`, notamment l'obligation de HTTPS.
 
-## Licence
+## Licence et auteurs
 
-GPL-3.0, voir `web/LICENSE`. Basé sur wpkgExpress-ng (Probesys) et wpkgExpress (Brian White).
+WPKG Express NG est un logiciel libre sous licence GPL-3.0-or-later, voir `web/LICENSE`. Il est fourni sans aucune garantie.
+
+| Œuvre | Droits d'auteur |
+|---|---|
+| WPKG Express NG, reprise et modifications de 2026 | © 2026 Aubin Puyoou |
+| wpkgExpress-ng | © 2013 [Probesys](https://www.probesys.com) |
+| wpkgExpress | © 2009 Brian White |
+| Feuille de style cloudyDay.css | © 2005 Pat Heard (fullahead.org) |
+
+Modifié en 2026 par Aubin Puyoou :
+
+- portage de PHP 5 et CakePHP 1.x vers PHP 8.5 et CakePHP 5.4 ;
+- interface modernisée, thèmes clair et sombre, traduction française ;
+- page des rapports des postes et tableau de bord du parc ;
+- pile Docker, script d'installation, tests PHPUnit et tests de `wpkg.js`.
+
+Le client `wpkg-client/` est une copie de [WPKG](https://wpkg.org), sous sa propre licence.
