@@ -40,6 +40,33 @@ class HomeControllerTest extends AdminIntegrationTestCase
     }
 
     /**
+     * The dashboard is French with the wpkg_lang cookie, plural forms included.
+     *
+     * @return void
+     */
+    public function testFrenchDashboard(): void
+    {
+        $this->cookie('wpkg_lang', 'fr');
+
+        $this->get('/');
+
+        $this->assertResponseOk();
+        $this->assertResponseContains(
+            '1 poste a échoué lors de sa dernière exécution. 1 s&#039;est terminé avec un avertissement. '
+            . '2 n&#039;ont aucun rapport lisible. 3 n&#039;ont pas envoyé de rapport depuis plus de 24 heures.',
+        );
+        $this->assertResponseContains('Dernier rapport');
+        $this->assertResponseContains('aria-label="Échec 1, Avertissement 1, Inconnu 2, Succès 1"');
+        $this->assertResponseContains('<h2>Postes</h2>');
+        $this->assertResponseContains('<h2>À traiter</h2>');
+        $this->assertResponseContains('Voir tous les rapports');
+        $this->assertResponseContains('Ancien 3');
+        $this->assertResponseContains('en échec');
+        $this->assertResponseContains('dernière exécution');
+        $this->assertResponseNotContains('Needs attention');
+    }
+
+    /**
      * The sentence, the bar and the legend carry the totals of the reports page.
      *
      * @return void

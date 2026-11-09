@@ -1,0 +1,1196 @@
+# LANGUAGE translation of CakePHP Application
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2026-11-09 10:28+0000\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+msgid "An error occurred while processing your input"
+msgstr ""
+
+msgid "Unknown move direction."
+msgstr ""
+
+msgid "Incorrect username or password"
+msgstr ""
+
+msgid "Logged out successfully."
+msgstr ""
+
+msgid "The Exit Code has been saved."
+msgstr ""
+
+msgid "The Exit Code could not be saved. Please, try again."
+msgstr ""
+
+msgid "Package Exitcode deleted."
+msgstr ""
+
+msgid "An error occurred while attempting to delete that Package Exitcode."
+msgstr ""
+
+msgid "You must add at least one Profile first"
+msgstr ""
+
+msgid "The Host has been saved"
+msgstr ""
+
+msgid "The Host could not be saved. Please, try again."
+msgstr ""
+
+msgid "There are no other Profiles to add/remove"
+msgstr ""
+
+msgid "Host''s association with Profile ''{0}'' deleted"
+msgstr ""
+
+msgid "Host deleted"
+msgstr ""
+
+msgid "The Host could not be deleted. Please, try again."
+msgstr ""
+
+msgid "The Package Action has been saved."
+msgstr ""
+
+msgid "The Package Action could not be saved. Please, try again."
+msgstr ""
+
+msgid "Package Action deleted."
+msgstr ""
+
+msgid "An error occurred while attempting to delete that Package Action."
+msgstr ""
+
+msgid "The Package Check has been saved."
+msgstr ""
+
+msgid "The Package Check could not be saved. Please, try again."
+msgstr ""
+
+msgid "Package Check deleted."
+msgstr ""
+
+msgid "An error occurred while attempting to delete that Package Check."
+msgstr ""
+
+msgid "The Package has been saved."
+msgstr ""
+
+msgid "The Package could not be saved. Please, try again."
+msgstr ""
+
+msgid "An error occurred while attempting to delete that Package. It is depended on by: {0}"
+msgstr ""
+
+msgid "Package deleted."
+msgstr ""
+
+msgid "An error occurred while attempting to delete that Package."
+msgstr ""
+
+msgid "The Package ''{0}'' cannot be disabled because it is depended on by the following package(s): {1}"
+msgstr ""
+
+msgid "Host ''{0}'' added to Profile ''{1}''."
+msgstr ""
+
+msgid "The Profile ''{0}'' is the main profile of Host ''{1}'': change it on the host."
+msgstr ""
+
+msgid "Host ''{0}'' removed from Profile ''{1}''."
+msgstr ""
+
+msgid "The Profile has been saved."
+msgstr ""
+
+msgid "The Profile could not be saved. Please, try again."
+msgstr ""
+
+msgid "There are no Packages to add/remove"
+msgstr ""
+
+msgid "Profile''s association with Package ''{0}'' deleted."
+msgstr ""
+
+msgid "Profile deleted."
+msgstr ""
+
+msgid "The Profile could not be deleted. Please, try again."
+msgstr ""
+
+msgid "The Profile ''{0}'' is disabled: clients would ignore this link."
+msgstr ""
+
+msgid "The Profile ''{0}'' is already the main profile of Host ''{1}''."
+msgstr ""
+
+msgid "Host ''{0}'' is already attached to Profile ''{1}''."
+msgstr ""
+
+msgid "The Profile ''{0}'' cannot be deleted or disabled because it is the main profile for the following host(s): {1}"
+msgstr ""
+
+msgid "No report found for this host."
+msgstr ""
+
+msgid "The Variable has been saved"
+msgstr ""
+
+msgid "The Variable could not be saved"
+msgstr ""
+
+msgid "Variable deleted"
+msgstr ""
+
+msgid "The Variable could not be deleted"
+msgstr ""
+
+msgid "Invalid type."
+msgstr ""
+
+msgid "{0} (line {1})"
+msgstr ""
+
+msgid "{0}: could not find existing dependency package: {1}"
+msgstr ""
+
+msgid "{0}: upgraded from revision {1} to {2}."
+msgstr ""
+
+msgid "{0}: a package with the same ID and an equal or higher revision ({1}) already exists. Skipped."
+msgstr ""
+
+msgid "{0}: <{1}> elements are not stored and were dropped."
+msgstr ""
+
+msgid "{0}: {1}"
+msgstr ""
+
+msgid "{0}: unsupported check type=\"{1}\" condition=\"{2}\"."
+msgstr ""
+
+msgid "{0}: <{1}> without a cmd attribute was dropped."
+msgstr ""
+
+msgid "{0}: detected package dependency on self. Skipping."
+msgstr ""
+
+msgid "{0}: dependency {1} was not imported."
+msgstr ""
+
+msgid "{0}: could not find existing profile package: {1}"
+msgstr ""
+
+msgid "{0}: detected profile dependency on self. Skipping."
+msgstr ""
+
+msgid "{0}: could not find existing dependency profile: {1}"
+msgstr ""
+
+msgid "{0}: could not find existing host''s main profile: {1}"
+msgstr ""
+
+msgid "{0}: could not find existing host profile: {1}"
+msgstr ""
+
+msgid "invalid {0}."
+msgstr ""
+
+msgid "could not be saved."
+msgstr ""
+
+msgid "Invalid Host header. Request host does not match configured application host."
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
+msgid "Delayed"
+msgstr ""
+
+msgid "Postponed"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid "The exit code's code attribute must be an integer or the string, 'any'."
+msgstr ""
+
+msgid "The exit code's reboot attribute is invalid."
+msgstr ""
+
+msgid "The exit code's code already exists for this package action."
+msgstr ""
+
+msgid "The host's name is an invalid regular expression."
+msgstr ""
+
+msgid "The host's main profile could not be found."
+msgstr ""
+
+msgid "That host already exists."
+msgstr ""
+
+msgid "The package action command attribute is invalid."
+msgstr ""
+
+msgid "The package action type attribute is invalid."
+msgstr ""
+
+msgid "The package action timeout attribute is invalid."
+msgstr ""
+
+msgid "The package check type attribute is invalid."
+msgstr ""
+
+msgid "The package check condition attribute is invalid."
+msgstr ""
+
+msgid "Logical atleast and atmost checks need a count."
+msgstr ""
+
+msgid "Root Node"
+msgstr ""
+
+msgid "Logical {0}"
+msgstr ""
+
+msgid "The package's id must start with a letter or number and only contain: letters, numbers, underscores, and hyphens."
+msgstr ""
+
+msgid "The package's revision attribute is not formatted properly. It must start with a digit. If it contains periods, you must have at least one digit after each."
+msgstr ""
+
+msgid "The package's priority attribute is not an integer."
+msgstr ""
+
+msgid "The package's reboot attribute is invalid."
+msgstr ""
+
+msgid "The package's execute attribute is invalid."
+msgstr ""
+
+msgid "The package's notify attribute must be true or false."
+msgstr ""
+
+msgid "That package already exists."
+msgstr ""
+
+msgid "The profile's id must start with a letter or number and only contain: letters, numbers, underscores, and hyphens."
+msgstr ""
+
+msgid "That profile already exists."
+msgstr ""
+
+msgid "The file is empty."
+msgstr ""
+
+msgid "The file is not well-formed."
+msgstr ""
+
+msgid "Unmatched"
+msgstr ""
+
+msgid "Success"
+msgstr ""
+
+msgid "Warning"
+msgstr ""
+
+msgid "Unknown"
+msgstr ""
+
+msgid "Failed"
+msgstr ""
+
+msgid "No readable log"
+msgstr ""
+
+msgid "No report for {0} hours"
+msgstr ""
+
+msgid "Move top"
+msgstr ""
+
+msgid "Move up"
+msgstr ""
+
+msgid "Move down"
+msgstr ""
+
+msgid "Move bottom"
+msgstr ""
+
+msgid "Logical {0} {1}"
+msgstr ""
+
+msgid "Registry Path \"{0}\" Exists"
+msgstr ""
+
+msgid "Registry Path \"{0}\" Equals \"{1}\""
+msgstr ""
+
+msgid "Uninstall Exists {0}"
+msgstr ""
+
+msgid "Uninstall {0} {1} {2}"
+msgstr ""
+
+msgid "Host {0} {1}"
+msgstr ""
+
+msgid "Execute \"{0}\" and ensure the returned exit code {1} {2}"
+msgstr ""
+
+msgid "File \"{0}\" Exists"
+msgstr ""
+
+msgid "File \"{0}\" Has a File Size = {1}"
+msgstr ""
+
+msgid "File \"{0}\" Has a Version {1} {2}"
+msgstr ""
+
+msgid "Add/Remove Name:"
+msgstr ""
+
+msgid "File Path:"
+msgstr ""
+
+msgid "Executable Path:"
+msgstr ""
+
+msgid "Path:"
+msgstr ""
+
+msgid "Exit Code:"
+msgstr ""
+
+msgid "Size (in bytes):"
+msgstr ""
+
+msgid "Version:"
+msgstr ""
+
+msgid "Count:"
+msgstr ""
+
+msgid "Value:"
+msgstr ""
+
+msgid "Auto"
+msgstr ""
+
+msgid "Light"
+msgstr ""
+
+msgid "Dark"
+msgstr ""
+
+msgid "If enabled, this package will appear in package (xml) lists."
+msgstr ""
+
+msgid "Human-readable name that identifies this package (e.g. Foo Bar Baz Ultra Edition)."
+msgstr ""
+
+msgid "Unique ID containing only letters, numbers, underscores and hyphens (e.g. fooBarBaz_ultra OR foo-bar-baz-ultra)."
+msgstr ""
+
+msgid "An positive integer or positive decimal value that denotes the version/revision of this package (e.g. 1 OR 1.0.3). If you have periods in the revision, you must have at least one digit after each period."
+msgstr ""
+
+msgid "An integer value (any positive non-decimal number) that indicates this package's priority. Higher priorities take precedence over lower priorities (e.g. 10)."
+msgstr ""
+
+msgid "'Always' will always execute all of this package's Install actions every time, whereas 'Once' will only execute them once. Both of these modes will always ignore all Package checks."
+msgstr ""
+
+msgid "If set, the system will reboot after installation of this package."
+msgstr ""
+
+msgid "If set, the system will notify the user via 'net send' when installation starts and stops."
+msgstr ""
+
+msgid "Additional notes about this package. Not used by WPKG."
+msgstr ""
+
+msgid "The last date and time this package was modified."
+msgstr ""
+
+msgid "Packages that this package depends on."
+msgstr ""
+
+msgid "Packages that depend on this package."
+msgstr ""
+
+msgid "Profiles that contain this package."
+msgstr ""
+
+msgid "The kind of check to be performed."
+msgstr ""
+
+msgid "Describes how the package check is to be carried out for the selected type."
+msgstr ""
+
+msgid "The contents of this field vary depending on the package check type and condition."
+msgstr ""
+
+msgid "Determines where the package check should be placed in the package check hierarchy. All potential parents are listed in order."
+msgstr ""
+
+msgid "The kind of action to be executed."
+msgstr ""
+
+msgid "The command to be executed."
+msgstr ""
+
+msgid "The maximum number of seconds to wait for the action to execute. Default is 3600."
+msgstr ""
+
+msgid "The working directory to use when executing this action."
+msgstr ""
+
+msgid "This is the expected exit code produced by the associated command/package action."
+msgstr ""
+
+msgid "Determines if and what kind of a reboot is performed when the specified exit code is detected."
+msgstr ""
+
+msgid "If enabled, this profile will appear in profile (xml) lists."
+msgstr ""
+
+msgid "Unique ID containing only letters, numbers, underscores and hyphens (e.g. base_software OR developer-suite OR complabsoft8)."
+msgstr ""
+
+msgid "Additional notes about this profile. Not used by WPKG."
+msgstr ""
+
+msgid "The last date and time this profile was modified."
+msgstr ""
+
+msgid "Profiles that this profile depends on."
+msgstr ""
+
+msgid "If enabled, this host will appear in profile (xml) lists."
+msgstr ""
+
+msgid "The position of this host entry. This is important for regular expression-based host names as they are evaluated in order. However, non-regular expression-based host names are ALWAYS checked first."
+msgstr ""
+
+msgid "Either a regular expression or a literal host name. (e.g. libraryPC[0-9]+ OR principalcomp OR .+)."
+msgstr ""
+
+msgid "Additional notes about this host. Not used by WPKG."
+msgstr ""
+
+msgid "The last date and time this host was modified."
+msgstr ""
+
+msgid "The main profile that will always be evaluated for this host."
+msgstr ""
+
+msgid "Admin"
+msgstr ""
+
+msgid "Errors"
+msgstr ""
+
+msgid "Warnings"
+msgstr ""
+
+msgid "Information"
+msgstr ""
+
+msgid "Packages"
+msgstr ""
+
+msgid "Profiles"
+msgstr ""
+
+msgid "Hosts"
+msgstr ""
+
+msgid "Uploaded {0} failed to pass XSD schema validation"
+msgstr ""
+
+msgid "{0} of {1} uploaded {2} were imported successfully"
+msgstr ""
+
+msgid "Tasks"
+msgstr ""
+
+msgid "Import"
+msgstr ""
+
+msgid "Packages: "
+msgstr ""
+
+msgid "Profiles: "
+msgstr ""
+
+msgid "Hosts: "
+msgstr ""
+
+msgid "Export"
+msgstr ""
+
+msgid "Settings"
+msgstr ""
+
+msgid "Settings come from environment variables and take effect when the application restarts."
+msgstr ""
+
+msgid "Web Authentication"
+msgstr ""
+
+msgid "Username:"
+msgstr ""
+
+msgid "Force SSL:"
+msgstr ""
+
+msgid "XML Feed"
+msgstr ""
+
+msgid "Export disabled items:"
+msgstr ""
+
+msgid "Format XML output:"
+msgstr ""
+
+msgid "Protect XML output:"
+msgstr ""
+
+msgid "Reports"
+msgstr ""
+
+msgid "Directory:"
+msgstr ""
+
+msgid "Not configured"
+msgstr ""
+
+msgid "wpkgExpress-ng Login"
+msgstr ""
+
+msgid "Login: "
+msgstr ""
+
+msgid "Password: "
+msgstr ""
+
+msgid "Login"
+msgstr ""
+
+msgid "Not Found"
+msgstr ""
+
+msgid "Bad Request"
+msgstr ""
+
+msgid "Forbidden"
+msgstr ""
+
+msgid "Method Not Allowed"
+msgstr ""
+
+msgid "CSRF token mismatch."
+msgstr ""
+
+msgid "An internal error has occurred."
+msgstr ""
+
+msgid "Add Exit Code"
+msgstr ""
+
+msgid "Adding Exit Code to ''{0}'' Package Action"
+msgstr ""
+
+msgid "Edit Exit Code"
+msgstr ""
+
+msgid "Editing Exit Code for ''{0}'' Package Action"
+msgstr ""
+
+msgid "Summary"
+msgstr ""
+
+msgid "Workstation reports are off. Set WPKG_REPORTS_PATH to show the last run of each host."
+msgstr ""
+
+msgid "Reports directory cannot be read"
+msgstr ""
+
+msgid "No reports found"
+msgstr ""
+
+msgid "# Enabled:"
+msgstr ""
+
+msgid "# Disabled:"
+msgstr ""
+
+msgid "# Total:"
+msgstr ""
+
+msgid "Last Modified:"
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "Id"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Notes"
+msgstr ""
+
+msgid "Unable to complete your search request"
+msgstr ""
+
+msgid "Found <b>{0} result</b> while searching for \"<b>{1}</b>\":"
+msgid_plural "Found <b>{0} results</b> while searching for \"<b>{1}</b>\":"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Add Host"
+msgstr ""
+
+msgid "Add New Host"
+msgstr ""
+
+msgid "Name:"
+msgstr ""
+
+msgid "Notes:"
+msgstr ""
+
+msgid "Main Profile:"
+msgstr ""
+
+msgid "Submit"
+msgstr ""
+
+msgid "Edit Host"
+msgstr ""
+
+msgid "Editing Host ''{0}''"
+msgstr ""
+
+msgid "Enabled:"
+msgstr ""
+
+msgid "Add"
+msgstr ""
+
+msgid "No Hosts found"
+msgstr ""
+
+msgid "Enabled"
+msgstr ""
+
+msgid "Position"
+msgstr ""
+
+msgid "Main Profile"
+msgstr ""
+
+msgid "Last Modified"
+msgstr ""
+
+msgid "Actions"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "Delete Host ''{0}''?"
+msgstr ""
+
+msgid "Host profiles"
+msgstr ""
+
+msgid "Modifying additional associated Profiles for Host ''{0}''"
+msgstr ""
+
+msgid "Host {0}"
+msgstr ""
+
+msgid "Host Details for ''{0}''"
+msgstr ""
+
+msgid "Variables"
+msgstr ""
+
+msgid "Additional associated Profiles"
+msgstr ""
+
+msgid "<None>"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Add Package Action"
+msgstr ""
+
+msgid "Adding Package Action for ''{0}''"
+msgstr ""
+
+msgid "Edit Package Action"
+msgstr ""
+
+msgid "Editing Package Action for ''{0}''"
+msgstr ""
+
+msgid "Package Action"
+msgstr ""
+
+msgid "Package Action Details for ''{0}''"
+msgstr ""
+
+msgid "Delete this action?"
+msgstr ""
+
+msgid "Type:"
+msgstr ""
+
+msgid "Command:"
+msgstr ""
+
+msgid "Timeout:"
+msgstr ""
+
+msgid "Work Dir.:"
+msgstr ""
+
+msgid "Exit Codes"
+msgstr ""
+
+msgid "(Reboot: {0})"
+msgstr ""
+
+msgid "Add Package Check"
+msgstr ""
+
+msgid "Adding Package Check for ''{0}''"
+msgstr ""
+
+msgid "Edit Package Check"
+msgstr ""
+
+msgid "Editing Package Check for ''{0}''"
+msgstr ""
+
+msgid "Add Package"
+msgstr ""
+
+msgid "Add New Package"
+msgstr ""
+
+msgid "Edit Package"
+msgstr ""
+
+msgid "Editing Package ''{0}''"
+msgstr ""
+
+msgid "Dependencies:"
+msgstr ""
+
+msgid "No other Packages to choose from."
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "No Packages found"
+msgstr ""
+
+msgid "Revision"
+msgstr ""
+
+msgid "Priority"
+msgstr ""
+
+msgid "Reboot"
+msgstr ""
+
+msgid "Execute"
+msgstr ""
+
+msgid "Notify"
+msgstr ""
+
+msgid "Delete Package ''{0}''?"
+msgstr ""
+
+msgid "Package {0}"
+msgstr ""
+
+msgid "Package Details for ''{0}''"
+msgstr ""
+
+msgid "ID:"
+msgstr ""
+
+msgid "Revision:"
+msgstr ""
+
+msgid "Priority:"
+msgstr ""
+
+msgid "Reboot:"
+msgstr ""
+
+msgid "Execute:"
+msgstr ""
+
+msgid "Notify:"
+msgstr ""
+
+msgid "True"
+msgstr ""
+
+msgid "False"
+msgstr ""
+
+msgid "Depends On:"
+msgstr ""
+
+msgid "Depended On By:"
+msgstr ""
+
+msgid "Exists in Profiles:"
+msgstr ""
+
+msgid "Package Checks"
+msgstr ""
+
+msgid "Package Actions"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Command"
+msgstr ""
+
+msgid "Add Profile"
+msgstr ""
+
+msgid "Add New Profile"
+msgstr ""
+
+msgid "Edit Profile"
+msgstr ""
+
+msgid "Editing Profile ''{0}''"
+msgstr ""
+
+msgid "No other Profiles to choose from."
+msgstr ""
+
+msgid "Hosts of Profile {0}"
+msgstr ""
+
+msgid "Hosts of Profile ''{0}''"
+msgstr ""
+
+msgid "Add Host:"
+msgstr ""
+
+msgid "Link"
+msgstr ""
+
+msgid "Main"
+msgstr ""
+
+msgid "Additional"
+msgstr ""
+
+msgid "Change the main profile"
+msgstr ""
+
+msgid "Remove Host ''{0}'' from Profile ''{1}''? At their next synchronization, clients uninstall the packages they only got from this profile."
+msgstr ""
+
+msgid "No Profiles found"
+msgstr ""
+
+msgid "Delete Profile ''{0}''?"
+msgstr ""
+
+msgid "Profile packages"
+msgstr ""
+
+msgid "Modifying associated Packages for Profile ''{0}''"
+msgstr ""
+
+msgid "Profile {0}"
+msgstr ""
+
+msgid "Profile Details for ''{0}''"
+msgstr ""
+
+msgid "Associated Packages"
+msgstr ""
+
+msgid "Reports directory not configured: set WPKG_REPORTS_PATH"
+msgstr ""
+
+msgid "Stale: {0}"
+msgstr ""
+
+msgid "profile {0}"
+msgstr ""
+
+msgid "{0} host(s)"
+msgstr ""
+
+msgid "Show the full log"
+msgstr ""
+
+msgid "{0} error(s), {1} warning(s)"
+msgstr ""
+
+msgid "Report {0}"
+msgstr ""
+
+msgid "Report"
+msgstr ""
+
+msgid "Back to reports"
+msgstr ""
+
+msgid "Last log"
+msgstr ""
+
+msgid "No log file for this host"
+msgstr ""
+
+msgid "Adding Variable"
+msgstr ""
+
+msgid "Adding Variable to {0} ''{1}''"
+msgstr ""
+
+msgid "Editing Variable"
+msgstr ""
+
+msgid "Editing Variable for {0} ''{1}''"
+msgstr ""
+
+msgid "Variables for {0} ''{1}''"
+msgstr ""
+
+msgid "Logical"
+msgstr ""
+
+msgid "Condition:"
+msgstr ""
+
+msgid "Parent:"
+msgstr ""
+
+msgid "Delete this check and its children?"
+msgstr ""
+
+msgid "Code:"
+msgstr ""
+
+msgid "Latest report: {0}."
+msgstr ""
+
+msgid "Stale"
+msgstr ""
+
+msgid "Workstations"
+msgstr ""
+
+msgid "{0} failed"
+msgstr ""
+
+msgid "{0} unknown"
+msgstr ""
+
+msgid "last run {0} (more than 24 hours ago)"
+msgstr ""
+
+msgid "last run {0}"
+msgstr ""
+
+msgid "No report for more than 24 hours"
+msgstr ""
+
+msgid "Needs attention"
+msgstr ""
+
+msgid "Nothing to fix: every workstation succeeded in the last 24 hours."
+msgstr ""
+
+msgid "Show all reports"
+msgstr ""
+
+msgid "{0} workstation failed its last run."
+msgid_plural "{0} workstations failed their last run."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "{0} finished with a warning."
+msgid_plural "{0} finished with warnings."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "{0} has no readable report."
+msgid_plural "{0} have no readable report."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "{0} has not reported for more than 24 hours."
+msgid_plural "{0} have not reported for more than 24 hours."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "{0} workstation finished its last run without errors."
+msgid_plural "All {0} workstations finished their last run without errors."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "{0} host"
+msgid_plural "{0} hosts"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "{0} error"
+msgid_plural "{0} errors"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "{0} warning"
+msgid_plural "{0} warnings"
+msgstr[0] ""
+msgstr[1] ""
+
+msgctxt "breakdown"
+msgid "{0} warning"
+msgstr ""
+
+msgid "Language:"
+msgstr ""
+
+msgid "Showing page {{page}} of {{pages}}, {{current}} record(s) out of {{count}} total"
+msgstr ""
+
+msgid "<< previous"
+msgstr ""
+
+msgid "next >>"
+msgstr ""
+
+msgid "No run in the last 24 hours"
+msgstr ""
+
+msgid "Last run"
+msgstr ""
+
+msgid "WPKG version"
+msgstr ""
+
+msgid "Host name"
+msgstr ""
+
+msgid "Operating system"
+msgstr ""
+
+msgid "Architecture"
+msgstr ""
+
+msgid "IP addresses"
+msgstr ""
+
+msgid "Domain"
+msgstr ""
+
+msgid "Installed packages"
+msgstr ""
+
+msgid "Log file"
+msgstr ""
+
+msgid "Missing"
+msgstr ""
+
+msgid "XML file"
+msgstr ""
+
+msgid "Succeeded"
+msgstr ""
+
+msgid "Theme:"
+msgstr ""
+
+msgid "Return to main summary page"
+msgstr ""
+
+msgid "A web-based frontend to {0}"
+msgstr ""
+
+msgid "Official home for the WPKG project"
+msgstr ""
+
+msgid "Manage packages and associated information"
+msgstr ""
+
+msgid "Manage profiles"
+msgstr ""
+
+msgid "Manage hosts"
+msgstr ""
+
+msgid "Review the last run of each workstation"
+msgstr ""
+
+msgid "Perform other administrative tasks"
+msgstr ""
+
+msgid "Logout"
+msgstr ""
+
+msgid "Log out of the current session"
+msgstr ""
+
+msgid "All"
+msgstr ""
+
+msgid "Copyright &copy; 2013 {0} - Based on wpkgExpress by Brian White"
+msgstr ""
+
+msgid "Probesys - Open Source specialist"
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "Back to the summary"
+msgstr ""
+
