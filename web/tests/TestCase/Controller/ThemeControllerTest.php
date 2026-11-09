@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Test\TestCase\Controller;
 
 use App\Test\Support\AdminIntegrationTestCase;
+use Cake\Routing\Router;
 use PHPUnit\Framework\Attributes\TestWith;
 
 /**
@@ -19,7 +20,7 @@ class ThemeControllerTest extends AdminIntegrationTestCase
      */
     public function testSetDarkStoresCookieAndRedirectsToReferer(): void
     {
-        $this->configRequest(['headers' => ['Referer' => 'http://wpkg.localhost/packages']]);
+        $this->configRequest(['headers' => ['Referer' => Router::fullBaseUrl() . '/packages']]);
 
         $this->post('/theme', ['theme' => 'dark']);
 
