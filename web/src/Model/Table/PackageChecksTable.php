@@ -50,7 +50,7 @@ class PackageChecksTable extends Table
             ->requirePresence('type', 'create')
             ->add('type', 'validRange', [
                 'rule' => fn(mixed $type): bool => CheckType::tryFrom((int)$type) !== null,
-                'message' => 'The package check type attribute is invalid.',
+                'message' => __('The package check type attribute is invalid.'),
             ])
             ->requirePresence('condition', 'create')
             ->add('condition', 'validRange', [
@@ -60,14 +60,14 @@ class PackageChecksTable extends Table
                     return $checkCondition !== null
                         && $checkCondition->type()->value === (int)($context['data']['type'] ?? -1);
                 },
-                'message' => 'The package check condition attribute is invalid.',
+                'message' => __('The package check condition attribute is invalid.'),
             ])
             ->allowEmptyString('path')
             ->maxLength('path', 200)
             // wpkg.js throws on an atleast or atmost check without a count.
             ->allowEmptyString(
                 'value',
-                'Logical atleast and atmost checks need a count.',
+                __('Logical atleast and atmost checks need a count.'),
                 fn(array $context): bool => !self::isCountedCondition($context['data']['condition'] ?? null),
             )
             ->add('value', 'count', [
@@ -75,7 +75,7 @@ class PackageChecksTable extends Table
                     return !self::isCountedCondition($context['data']['condition'] ?? null)
                         || ctype_digit((string)$value);
                 },
-                'message' => 'Logical atleast and atmost checks need a count.',
+                'message' => __('Logical atleast and atmost checks need a count.'),
             ])
             ->maxLength('value', 200)
             ->allowEmptyString('parent_id');
@@ -182,7 +182,7 @@ class PackageChecksTable extends Table
             ->orderBy(['lft' => 'ASC'])
             ->all();
 
-        $options = [0 => 'Root Node'];
+        $options = [0 => __('Root Node')];
         $openRights = [];
         foreach ($checks as $check) {
             while ($openRights && end($openRights) < $check->get('lft')) {
@@ -190,7 +190,7 @@ class PackageChecksTable extends Table
             }
             $condition = CheckCondition::tryFrom($check->get('condition'));
             $options[$check->get('id')] = str_repeat('-', count($openRights) + 1)
-                . 'Logical ' . ucfirst($condition?->xmlValue() ?? 'unknown');
+                . __('Logical {0}', ucfirst($condition?->xmlValue() ?? 'unknown'));
             $openRights[] = $check->get('rght');
         }
 

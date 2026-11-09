@@ -38,11 +38,11 @@ class PackageActionsController extends AppController
             $action = $this->PackageActions->patchEntity($action, $this->request->getData());
             $action->package_id = $packageId;
             if ($this->PackageActions->save($action)) {
-                $this->Flash->success('The Package Action has been saved.');
+                $this->Flash->success(__('The Package Action has been saved.'));
 
                 return $this->redirect(['controller' => 'Packages', 'action' => 'view', $packageId]);
             }
-            $this->Flash->error('The Package Action could not be saved. Please, try again.');
+            $this->Flash->error(__('The Package Action could not be saved. Please, try again.'));
         }
         $this->set(compact('action', 'package'));
 
@@ -63,11 +63,11 @@ class PackageActionsController extends AppController
                 'type', 'command', 'timeout', 'workdir',
             ]]);
             if ($this->PackageActions->save($action)) {
-                $this->Flash->success('The Package Action has been saved.');
+                $this->Flash->success(__('The Package Action has been saved.'));
 
                 return $this->redirect(['controller' => 'Packages', 'action' => 'view', $action->package_id]);
             }
-            $this->Flash->error('The Package Action could not be saved. Please, try again.');
+            $this->Flash->error(__('The Package Action could not be saved. Please, try again.'));
         }
         $this->set(compact('action'));
 
@@ -85,9 +85,9 @@ class PackageActionsController extends AppController
         $this->request->allowMethod(['post', 'delete']);
         $action = $this->PackageActions->get($id);
         if ($this->PackageActions->delete($action)) {
-            $this->Flash->success('Package Action deleted.');
+            $this->Flash->success(__('Package Action deleted.'));
         } else {
-            $this->Flash->error('An error occurred while attempting to delete that Package Action.');
+            $this->Flash->error(__('An error occurred while attempting to delete that Package Action.'));
         }
 
         return $this->redirect(['controller' => 'Packages', 'action' => 'view', $action->package_id]);

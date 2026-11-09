@@ -21,7 +21,12 @@ enum ReportStatus: string
      */
     public function label(): string
     {
-        return ucfirst($this->value);
+        return match ($this) {
+            self::Success => __('Success'),
+            self::Warning => __('Warning'),
+            self::Unknown => __('Unknown'),
+            self::Failed => __('Failed'),
+        };
     }
 
     /**

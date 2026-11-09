@@ -6,22 +6,22 @@
  * @var \App\Report\HostReport $report
  */
 $facts = [
-    'Last run' => $this->Wpkg->date($report->ranAt()),
-    'WPKG version' => $report->log?->wpkgVersion(),
-    'Host name' => $report->properties['hostname'] ?? null,
-    'Operating system' => $report->properties['os'] ?? null,
-    'Architecture' => $report->properties['architecture'] ?? null,
-    'IP addresses' => implode(', ', $report->ipAddresses()),
-    'Domain' => $report->properties['domainname'] ?? null,
-    'Profiles' => implode(', ', $report->log?->profiles() ?? []),
-    'Installed packages' => $report->installedPackages === null ? null : (string)$report->installedPackages,
-    'Log file' => $report->log === null ? 'Missing' : null,
-    'XML file' => $report->hasXml ? $report->xmlError : 'Missing',
+    __('Last run') => $this->Wpkg->date($report->ranAt()),
+    __('WPKG version') => $report->log?->wpkgVersion(),
+    __('Host name') => $report->properties['hostname'] ?? null,
+    __('Operating system') => $report->properties['os'] ?? null,
+    __('Architecture') => $report->properties['architecture'] ?? null,
+    __('IP addresses') => implode(', ', $report->ipAddresses()),
+    __('Domain') => $report->properties['domainname'] ?? null,
+    __('Profiles') => implode(', ', $report->log?->profiles() ?? []),
+    __('Installed packages') => $report->installedPackages === null ? null : (string)$report->installedPackages,
+    __('Log file') => $report->log === null ? __('Missing') : null,
+    __('XML file') => $report->hasXml ? $report->xmlError : __('Missing'),
 ];
 $lists = [
-    'Succeeded' => ['report-succeeded', $report->log?->succeeded() ?? []],
-    'Errors' => ['report-errors', $report->log?->errors() ?? []],
-    'Warnings' => ['report-warnings', $report->log?->warnings() ?? []],
+    __('Succeeded') => ['report-succeeded', $report->log?->succeeded() ?? []],
+    __('Errors') => ['report-errors', $report->log?->errors() ?? []],
+    __('Warnings') => ['report-warnings', $report->log?->warnings() ?? []],
 ];
 ?>
 <dl class="report-details">

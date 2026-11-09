@@ -7,6 +7,8 @@ namespace App\View\Helper;
 use App\Model\Entity\PackageCheck;
 use App\Model\Enum\CheckCondition;
 use App\Model\Enum\CheckType;
+use App\View\Language;
+use Cake\I18n\I18n;
 use Cake\I18n\Number;
 use Cake\View\Helper;
 use DateTimeInterface;
@@ -35,7 +37,9 @@ class WpkgHelper extends Helper
      */
     public function date(?DateTimeInterface $date): string
     {
-        return $date?->format('Y-m-d h:i:s A') ?? '';
+        $language = Language::fromLocale(I18n::getLocale()) ?? Language::English;
+
+        return $date?->format($language->dateFormat()) ?? '';
     }
 
     /**
@@ -120,9 +124,15 @@ class WpkgHelper extends Helper
      */
     public function moveIcons(array $url): string
     {
+        $labels = [
+            'top' => __('Move top'),
+            'up' => __('Move up'),
+            'down' => __('Move down'),
+            'bottom' => __('Move bottom'),
+        ];
         $icons = [];
-        foreach (['top', 'up', 'down', 'bottom'] as $direction) {
-            $icons[] = $this->postIcon('go-' . $direction, [...$url, $direction], 'Move ' . $direction);
+        foreach (array_keys($labels) as $direction) {
+            $icons[] = $this->postIcon('go-' . $direction, [...$url, $direction], $labels[$direction]);
         }
 
         return implode('&nbsp;', $icons);
@@ -154,26 +164,32 @@ class WpkgHelper extends Helper
         $value = (string)$check->value;
 
         return match ($condition?->type()) {
-            CheckType::Logical => 'Logical ' . ucfirst($condition->xmlValue())
-                . ($condition->usesValue() ? ' ' . $value : ''),
-            CheckType::Registry => sprintf('Registry Path "%s" ', $path)
-                . ($condition === CheckCondition::RegistryExists ? 'Exists' : sprintf('Equals "%s"', $value)),
+            CheckType::Logical => $condition->usesValue()
+                ? __('Logical {0} {1}', ucfirst($condition->xmlValue()), $value)
+                : __('Logical {0}', ucfirst($condition->xmlValue())),
+            CheckType::Registry => $condition === CheckCondition::RegistryExists
+                ? __('Registry Path "{0}" Exists', $path)
+                : __('Registry Path "{0}" Equals "{1}"', $path, $value),
             CheckType::Uninstall => $condition === CheckCondition::UninstallExists
-                ? 'Uninstall Exists ' . $path
-                : sprintf('Uninstall %s %s %s', $path, $this->comparison($condition), $value),
-            CheckType::Host => sprintf('Host %s %s', ucfirst($condition->xmlValue()), $value),
-            CheckType::Execute => sprintf(
-                'Execute "%s" and ensure the returned exit code %s %s',
+                ? __('Uninstall Exists {0}', $path)
+                : __('Uninstall {0} {1} {2}', $path, $this->comparison($condition), $value),
+            CheckType::Host => __('Host {0} {1}', ucfirst($condition->xmlValue()), $value),
+            CheckType::Execute => __(
+                'Execute "{0}" and ensure the returned exit code {1} {2}',
                 $path,
                 $this->comparison($condition),
                 $value,
             ),
-            CheckType::File => sprintf('File "%s" ', $path) . match ($condition) {
-                CheckCondition::FileExists => 'Exists',
-                CheckCondition::FileSizeEquals => 'Has a File Size = ' . Number::toReadableSize((float)$value),
-                default => sprintf('Has a Version %s %s', $this->comparison($condition), $value),
+            CheckType::File => match ($condition) {
+                CheckCondition::FileExists => __('File "{0}" Exists', $path),
+                CheckCondition::FileSizeEquals => __(
+                    'File "{0}" Has a File Size = {1}',
+                    $path,
+                    Number::toReadableSize((float)$value),
+                ),
+                default => __('File "{0}" Has a Version {1} {2}', $path, $this->comparison($condition), $value),
             },
-            default => 'Unknown',
+            default => __('Unknown'),
         };
     }
 
@@ -191,17 +207,17 @@ class WpkgHelper extends Helper
             'showPath' => !in_array($type, [CheckType::Logical, CheckType::Host], true),
             'showValue' => $condition->usesValue(),
             'pathLabel' => match ($type) {
-                CheckType::Uninstall => 'Add/Remove Name:',
-                CheckType::File => 'File Path:',
-                CheckType::Execute => 'Executable Path:',
-                default => 'Path:',
+                CheckType::Uninstall => __('Add/Remove Name:'),
+                CheckType::File => __('File Path:'),
+                CheckType::Execute => __('Executable Path:'),
+                default => __('Path:'),
             },
             'valueLabel' => match (true) {
-                $type === CheckType::Execute => 'Exit Code:',
-                $condition === CheckCondition::FileSizeEquals => 'Size (in bytes):',
-                $type === CheckType::File => 'Version:',
-                $type === CheckType::Logical => 'Count:',
-                default => 'Value:',
+                $type === CheckType::Execute => __('Exit Code:'),
+                $condition === CheckCondition::FileSizeEquals => __('Size (in bytes):'),
+                $type === CheckType::File => __('Version:'),
+                $type === CheckType::Logical => __('Count:'),
+                default => __('Value:'),
             },
         ];
     }

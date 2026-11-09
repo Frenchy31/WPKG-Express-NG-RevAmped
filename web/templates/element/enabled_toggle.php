@@ -4,6 +4,6 @@
  * @var object $record Record with `id` and `enabled`.
  */
 echo $this->Form->postLink(
-    $record->enabled ? 'Yes' : 'No',
+    $record->enabled ? __('Yes') : __('No'),
     ['action' => $record->enabled ? 'disable' : 'enable', $record->id],
 );

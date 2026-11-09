@@ -31,7 +31,7 @@ class AdminController extends AppController
                 $reports[$kind] = $importer->import($kind, (string)$upload->getStream());
             }
             if (!$reports) {
-                $this->Flash->error('An error occurred while processing your input');
+                $this->Flash->error(__('An error occurred while processing your input'));
             }
         }
 

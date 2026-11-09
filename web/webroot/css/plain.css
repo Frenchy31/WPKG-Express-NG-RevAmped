@@ -248,6 +248,13 @@ ul.reg, ol.reg {
   color: var(--ink-muted);
 }
 
+#footerLeft {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 24px;
+}
+
 #footerLeft form {
   display: flex;
   align-items: center;

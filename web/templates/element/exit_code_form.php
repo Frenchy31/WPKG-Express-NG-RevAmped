@@ -13,7 +13,7 @@ foreach (ExitCodeReboot::cases() as $case) {
 }
 
 echo $this->Form->create($exitCode);
-echo $this->Form->control('code', ['type' => 'text', 'class' => 'input', 'size' => 8, 'label' => $this->Wpkg->label('Code:', Tooltip::EXITCODE_CODE, true)]);
-echo $this->Form->control('reboot', ['type' => 'select', 'options' => $rebootOptions, 'label' => $this->Wpkg->label('Reboot:', Tooltip::EXITCODE_REBOOT)]);
-echo '<div class="inputwrap"><label>&nbsp;</label>' . $this->Form->button('Submit') . '</div>';
+echo $this->Form->control('code', ['type' => 'text', 'class' => 'input', 'size' => 8, 'label' => $this->Wpkg->label(__('Code:'), Tooltip::exitcodeCode(), true)]);
+echo $this->Form->control('reboot', ['type' => 'select', 'options' => $rebootOptions, 'label' => $this->Wpkg->label(__('Reboot:'), Tooltip::exitcodeReboot())]);
+echo '<div class="inputwrap"><label>&nbsp;</label>' . $this->Form->button(__('Submit')) . '</div>';
 echo $this->Form->end();

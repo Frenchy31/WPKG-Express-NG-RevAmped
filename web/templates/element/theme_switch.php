@@ -8,7 +8,7 @@ use App\View\Theme;
 $current = $this->theme();
 ?>
 <?= $this->Form->create(null, ['url' => '/theme']) ?>
-    <span>Theme:</span>
+    <span><?= __('Theme:') ?></span>
     <?php foreach (Theme::cases() as $theme) : ?>
         <?= $this->Form->button($theme->label(), [
             'type' => 'submit',

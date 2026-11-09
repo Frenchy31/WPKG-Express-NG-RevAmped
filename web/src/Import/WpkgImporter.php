@@ -92,7 +92,7 @@ class WpkgImporter
         if (!$isValid) {
             $report->rejected = true;
             foreach (libxml_get_errors() as $error) {
-                $report->errors[] = sprintf('%s (line %d)', trim($error->message), $error->line);
+                $report->errors[] = __('{0} (line {1})', trim($error->message), (string)$error->line);
             }
         }
         libxml_clear_errors();
@@ -153,8 +153,8 @@ class WpkgImporter
 
             $missing = $this->missingDependencies($element, $identifiersInFile);
             if ($missing) {
-                $report->errors[] = sprintf(
-                    '%s: could not find existing dependency package: %s',
+                $report->errors[] = __(
+                    '{0}: could not find existing dependency package: {1}',
                     $identifier,
                     implode(', ', $missing),
                 );
@@ -195,8 +195,8 @@ class WpkgImporter
         $identifier = $element->getAttribute('id');
         $revision = $element->getAttribute('revision');
         if ($this->compareRevisions($revision, (string)$existing->revision) > 0) {
-            $report->notices[] = sprintf(
-                '%s: upgraded from revision %s to %s.',
+            $report->notices[] = __(
+                '{0}: upgraded from revision {1} to {2}.',
                 $identifier,
                 $existing->revision,
                 $revision,
@@ -205,8 +205,8 @@ class WpkgImporter
             return true;
         }
 
-        $report->warnings[] = sprintf(
-            '%s: a package with the same ID and an equal or higher revision (%s) already exists. Skipped.',
+        $report->warnings[] = __(
+            '{0}: a package with the same ID and an equal or higher revision ({1}) already exists. Skipped.',
             $identifier,
             $existing->revision,
         );
@@ -269,8 +269,8 @@ class WpkgImporter
     {
         foreach (self::UNSUPPORTED_ELEMENTS as $elementName) {
             if ($element->getElementsByTagName($elementName)->length > 0) {
-                $report->warnings[] = sprintf(
-                    '%s: <%s> elements are not stored and were dropped.',
+                $report->warnings[] = __(
+                    '{0}: <{1}> elements are not stored and were dropped.',
                     $element->getAttribute('id'),
                     $elementName,
                 );
@@ -297,7 +297,7 @@ class WpkgImporter
 
         $package = $packages->newEntity($this->packageFields($element));
         if ($package->hasErrors() || !$packages->save($package)) {
-            $report->errors[] = $identifier . ': ' . $this->firstError($package->getErrors());
+            $report->errors[] = __('{0}: {1}', $identifier, $this->firstError($package->getErrors()));
 
             return null;
         }
@@ -375,8 +375,8 @@ class WpkgImporter
         $type = CheckType::fromXml($element->getAttribute('type'));
         $condition = $type === null ? null : CheckCondition::fromXml($type, $element->getAttribute('condition'));
         if ($type === null || $condition === null) {
-            $report->errors[] = sprintf(
-                '%s: unsupported check type="%s" condition="%s".',
+            $report->errors[] = __(
+                '{0}: unsupported check type="{1}" condition="{2}".',
                 $identifier,
                 $element->getAttribute('type'),
                 $element->getAttribute('condition'),
@@ -394,7 +394,7 @@ class WpkgImporter
         ]);
         $check->package_id = $packageId;
         if ($check->hasErrors() || !$checks->saveInPackage($check)) {
-            $report->errors[] = $identifier . ': ' . $this->firstError($check->getErrors());
+            $report->errors[] = __('{0}: {1}', $identifier, $this->firstError($check->getErrors()));
 
             return false;
         }
@@ -427,8 +427,8 @@ class WpkgImporter
     ): bool {
         $actions = $this->fetchTable('PackageActions');
         if (!$element->hasAttribute('cmd')) {
-            $report->warnings[] = sprintf(
-                '%s: <%s> without a cmd attribute was dropped.',
+            $report->warnings[] = __(
+                '{0}: <{1}> without a cmd attribute was dropped.',
                 $identifier,
                 $actionType->xmlElement(),
             );
@@ -444,7 +444,7 @@ class WpkgImporter
         ]);
         $action->package_id = $packageId;
         if ($action->hasErrors() || !$actions->save($action)) {
-            $report->errors[] = $identifier . ': ' . $this->firstError($action->getErrors());
+            $report->errors[] = __('{0}: {1}', $identifier, $this->firstError($action->getErrors()));
 
             return false;
         }
@@ -457,7 +457,7 @@ class WpkgImporter
             ]);
             $exitCode->package_action_id = $action->id;
             if ($exitCode->hasErrors() || !$exitCodes->save($exitCode)) {
-                $report->errors[] = $identifier . ': ' . $this->firstError($exitCode->getErrors());
+                $report->errors[] = __('{0}: {1}', $identifier, $this->firstError($exitCode->getErrors()));
 
                 return false;
             }
@@ -483,14 +483,14 @@ class WpkgImporter
         foreach ($this->children($element, 'depends') as $dependencyElement) {
             $dependencyIdentifier = $dependencyElement->getAttribute('package-id');
             if ($dependencyIdentifier === $identifier) {
-                $report->warnings[] = $identifier . ': detected package dependency on self. Skipping.';
+                $report->warnings[] = __('{0}: detected package dependency on self. Skipping.', $identifier);
                 continue;
             }
 
             $dependency = $packages->find()->where(['id_text' => $dependencyIdentifier])->first();
             if ($dependency === null) {
-                $report->errors[] = sprintf(
-                    '%s: dependency %s was not imported.',
+                $report->errors[] = __(
+                    '{0}: dependency {1} was not imported.',
                     $identifier,
                     $dependencyIdentifier,
                 );
@@ -528,8 +528,8 @@ class WpkgImporter
                 }
             }
             if ($missing) {
-                $report->errors[] = sprintf(
-                    '%s: could not find existing profile package: %s',
+                $report->errors[] = __(
+                    '{0}: could not find existing profile package: {1}',
                     $identifier,
                     implode(', ', $missing),
                 );
@@ -538,7 +538,7 @@ class WpkgImporter
 
             $profile = $profiles->newEntity(['id_text' => $identifier], ['associated' => []]);
             if ($profile->hasErrors() || !$profiles->save($profile)) {
-                $report->errors[] = $identifier . ': ' . $this->firstError($profile->getErrors());
+                $report->errors[] = __('{0}: {1}', $identifier, $this->firstError($profile->getErrors()));
                 continue;
             }
             if ($packages) {
@@ -574,14 +574,14 @@ class WpkgImporter
         foreach ($this->children($element, 'depends') as $dependencyElement) {
             $dependencyIdentifier = $dependencyElement->getAttribute('profile-id');
             if ($dependencyIdentifier === $identifier) {
-                $report->warnings[] = $identifier . ': detected profile dependency on self. Skipping.';
+                $report->warnings[] = __('{0}: detected profile dependency on self. Skipping.', $identifier);
                 continue;
             }
 
             $dependency = $profiles->find()->where(['id_text' => $dependencyIdentifier])->first();
             if ($dependency === null) {
-                $report->errors[] = sprintf(
-                    '%s: could not find existing dependency profile: %s',
+                $report->errors[] = __(
+                    '{0}: could not find existing dependency profile: {1}',
                     $identifier,
                     $dependencyIdentifier,
                 );
@@ -610,8 +610,8 @@ class WpkgImporter
             $mainProfileIdentifier = $element->getAttribute('profile-id');
             $mainProfile = $profiles->find()->where(['id_text' => $mainProfileIdentifier])->first();
             if ($mainProfile === null) {
-                $report->errors[] = sprintf(
-                    "%s: could not find existing host's main profile: %s",
+                $report->errors[] = __(
+                    '{0}: could not find existing host\'\'s main profile: {1}',
                     $name,
                     $mainProfileIdentifier,
                 );
@@ -629,8 +629,8 @@ class WpkgImporter
                 }
             }
             if ($missing) {
-                $report->errors[] = sprintf(
-                    '%s: could not find existing host profile: %s',
+                $report->errors[] = __(
+                    '{0}: could not find existing host profile: {1}',
                     $name,
                     implode(', ', $missing),
                 );
@@ -639,7 +639,7 @@ class WpkgImporter
 
             $host = $hosts->newEntity(['name' => $name, 'mainprofile_id' => $mainProfile->id], ['associated' => []]);
             if ($host->hasErrors() || !$hosts->save($host)) {
-                $report->errors[] = $name . ': ' . $this->firstError($host->getErrors());
+                $report->errors[] = __('{0}: {1}', $name, $this->firstError($host->getErrors()));
                 continue;
             }
             if ($extraProfiles) {
@@ -705,9 +705,9 @@ class WpkgImporter
                 return $message;
             }
 
-            return sprintf('invalid %s.', $field);
+            return __('invalid {0}.', (string)$field);
         }
 
-        return 'could not be saved.';
+        return __('could not be saved.');
     }
 }

@@ -20,33 +20,46 @@ $glyphs = [
     ReportStatus::Unknown->value => '?',
     ReportStatus::Success->value => '',
 ];
-$plural = fn(int $number, string $singular, string $plural): string => $number . ' ' . ($number === 1 ? $singular : $plural);
-
 $sentences = [];
 if ($totals['failed'] > 0) {
-    $sentences[] = $totals['failed'] === 1
-        ? '1 workstation failed its last run.'
-        : $totals['failed'] . ' workstations failed their last run.';
+    $sentences[] = __n(
+        '{0} workstation failed its last run.',
+        '{0} workstations failed their last run.',
+        $totals['failed'],
+        (string)$totals['failed'],
+    );
 }
 if ($totals['warning'] > 0) {
-    $sentences[] = $totals['warning'] === 1
-        ? '1 finished with a warning.'
-        : $totals['warning'] . ' finished with warnings.';
+    $sentences[] = __n(
+        '{0} finished with a warning.',
+        '{0} finished with warnings.',
+        $totals['warning'],
+        (string)$totals['warning'],
+    );
 }
 if ($totals['unknown'] > 0) {
-    $sentences[] = $totals['unknown'] === 1
-        ? '1 has no readable report.'
-        : $totals['unknown'] . ' have no readable report.';
+    $sentences[] = __n(
+        '{0} has no readable report.',
+        '{0} have no readable report.',
+        $totals['unknown'],
+        (string)$totals['unknown'],
+    );
 }
 if ($staleCount > 0) {
-    $sentences[] = $staleCount === 1
-        ? '1 has not reported for more than 24 hours.'
-        : $staleCount . ' have not reported for more than 24 hours.';
+    $sentences[] = __n(
+        '{0} has not reported for more than 24 hours.',
+        '{0} have not reported for more than 24 hours.',
+        $staleCount,
+        (string)$staleCount,
+    );
 }
 if ($sentences === []) {
-    $sentences[] = $count === 1
-        ? '1 workstation finished its last run without errors.'
-        : 'All ' . $count . ' workstations finished their last run without errors.';
+    $sentences[] = __n(
+        '{0} workstation finished its last run without errors.',
+        'All {0} workstations finished their last run without errors.',
+        $count,
+        (string)$count,
+    );
 }
 
 $barLabel = implode(', ', array_map(
@@ -55,10 +68,10 @@ $barLabel = implode(', ', array_map(
 ));
 $needingAttention = $summary->needsAttention();
 ?>
-<h2>Summary</h2><hr class="hbar" />
+<h2><?= __('Summary') ?></h2><hr class="hbar" />
 <div class="fleet-summary">
     <p class="fleet-sentence"><?= h(implode(' ', $sentences)) ?></p>
-    <p class="fleet-latest">Latest report: <?= h($this->Wpkg->date($summary->latestRunAt())) ?>.</p>
+    <p class="fleet-latest"><?= h(__('Latest report: {0}.', $this->Wpkg->date($summary->latestRunAt()))) ?></p>
     <svg class="fleet-bar" role="img" aria-label="<?= h($barLabel) ?>" width="100%" height="8" viewBox="0 0 100 8" preserveAspectRatio="none">
         <?php foreach ($summary->barSegments() as $segment) : ?>
             <rect class="<?= $segment['status']->cssClass() ?>" x="<?= $segment['offset'] ?>" y="0" width="<?= $segment['width'] ?>" height="8" />
@@ -68,28 +81,32 @@ $needingAttention = $summary->needsAttention();
         <?php foreach (ReportSummary::STATUS_ORDER as $status) : ?>
             <li><span class="fleet-swatch <?= $status->cssClass() ?>"></span><?= h($status->label()) ?> <?= $totals[$status->value] ?></li>
         <?php endforeach; ?>
-        <li><span class="fleet-swatch stale"></span>Stale <?= $staleCount ?></li>
+        <li><span class="fleet-swatch stale"></span><?= __('Stale') ?> <?= $staleCount ?></li>
     </ul>
 </div>
 <div class="fleet-columns">
     <section class="fleet-map">
-        <h2>Workstations</h2><hr class="hbar" />
+        <h2><?= __('Workstations') ?></h2><hr class="hbar" />
         <?php foreach ($groups as $group) : ?>
             <?php
             $groupCounts = $group->countByStatus();
             $breakdown = [];
             foreach ([ReportStatus::Failed, ReportStatus::Warning, ReportStatus::Unknown] as $status) {
                 if (isset($groupCounts[$status->value])) {
-                    $breakdown[] = $groupCounts[$status->value] . ' ' . strtolower($status->label());
+                    $breakdown[] = match ($status) {
+                        ReportStatus::Failed => __('{0} failed', (string)$groupCounts[$status->value]),
+                        ReportStatus::Warning => __x('breakdown', '{0} warning', (string)$groupCounts[$status->value]),
+                        default => __('{0} unknown', (string)$groupCounts[$status->value]),
+                    };
                 }
             }
-            $hostCount = $plural(count($group->reports), 'host', 'hosts');
+            $hostCount = __n('{0} host', '{0} hosts', count($group->reports), (string)count($group->reports));
             ?>
             <div class="fleet-group">
                 <div class="fleet-group-head">
                     <strong><?= h($group->label()) ?></strong>
                     <?php if ($group->profile() !== null) : ?>
-                        <span class="report-note">profile <?= h($group->profile()) ?></span>
+                        <span class="report-note"><?= h(__('profile {0}', $group->profile())) ?></span>
                     <?php endif; ?>
                     <span class="report-note"><?= h(implode(', ', [$hostCount, ...$breakdown])) ?></span>
                 </div>
@@ -98,16 +115,29 @@ $needingAttention = $summary->needsAttention();
                         <?php
                         $status = $report->status();
                         $detail = match ($status) {
-                            ReportStatus::Failed => $plural(count($report->log?->errors() ?? []), 'error', 'errors'),
-                            ReportStatus::Warning => $plural(count($report->log?->warnings() ?? []), 'warning', 'warnings'),
+                            ReportStatus::Failed => __n(
+                                '{0} error',
+                                '{0} errors',
+                                count($report->log?->errors() ?? []),
+                                (string)count($report->log?->errors() ?? []),
+                            ),
+                            ReportStatus::Warning => __n(
+                                '{0} warning',
+                                '{0} warnings',
+                                count($report->log?->warnings() ?? []),
+                                (string)count($report->log?->warnings() ?? []),
+                            ),
                             default => null,
                         };
                         $isStale = $report->isStale($now);
-                        $description = $report->hostname . ': ' . implode(', ', array_filter([
+                        $lastRun = $isStale
+                            ? __('last run {0} (more than 24 hours ago)', $this->Wpkg->date($report->ranAt()))
+                            : __('last run {0}', $this->Wpkg->date($report->ranAt()));
+                        $description = __('{0}: {1}', $report->hostname, implode(', ', array_filter([
                             $status->label(),
                             $detail,
-                            'last run ' . $this->Wpkg->date($report->ranAt()) . ($isStale ? ' (more than 24 hours ago)' : ''),
-                        ]));
+                            $lastRun,
+                        ])));
                         ?>
                         <a class="fleet-cell <?= $status->cssClass() ?><?= $isStale ? ' stale' : '' ?>" href="<?= h($this->Url->build('/reports/' . rawurlencode($report->hostname))) ?>" title="<?= h($description) ?>" aria-label="<?= h($description) ?>"><span aria-hidden="true"><?= $glyphs[$status->value] ?></span></a>
                     <?php endforeach; ?>
@@ -115,17 +145,17 @@ $needingAttention = $summary->needsAttention();
             </div>
         <?php endforeach; ?>
         <ul class="fleet-key">
-            <li><span class="fleet-swatch status-success"></span>Success</li>
-            <li><span class="fleet-swatch status-failed"></span>✕ Failed</li>
-            <li><span class="fleet-swatch status-warning"></span>! Warning</li>
-            <li><span class="fleet-swatch status-unknown"></span>? Unknown</li>
-            <li><span class="fleet-swatch stale"></span>No report for more than 24 hours</li>
+            <li><span class="fleet-swatch status-success"></span><?= h(ReportStatus::Success->label()) ?></li>
+            <li><span class="fleet-swatch status-failed"></span>✕ <?= h(ReportStatus::Failed->label()) ?></li>
+            <li><span class="fleet-swatch status-warning"></span>! <?= h(ReportStatus::Warning->label()) ?></li>
+            <li><span class="fleet-swatch status-unknown"></span>? <?= h(ReportStatus::Unknown->label()) ?></li>
+            <li><span class="fleet-swatch stale"></span><?= __('No report for more than 24 hours') ?></li>
         </ul>
     </section>
     <section class="fleet-attention">
-        <h2>Needs attention</h2><hr class="hbar" />
+        <h2><?= __('Needs attention') ?></h2><hr class="hbar" />
         <?php if ($needingAttention === []) : ?>
-            <p>Nothing to fix: every workstation succeeded in the last 24 hours.</p>
+            <p><?= __('Nothing to fix: every workstation succeeded in the last 24 hours.') ?></p>
         <?php else : ?>
             <ul class="attention-list">
                 <?php foreach ($needingAttention as $report) : ?>
@@ -137,13 +167,13 @@ $needingAttention = $summary->needsAttention();
                         <div class="attention-head">
                             <a href="<?= h($this->Url->build('/reports/' . rawurlencode($report->hostname))) ?>"><?= h($report->hostname) ?></a>
                             <?= $this->element('report_badges', ['report' => $report, 'now' => $now]) ?>
-                            <span class="report-note"><?= h($ranAt->format($ranAt->format('Y-m-d') === $now->format('Y-m-d') ? 'h:i A' : 'Y-m-d')) ?></span>
+                            <span class="report-note"><?= h($ranAt->format($ranAt->format('Y-m-d') === $now->format('Y-m-d') ? $this->language()->timeFormat() : 'Y-m-d')) ?></span>
                         </div>
                         <div class="attention-cause" title="<?= h($cause) ?>"><?= h(ReportSummary::shorten($cause)) ?></div>
                     </li>
                 <?php endforeach; ?>
             </ul>
         <?php endif; ?>
-        <p><?= $this->Html->link('Show all reports', '/reports') ?></p>
+        <p><?= $this->Html->link(__('Show all reports'), '/reports') ?></p>
     </section>
 </div>

@@ -44,11 +44,11 @@ class ExitCodesTable extends Table
             ->notEmptyString('code')
             ->add('code', 'validCode', [
                 'rule' => fn(mixed $code): bool => self::isValidCode((string)$code),
-                'message' => "The exit code's code attribute must be an integer or the string, 'any'.",
+                'message' => __("The exit code's code attribute must be an integer or the string, 'any'."),
             ])
             ->add('reboot', 'validRange', [
                 'rule' => fn(mixed $reboot): bool => ExitCodeReboot::tryFrom((int)$reboot) !== null,
-                'message' => "The exit code's reboot attribute is invalid.",
+                'message' => __("The exit code's reboot attribute is invalid."),
             ]);
     }
 
@@ -63,7 +63,7 @@ class ExitCodesTable extends Table
         $rules->add($rules->existsIn(['package_action_id'], 'PackageActions'));
         $rules->add($rules->isUnique(['package_action_id', 'code']), 'uniqueCode', [
             'errorField' => 'code',
-            'message' => "The exit code's code already exists for this package action.",
+            'message' => __("The exit code's code already exists for this package action."),
         ]);
 
         return $rules;
