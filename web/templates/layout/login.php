@@ -4,12 +4,12 @@
  */
 ?>
 <!DOCTYPE html>
-<html lang="en"<?= $this->theme()->htmlAttribute() ?>>
+<html lang="<?= $this->language()->value ?>"<?= $this->theme()->htmlAttribute() ?>>
 <head>
     <?= $this->Html->charset() ?>
     <meta name="color-scheme" content="light dark">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>wpkgExpress-ng :: Login</title>
+    <title>wpkgExpress-ng :: <?= __('Login') ?></title>
     <?= $this->Html->css('plain') ?>
 </head>
 <body>

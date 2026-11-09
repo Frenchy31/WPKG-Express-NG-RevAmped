@@ -63,14 +63,14 @@ class HostsTable extends Table
     {
         return $validator
             ->requirePresence('name', 'create')
-            ->notEmptyString('name', "The host's name is an invalid regular expression.")
+            ->notEmptyString('name', __("The host's name is an invalid regular expression."))
             ->maxLength('name', 100)
             ->add('name', 'validRegex', [
                 'rule' => fn(mixed $name): bool => self::isValidPattern((string)$name),
-                'message' => "The host's name is an invalid regular expression.",
+                'message' => __("The host's name is an invalid regular expression."),
             ])
             ->requirePresence('mainprofile_id', 'create')
-            ->integer('mainprofile_id', "The host's main profile could not be found.");
+            ->integer('mainprofile_id', __("The host's main profile could not be found."));
     }
 
     /**
@@ -81,11 +81,11 @@ class HostsTable extends Table
      */
     public function buildRules(RulesChecker $rules): RulesChecker
     {
-        $rules->add($rules->isUnique(['name'], 'That host already exists.'));
+        $rules->add($rules->isUnique(['name'], __('That host already exists.')));
         $rules->add($rules->existsIn(
             ['mainprofile_id'],
             'MainProfiles',
-            "The host's main profile could not be found.",
+            __("The host's main profile could not be found."),
         ));
 
         return $rules;

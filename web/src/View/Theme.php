@@ -33,7 +33,11 @@ enum Theme: string
      */
     public function label(): string
     {
-        return ucfirst($this->value);
+        return match ($this) {
+            self::Auto => __('Auto'),
+            self::Light => __('Light'),
+            self::Dark => __('Dark'),
+        };
     }
 
     /**

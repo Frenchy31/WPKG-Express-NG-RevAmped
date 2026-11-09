@@ -1,0 +1,33 @@
+# French translation of the CakePHP messages shown by this application
+msgid ""
+msgstr ""
+"Project-Id-Version: wpkgExpress-ng\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "This field is required"
+msgstr "Ce champ est obligatoire"
+
+msgid "This field cannot be left empty"
+msgstr "Ce champ ne peut pas être vide"
+
+msgid "This value does not exist"
+msgstr "Cette valeur n'existe pas"
+
+msgid "This value is already in use"
+msgstr "Cette valeur est déjà utilisée"
+
+msgid "The provided value must be an integer"
+msgstr "La valeur fournie doit être un entier"
+
+msgid "The provided value must be a boolean"
+msgstr "La valeur fournie doit être un booléen"
+
+msgid "The provided value is invalid"
+msgstr "La valeur fournie est invalide"
+
+msgid "The provided value must be at most `{0}` characters long"
+msgstr "La valeur fournie doit comporter au plus `{0}` caractères"

@@ -31,9 +31,9 @@ enum PackageReboot: int
     public function label(): string
     {
         return match ($this) {
-            self::False => 'No',
-            self::True => 'Yes',
-            self::Postponed => 'Postponed',
+            self::False => __('No'),
+            self::True => __('Yes'),
+            self::Postponed => __('Postponed'),
         };
     }
 }

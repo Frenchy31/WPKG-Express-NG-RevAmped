@@ -5,4 +5,13 @@
  */
 $this->setLayout('error');
 ?>
-<h2><?= h($message) ?></h2>
+<?php
+$knownMessages = [
+    'Not Found' => __('Not Found'),
+    'Bad Request' => __('Bad Request'),
+    'Forbidden' => __('Forbidden'),
+    'Method Not Allowed' => __('Method Not Allowed'),
+    'CSRF token mismatch.' => __('CSRF token mismatch.'),
+];
+?>
+<h2><?= h($knownMessages[$message] ?? $message) ?></h2>

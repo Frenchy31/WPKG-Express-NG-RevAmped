@@ -6,7 +6,7 @@ namespace App\Controller;
 
 use App\Report\HostMatcher;
 use App\Report\ReportDirectory;
-use App\Report\ReportStatus;
+use App\Report\ReportSummary;
 use Cake\Http\Exception\NotFoundException;
 use DateTimeImmutable;
 
@@ -26,19 +26,14 @@ class ReportsController extends AppController
         $reports = $directory->all();
         $now = new DateTimeImmutable();
 
-        $totals = array_fill_keys(array_column(ReportStatus::cases(), 'value'), 0);
-        $staleCount = 0;
-        foreach ($reports as $report) {
-            $totals[$report->status()->value]++;
-            $staleCount += (int)$report->isStale($now);
-        }
+        $summary = new ReportSummary($reports, $now);
 
         $this->set([
             'configured' => $directory->isConfigured(),
             'readable' => $directory->isReadable(),
             'groups' => (new HostMatcher())->group($reports),
-            'totals' => $totals,
-            'staleCount' => $staleCount,
+            'totals' => $summary->totals(),
+            'staleCount' => $summary->staleCount(),
             'now' => $now,
         ]);
     }
@@ -54,7 +49,7 @@ class ReportsController extends AppController
     {
         $report = ReportDirectory::fromConfiguration()->find($hostname);
         if ($report === null) {
-            throw new NotFoundException('No report found for this host.');
+            throw new NotFoundException(__('No report found for this host.'));
         }
 
         $this->set([

@@ -28,7 +28,7 @@ final readonly class ReportGroup
      */
     public function label(): string
     {
-        return $this->host === null ? 'Unmatched' : (string)$this->host->get('name');
+        return $this->host === null ? __('Unmatched') : (string)$this->host->get('name');
     }
 
     /**
@@ -53,5 +53,20 @@ final readonly class ReportGroup
             fn(ReportStatus $worst, HostReport $report): ReportStatus => $worst->worst($report->status()),
             ReportStatus::Success,
         );
+    }
+
+    /**
+     * Counts the workstations by status.
+     *
+     * @return array<string, int> Count by status value, only the statuses present.
+     */
+    public function countByStatus(): array
+    {
+        $counts = [];
+        foreach ($this->reports as $report) {
+            $counts[$report->status()->value] = ($counts[$report->status()->value] ?? 0) + 1;
+        }
+
+        return $counts;
     }
 }

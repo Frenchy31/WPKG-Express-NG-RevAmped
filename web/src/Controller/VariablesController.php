@@ -48,11 +48,11 @@ class VariablesController extends AppController
             $variable->ref_type = $variableType->value;
             $variable->ref_id = $recordId;
             if ($this->Variables->save($variable)) {
-                $this->Flash->success('The Variable has been saved');
+                $this->Flash->success(__('The Variable has been saved'));
 
                 return $this->redirect(['action' => 'view', $type, $recordId]);
             }
-            $this->Flash->error('The Variable could not be saved');
+            $this->Flash->error(__('The Variable could not be saved'));
         }
         $this->set(compact('variable'));
 
@@ -74,11 +74,11 @@ class VariablesController extends AppController
         if ($this->request->is(['post', 'put', 'patch'])) {
             $variable = $this->Variables->patchEntity($variable, $this->request->getData());
             if ($this->Variables->save($variable)) {
-                $this->Flash->success('The Variable has been saved');
+                $this->Flash->success(__('The Variable has been saved'));
 
                 return $this->redirect(['action' => 'view', strtolower($variableType->name), $variable->ref_id]);
             }
-            $this->Flash->error('The Variable could not be saved');
+            $this->Flash->error(__('The Variable could not be saved'));
         }
         $this->set(compact('variable'));
 
@@ -96,9 +96,9 @@ class VariablesController extends AppController
         $this->request->allowMethod(['post', 'delete']);
         $variable = $this->Variables->get($id);
         if ($this->Variables->delete($variable)) {
-            $this->Flash->success('Variable deleted');
+            $this->Flash->success(__('Variable deleted'));
         } else {
-            $this->Flash->error('The Variable could not be deleted');
+            $this->Flash->error(__('The Variable could not be deleted'));
         }
 
         return $this->redirect(['action' => 'view', $this->slugOf($variable), $variable->ref_id]);
@@ -113,7 +113,7 @@ class VariablesController extends AppController
      */
     private function resolveType(string $type): VariableType
     {
-        return VariableType::fromSlug($type) ?? throw new NotFoundException('Invalid type.');
+        return VariableType::fromSlug($type) ?? throw new NotFoundException(__('Invalid type.'));
     }
 
     /**

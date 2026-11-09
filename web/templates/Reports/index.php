@@ -11,21 +11,21 @@
 
 use App\Report\ReportStatus;
 
-$this->assign('title', 'Reports');
+$this->assign('title', __('Reports'));
 ?>
-<h2>Reports</h2><hr class="hbar" />
+<h2><?= __('Reports') ?></h2><hr class="hbar" />
 <?php if (!$configured) : ?>
-    <div class="message">Reports directory not configured: set WPKG_REPORTS_PATH</div>
+    <div class="message"><?= __('Reports directory not configured: set WPKG_REPORTS_PATH') ?></div>
 <?php elseif (!$readable) : ?>
-    <div class="message">Reports directory cannot be read</div>
+    <div class="message"><?= __('Reports directory cannot be read') ?></div>
 <?php elseif ($groups === []) : ?>
-    <div class="message">No reports found</div>
+    <div class="message"><?= __('No reports found') ?></div>
 <?php else : ?>
     <p class="report-totals">
         <?php foreach ([ReportStatus::Failed, ReportStatus::Warning, ReportStatus::Unknown, ReportStatus::Success] as $status) : ?>
-            <span class="report-badge <?= $status->cssClass() ?>"><?= h($status->label()) ?>: <?= $totals[$status->value] ?></span>
+            <span class="report-badge <?= $status->cssClass() ?>"><?= h(__('{0}: {1}', $status->label(), (string)$totals[$status->value])) ?></span>
         <?php endforeach; ?>
-        <span class="report-badge stale">Stale: <?= $staleCount ?></span>
+        <span class="report-badge stale"><?= h(__('Stale: {0}', (string)$staleCount)) ?></span>
     </p>
     <?php foreach ($groups as $group) : ?>
         <?php $groupStatus = $group->status(); ?>
@@ -34,19 +34,19 @@ $this->assign('title', 'Reports');
                 <span class="report-badge <?= $groupStatus->cssClass() ?>"><?= h($groupStatus->label()) ?></span>
                 <strong><?= h($group->label()) ?></strong>
                 <?php if ($group->profile() !== null) : ?>
-                    <span class="report-note">profile <?= h($group->profile()) ?></span>
+                    <span class="report-note"><?= h(__('profile {0}', $group->profile())) ?></span>
                 <?php endif; ?>
-                <span class="report-note"><?= count($group->reports) ?> host(s)</span>
+                <span class="report-note"><?= h(__('{0} host(s)', (string)count($group->reports))) ?></span>
             </summary>
             <?php foreach ($group->reports as $report) : ?>
                 <details class="report <?= $report->status()->cssClass() ?>">
                     <summary>
                         <?= $this->element('report_badges', ['report' => $report, 'now' => $now]) ?>
-                        <?= $this->Html->link($report->hostname, '/reports/' . rawurlencode($report->hostname), ['title' => 'Show the full log']) ?>
+                        <?= $this->Html->link($report->hostname, '/reports/' . rawurlencode($report->hostname), ['title' => __('Show the full log')]) ?>
                         <span class="report-note"><?= $this->Wpkg->date($report->ranAt()) ?></span>
                         <?php if ($report->log !== null) : ?>
                             <span class="report-note">
-                                <?= count($report->log->errors()) ?> error(s), <?= count($report->log->warnings()) ?> warning(s)
+                                <?= h(__('{0} error(s), {1} warning(s)', (string)count($report->log->errors()), (string)count($report->log->warnings()))) ?>
                             </span>
                         <?php endif; ?>
                     </summary>

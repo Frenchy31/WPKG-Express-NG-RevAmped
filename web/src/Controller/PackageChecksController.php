@@ -30,11 +30,11 @@ class PackageChecksController extends AppController
             $check = $this->PackageChecks->patchEntity($check, $this->submittedData());
             $check->package_id = $packageId;
             if ($this->PackageChecks->saveInPackage($check)) {
-                $this->Flash->success('The Package Check has been saved.');
+                $this->Flash->success(__('The Package Check has been saved.'));
 
                 return $this->redirect(['controller' => 'Packages', 'action' => 'view', $packageId]);
             }
-            $this->Flash->error('The Package Check could not be saved. Please, try again.');
+            $this->Flash->error(__('The Package Check could not be saved. Please, try again.'));
         }
 
         $this->setFormVariables($check, $packageId);
@@ -55,11 +55,11 @@ class PackageChecksController extends AppController
         if ($this->request->is(['post', 'put', 'patch'])) {
             $check = $this->PackageChecks->patchEntity($check, $this->submittedData());
             if ($this->PackageChecks->saveInPackage($check)) {
-                $this->Flash->success('The Package Check has been saved.');
+                $this->Flash->success(__('The Package Check has been saved.'));
 
                 return $this->redirect(['controller' => 'Packages', 'action' => 'view', $check->package_id]);
             }
-            $this->Flash->error('The Package Check could not be saved. Please, try again.');
+            $this->Flash->error(__('The Package Check could not be saved. Please, try again.'));
         }
 
         $this->setFormVariables($check, $check->package_id);
@@ -79,9 +79,9 @@ class PackageChecksController extends AppController
         $this->request->allowMethod(['post', 'delete']);
         $check = $this->PackageChecks->get($id);
         if ($this->PackageChecks->deleteInPackage($check)) {
-            $this->Flash->success('Package Check deleted.');
+            $this->Flash->success(__('Package Check deleted.'));
         } else {
-            $this->Flash->error('An error occurred while attempting to delete that Package Check.');
+            $this->Flash->error(__('An error occurred while attempting to delete that Package Check.'));
         }
 
         return $this->redirect(['controller' => 'Packages', 'action' => 'view', $check->package_id]);

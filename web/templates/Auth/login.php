@@ -5,10 +5,10 @@
 ?>
 <?= $this->Form->create() ?>
 <fieldset>
-    <legend>wpkgExpress-ng Login</legend>
-    <?= $this->Form->control('username', ['label' => 'Login: ', 'autocomplete' => 'off', 'autofocus' => true]) ?>
-    <?= $this->Form->control('password', ['label' => 'Password: ']) ?>
+    <legend><?= __('wpkgExpress-ng Login') ?></legend>
+    <?= $this->Form->control('username', ['label' => __('Login: '), 'autocomplete' => 'off', 'autofocus' => true]) ?>
+    <?= $this->Form->control('password', ['label' => __('Password: ')]) ?>
     <hr />
-    <?= $this->Form->button('Login') ?>
+    <?= $this->Form->button(__('Login')) ?>
 </fieldset>
 <?= $this->Form->end() ?>

@@ -271,6 +271,13 @@ ul.reg, ol.reg {
   color: var(--ink-muted);
 }
 
+#footerLeft {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 24px;
+}
+
 #footerLeft form {
   display: flex;
   align-items: center;
@@ -614,8 +621,12 @@ hr {
 
 #stats-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0 24px;
+}
+
+#stats-container .inputwrap {
+  grid-template-columns: 110px minmax(0, 1fr);
 }
 
 .statsblock {
@@ -706,6 +717,164 @@ hr {
 .report-log .level-warning { color: var(--status-warning-text); }
 .report-log .level-debug { color: var(--ink-muted); }
 
+/* -- Dashboard -- */
+
+.fleet-summary p {
+  margin: 4px 0;
+}
+
+.fleet-sentence {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.fleet-latest {
+  color: var(--ink-muted);
+}
+
+.fleet-bar {
+  display: block;
+  width: 100%;
+  height: 8px;
+  margin: 12px 0 8px;
+  background-color: var(--paper-alt);
+}
+
+.fleet-bar .status-success { fill: var(--status-success); }
+.fleet-bar .status-warning { fill: var(--status-warning); }
+.fleet-bar .status-failed { fill: var(--status-failed); }
+.fleet-bar .status-unknown { fill: var(--status-unknown); }
+
+.fleet-legend,
+.fleet-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.fleet-key {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.fleet-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  border-radius: 2px;
+  vertical-align: -1px;
+  background-color: var(--status-unknown);
+}
+
+.fleet-swatch.status-success { background-color: var(--status-success); }
+.fleet-swatch.status-warning { background-color: var(--status-warning); }
+.fleet-swatch.status-failed { background-color: var(--status-failed); }
+.fleet-swatch.status-unknown { background-color: var(--status-unknown); }
+.fleet-swatch.stale { background-color: var(--ink-muted); }
+
+.fleet-swatch.stale,
+.fleet-cell.stale {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent 0 3px,
+    color-mix(in srgb, var(--on-status) 45%, transparent) 3px 5px
+  );
+}
+
+.fleet-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 32px;
+}
+
+.fleet-columns > section {
+  min-width: 0;
+}
+
+.fleet-group {
+  margin-bottom: 16px;
+}
+
+.fleet-group-head .report-note:first-of-type {
+  margin-left: 12px;
+}
+
+.fleet-cells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.fleet-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 2px;
+  font: 700 13px/1 var(--font-text);
+  background-color: var(--status-unknown);
+}
+
+.fleet-cell,
+.fleet-cell:visited,
+.fleet-cell:hover {
+  color: var(--on-status);
+  text-decoration: none;
+}
+
+.fleet-cell:hover {
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+.fleet-cell.status-success { background-color: var(--status-success); }
+.fleet-cell.status-warning { background-color: var(--status-warning); }
+.fleet-cell.status-failed { background-color: var(--status-failed); }
+.fleet-cell.status-unknown { background-color: var(--status-unknown); }
+
+.attention-list {
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.attention-row {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.attention-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.attention-head > a {
+  font-weight: 700;
+}
+
+.attention-head .report-note {
+  margin-left: 0;
+}
+
+.attention-cause {
+  overflow-wrap: anywhere;
+  color: var(--ink-muted);
+}
+
+@media (min-width: 1100px) {
+  .fleet-columns {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
 /* -- Narrow screens -- */
 
 @media (max-width: 767px) {
@@ -738,6 +907,11 @@ hr {
 
   #content.narrow {
     margin-top: 32px;
+  }
+
+  #stats-container,
+  #stats-container .inputwrap {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .report-details {

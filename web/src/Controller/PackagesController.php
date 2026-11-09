@@ -54,11 +54,11 @@ class PackagesController extends AppController
         if ($this->request->is('post')) {
             $package = $this->Packages->patchEntity($package, $this->request->getData(), ['associated' => []]);
             if ($this->Packages->save($package)) {
-                $this->Flash->success('The Package has been saved.');
+                $this->Flash->success(__('The Package has been saved.'));
 
                 return $this->redirect(['action' => 'view', $package->id]);
             }
-            $this->Flash->error('The Package could not be saved. Please, try again.');
+            $this->Flash->error(__('The Package could not be saved. Please, try again.'));
         }
         $this->set(compact('package'));
 
@@ -79,11 +79,11 @@ class PackagesController extends AppController
                 'associated' => ['PackageDependencies' => ['onlyIds' => true]],
             ]);
             if ($this->Packages->save($package)) {
-                $this->Flash->success('The Package has been saved.');
+                $this->Flash->success(__('The Package has been saved.'));
 
                 return $this->redirect(['action' => 'view', $id]);
             }
-            $this->Flash->error('The Package could not be saved. Please, try again.');
+            $this->Flash->error(__('The Package could not be saved. Please, try again.'));
         }
 
         $this->set('package', $package);
@@ -107,12 +107,12 @@ class PackagesController extends AppController
         $dependents = $this->dependentNames($id);
         if ($dependents !== '') {
             $this->Flash->error(
-                'An error occurred while attempting to delete that Package. It is depended on by: ' . $dependents,
+                __('An error occurred while attempting to delete that Package. It is depended on by: {0}', $dependents),
             );
         } elseif ($this->Packages->delete($this->Packages->get($id))) {
-            $this->Flash->success('Package deleted.');
+            $this->Flash->success(__('Package deleted.'));
         } else {
-            $this->Flash->error('An error occurred while attempting to delete that Package.');
+            $this->Flash->error(__('An error occurred while attempting to delete that Package.'));
         }
 
         return $this->redirect(['action' => 'index']);
@@ -146,8 +146,8 @@ class PackagesController extends AppController
         $package = $this->Packages->get($id);
         $dependents = $this->dependentNames($id);
         if ($dependents !== '') {
-            $this->Flash->error(sprintf(
-                "The Package '%s' cannot be disabled because it is depended on by the following package(s): %s",
+            $this->Flash->error(__(
+                'The Package \'\'{0}\'\' cannot be disabled because it is depended on by the following package(s): {1}',
                 $package->name,
                 $dependents,
             ));
