@@ -2,10 +2,11 @@
 /**
  * @var \App\View\AppView $this
  * @var bool $configured
- * @var bool $readable
  * @var list<\App\Report\ReportGroup> $groups
  * @var array<string, int> $totals
  * @var int $staleCount
+ * @var \App\Report\IndexState|null $indexState
+ * @var bool $indexOverdue
  * @var \DateTimeImmutable $now
  */
 
@@ -14,10 +15,11 @@ use App\Report\ReportStatus;
 $this->assign('title', __('Reports'));
 ?>
 <h2><?= __('Reports') ?></h2><hr class="hbar" />
+<?php if ($configured) : ?>
+    <?= $this->element('report_index_status', ['indexState' => $indexState, 'indexOverdue' => $indexOverdue]) ?>
+<?php endif; ?>
 <?php if (!$configured) : ?>
     <div class="message"><?= __('Reports directory not configured: set WPKG_REPORTS_PATH') ?></div>
-<?php elseif (!$readable) : ?>
-    <div class="message"><?= __('Reports directory cannot be read') ?></div>
 <?php elseif ($groups === []) : ?>
     <div class="message"><?= __('No reports found') ?></div>
 <?php else : ?>

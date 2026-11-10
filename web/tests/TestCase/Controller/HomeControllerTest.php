@@ -8,12 +8,14 @@ use App\Test\Support\AdminIntegrationTestCase;
 use App\Test\Support\ReportFixturesTrait;
 use Cake\Core\Configure;
 use Cake\I18n\I18n;
+use Cake\ORM\Locator\LocatorAwareTrait;
 
 /**
  * Fleet dashboard of the home page.
  */
 class HomeControllerTest extends AdminIntegrationTestCase
 {
+    use LocatorAwareTrait;
     use ReportFixturesTrait;
 
     /**
@@ -29,6 +31,7 @@ class HomeControllerTest extends AdminIntegrationTestCase
             file_put_contents((string)$logPath, $content);
         }
         Configure::write('Wpkg.reportsPath', $reportsPath);
+        $this->indexReportFixtures();
     }
 
     /**
@@ -77,6 +80,7 @@ class HomeControllerTest extends AdminIntegrationTestCase
     public function testAgentGroupOrder(): void
     {
         $this->writeAgentReport('DEV-7');
+        $this->indexReportFixtures();
 
         $this->get('/');
 
@@ -101,6 +105,7 @@ class HomeControllerTest extends AdminIntegrationTestCase
     public function testFrenchAgentGroup(): void
     {
         $this->writeAgentReport('DEV-7');
+        $this->indexReportFixtures();
         $this->cookie('wpkg_lang', 'fr');
 
         $this->get('/');
@@ -207,6 +212,7 @@ class HomeControllerTest extends AdminIntegrationTestCase
             $this->reportsPath . DS . 'ROOM1-PC01.log',
             date('Y-m-d H:i:s') . ", DEBUG   : WPKG 1.3.1 starting...\n" . date('Y-m-d H:i:s') . ", INFO    : Done.\n",
         );
+        $this->indexReportFixtures();
 
         $this->get('/');
 
@@ -236,19 +242,64 @@ class HomeControllerTest extends AdminIntegrationTestCase
     }
 
     /**
-     * An unreadable directory is reported as on the reports page.
+     * The dashboard comes from the index: it renders the same when the directory cannot be opened.
      *
      * @return void
      */
     public function testUnreadableDirectory(): void
     {
         Configure::write('Wpkg.reportsPath', $this->reportsPath . DS . 'missing');
+        foreach ((array)glob($this->reportsPath . DS . '*') as $file) {
+            unlink((string)$file);
+        }
+        rmdir($this->reportsPath);
 
         $this->get('/');
 
-        $this->assertResponseContains('Reports directory cannot be read');
-        $this->assertResponseNotContains('fleet-');
+        $this->assertResponseOk();
+        $this->assertSame(5, substr_count((string)$this->_response->getBody(), 'class="fleet-cell '));
+        $this->assertResponseContains('1 workstation failed its last run.');
+        $this->assertResponseNotContains('Reports directory cannot be read');
         $this->assertResponseContains('# Enabled');
+        mkdir($this->reportsPath);
+    }
+
+    /**
+     * The dashboard shows the end of the last pass, and warns when the indexer stopped or never ran.
+     *
+     * @return void
+     */
+    public function testIndexerStatus(): void
+    {
+        $this->get('/');
+        $this->assertResponseContains('Last indexing: ');
+        $this->assertResponseNotContains('has not run since');
+
+        $this->fetchTable('ReportIndexState')->updateAll(['finished_at' => time() - 3600], ['id' => 1]);
+        $this->get('/');
+        $this->assertResponseContains('The reports indexer has not run since');
+        $this->assertResponseContains('fleet-summary');
+
+        $this->fetchTable('ReportIndexState')->deleteAll([]);
+        $this->fetchTable('HostReports')->deleteAll([]);
+        $this->get('/');
+        $this->assertResponseContains('The reports indexer has never run');
+        $this->assertResponseContains('No reports found');
+    }
+
+    /**
+     * The warning is French with the wpkg_lang cookie.
+     *
+     * @return void
+     */
+    public function testIndexerWarningInFrench(): void
+    {
+        $this->cookie('wpkg_lang', 'fr');
+        $this->fetchTable('ReportIndexState')->deleteAll([]);
+
+        $this->get('/');
+
+        $this->assertResponseContains("L'indexeur des rapports n'a jamais tourné");
     }
 
     /**
@@ -261,6 +312,7 @@ class HomeControllerTest extends AdminIntegrationTestCase
         foreach ((array)glob($this->reportsPath . DS . '*') as $file) {
             unlink((string)$file);
         }
+        $this->indexReportFixtures();
 
         $this->get('/');
 

@@ -294,6 +294,21 @@ msgstr "Ce profile existe déjà."
 msgid "The file is empty."
 msgstr "Le fichier est vide."
 
+msgid "The file cannot be read."
+msgstr "Le fichier est illisible."
+
+msgid "The reports indexer has never run: start the reports-indexer service."
+msgstr "L'indexeur des rapports n'a jamais tourné : démarrez le service reports-indexer."
+
+msgid "The last indexing failed: {0}"
+msgstr "La dernière indexation a échoué : {0}"
+
+msgid "The reports indexer has not run since {0}: the reports below may be out of date."
+msgstr "L'indexeur des rapports n'a pas tourné depuis {0} : les rapports ci-dessous peuvent être périmés."
+
+msgid "Last indexing: {0}"
+msgstr "Dernière indexation : {0}"
+
 msgid "The file is not well-formed."
 msgstr "Le fichier est mal formé."
 

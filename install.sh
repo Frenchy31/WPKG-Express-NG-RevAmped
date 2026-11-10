@@ -649,6 +649,10 @@ docker compose up -d --wait --remove-orphans "${up_services[@]}"
 step "Creating the database tables"
 docker compose exec -T -u www-data wpkg bin/cake migrations migrate
 
+# After the migrations: the first pass needs the host_reports tables.
+step "Starting the reports indexer"
+docker compose up -d --wait reports-indexer
+
 if enabled windows-vm; then
     step "Starting the Windows VM (Windows installs itself in the background, 15 to 40 minutes)"
     docker compose up -d wpkg-test-client

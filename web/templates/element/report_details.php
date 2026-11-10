@@ -15,7 +15,7 @@ $facts = [
     __('Domain') => $report->properties['domainname'] ?? null,
     __('Profiles') => implode(', ', $report->log?->profiles() ?? []),
     __('Installed packages') => $report->installedPackages === null ? null : (string)$report->installedPackages,
-    __('Log file') => $report->log === null ? __('Missing') : null,
+    __('Log file') => $report->log === null ? __('Missing') : $report->logError,
     __('XML file') => $report->hasXml ? $report->xmlError : __('Missing'),
 ];
 $lists = [

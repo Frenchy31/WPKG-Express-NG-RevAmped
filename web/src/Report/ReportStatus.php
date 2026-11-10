@@ -6,6 +6,8 @@ namespace App\Report;
 
 /**
  * Result of the last wpkg.js run of a workstation.
+ *
+ * The string values are persisted in host_reports.status: never rename them.
  */
 enum ReportStatus: string
 {

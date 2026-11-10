@@ -38,16 +38,19 @@ class ReportDirectoryTest extends TestCase
     }
 
     /**
-     * A workstation appears once, whether it has a log, an XML file or both.
+     * Each log and XML file is listed with its workstation name, other files are not.
      *
      * @return void
      */
-    public function testAllPairsFiles(): void
+    public function testHostnamesListsFiles(): void
     {
-        $hostnames = array_map(fn($report): string => $report->hostname, $this->directory->all());
+        $hostnames = iterator_to_array($this->directory->hostnames(), false);
         sort($hostnames);
 
-        $this->assertSame(['BROKEN', 'DEV-7', 'ROOM1-PC01', 'ROOM1-PC02', 'ROOM2-PC05'], $hostnames);
+        $this->assertSame(
+            ['BROKEN', 'DEV-7', 'ROOM1-PC01', 'ROOM1-PC01', 'ROOM1-PC02', 'ROOM2-PC05'],
+            $hostnames,
+        );
     }
 
     /**
@@ -140,7 +143,7 @@ class ReportDirectoryTest extends TestCase
 
         $this->assertFalse($directory->isConfigured());
         $this->assertFalse($directory->isReadable());
-        $this->assertSame([], $directory->all());
+        $this->assertSame([], iterator_to_array($directory->hostnames()));
         $this->assertNull($directory->find('ROOM1-PC01'));
     }
 }

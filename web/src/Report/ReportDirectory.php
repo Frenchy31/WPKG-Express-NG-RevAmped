@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use DirectoryIterator;
 use DOMDocument;
 use DOMElement;
+use Generator;
 
 /**
  * Directory of the share where workstations copy their wpkg.xml and log as <HOSTNAME>.xml and <HOSTNAME>.log.
@@ -60,36 +61,49 @@ final class ReportDirectory
     }
 
     /**
-     * Returns the report of every workstation found in the directory.
+     * Lists the host names of the report files, one per file, one file at a time.
      *
-     * @return list<\App\Report\HostReport>
+     * A workstation with both files is listed twice.
+     *
+     * @return \Generator<int, string>
      */
-    public function all(): array
+    public function hostnames(): Generator
     {
         if (!$this->isReadable()) {
-            return [];
+            return;
         }
 
-        $hostnames = [];
         foreach (new DirectoryIterator($this->path) as $file) {
             if (!$file->isFile() || !in_array($file->getExtension(), ['log', 'xml'], true)) {
                 continue;
             }
             $hostname = $file->getBasename('.' . $file->getExtension());
             if (preg_match(self::HOSTNAME_PATTERN, $hostname) === 1) {
-                $hostnames[$hostname] = true;
+                yield $hostname;
             }
         }
+    }
 
-        $reports = [];
-        foreach (array_keys($hostnames) as $hostname) {
-            $report = $this->find((string)$hostname);
-            if ($report !== null) {
-                $reports[] = $report;
-            }
-        }
+    /**
+     * Returns the path of the log file of a workstation.
+     *
+     * @param string $hostname Valid host name.
+     * @return string
+     */
+    public function logPath(string $hostname): string
+    {
+        return $this->path . DS . $hostname . '.log';
+    }
 
-        return $reports;
+    /**
+     * Returns the path of the wpkg.xml copy of a workstation.
+     *
+     * @param string $hostname Valid host name.
+     * @return string
+     */
+    public function xmlPath(string $hostname): string
+    {
+        return $this->path . DS . $hostname . '.xml';
     }
 
     /**
@@ -104,14 +118,14 @@ final class ReportDirectory
             return null;
         }
 
-        $logPath = $this->path . DS . $hostname . '.log';
-        $xmlPath = $this->path . DS . $hostname . '.xml';
+        $logPath = $this->logPath($hostname);
+        $xmlPath = $this->xmlPath($hostname);
         $existing = array_values(array_filter([$logPath, $xmlPath], 'is_file'));
         if ($existing === []) {
             return null;
         }
 
-        $log = is_file($logPath) ? RunLog::parse((string)file_get_contents($logPath)) : null;
+        [$log, $logError] = is_file($logPath) ? $this->readLog($logPath) : [null, null];
         [$properties, $packageIds, $xmlError] = is_file($xmlPath) ? $this->readXml($xmlPath) : [[], null, null];
         $modifiedAt = (new DateTimeImmutable())->setTimestamp(max(array_map('filemtime', $existing)));
 
@@ -123,8 +137,25 @@ final class ReportDirectory
             $packageIds === null ? null : count($packageIds),
             $xmlError,
             $modifiedAt,
+            $logError,
             $packageIds ?? [],
         );
+    }
+
+    /**
+     * Reads a log file.
+     *
+     * @param string $logPath File path.
+     * @return array{0: \App\Report\RunLog, 1: string|null} Log, error.
+     */
+    public function readLog(string $logPath): array
+    {
+        $content = @file_get_contents($logPath);
+        if ($content === false) {
+            return [RunLog::parse(''), __('The file cannot be read.')];
+        }
+
+        return [RunLog::parse($content), trim($content) === '' ? __('The file is empty.') : null];
     }
 
     /**
@@ -134,9 +165,9 @@ final class ReportDirectory
      * @return array{0: array<string, string>, 1: list<string>|null, 2: string|null} Properties, package
      *     identifiers, error.
      */
-    private function readXml(string $xmlPath): array
+    public function readXml(string $xmlPath): array
     {
-        $content = (string)file_get_contents($xmlPath);
+        $content = (string)@file_get_contents($xmlPath);
         if (trim($content) === '') {
             return [[], null, __('The file is empty.')];
         }

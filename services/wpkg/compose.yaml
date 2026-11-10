@@ -16,3 +16,22 @@ services:
     networks:
       backend:
         ipv4_address: 172.19.0.5
+
+  # Reads the new and changed report files of the share into MySQL: the Reports pages read that table.
+  # A failing pass (tables not migrated yet, share unreachable) is logged and retried at the next interval.
+  # "$$" is the Compose escape for "$": the shell of the container expands the variables.
+  reports-indexer:
+    image: my-wpkg
+    env_file: services/wpkg/wpkg.env
+    user: www-data
+    restart: unless-stopped
+    command:
+      - sh
+      - -c
+      - |
+        while true; do
+          bin/cake reports index || echo "reports index failed with status $$?"
+          sleep "$${WPKG_REPORTS_INDEX_INTERVAL:-60}" || sleep 60
+        done
+    networks:
+      - backend

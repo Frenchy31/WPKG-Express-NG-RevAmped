@@ -11,7 +11,7 @@ use DateTimeImmutable;
  *
  * The client copies the file to the share while it still runs, so the log has no end marker.
  */
-final class RunLog
+final class RunLog implements LogSummary
 {
     /**
      * `2026-11-08 02:11:11, DEBUG   : message`
@@ -173,6 +173,24 @@ final class RunLog
             array_filter($levels) !== [] => ReportStatus::Success,
             default => ReportStatus::Unknown,
         };
+    }
+
+    /**
+     * Keeps what the pages show, without the entries.
+     *
+     * @return \App\Report\IndexedLog
+     */
+    public function summary(): IndexedLog
+    {
+        return new IndexedLog(
+            $this->status(),
+            $this->startedAt(),
+            $this->wpkgVersion(),
+            $this->profiles(),
+            $this->succeeded(),
+            $this->errors(),
+            $this->warnings(),
+        );
     }
 
     /**

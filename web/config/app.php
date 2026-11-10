@@ -432,7 +432,10 @@ return [
      * - allowedHosts: comma separated host names accepted besides the host of App.fullBaseUrl.
      *   Every name used by clients in hosts_path must be listed, or their requests are refused.
      * - reportsPath: directory where workstations copy their wpkg.xml and log as <HOSTNAME>.xml and
-     *   <HOSTNAME>.log, read by the Reports page. Empty disables the page.
+     *   <HOSTNAME>.log, indexed by `bin/cake reports index` into the host_reports table that the
+     *   Reports pages read. Empty disables the pages.
+     * - reportsIndexInterval: seconds between two passes of the reports-indexer service. The pages warn
+     *   when the last pass is older than three intervals.
      */
     'Wpkg' => [
         'allowedHosts' => env('WPKG_ALLOWED_HOSTS', ''),
@@ -447,6 +450,7 @@ return [
         ],
         'forceSsl' => filter_var(env('WPKG_FORCE_SSL', false), FILTER_VALIDATE_BOOLEAN),
         'reportsPath' => env('WPKG_REPORTS_PATH', ''),
+        'reportsIndexInterval' => max(1, (int)env('WPKG_REPORTS_INDEX_INTERVAL', 60)),
     ],
 
     /**

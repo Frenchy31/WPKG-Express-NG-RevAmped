@@ -2,6 +2,7 @@
 /**
  * @var \App\View\AppView $this
  * @var \App\Report\HostReport $report
+ * @var \App\Report\RunLog|null $runLog
  * @var \DateTimeImmutable $now
  */
 $this->assign('title', __('Report {0}', $report->hostname));
@@ -11,11 +12,11 @@ $this->assign('title', __('Report {0}', $report->hostname));
 <?= $this->element('report_details', ['report' => $report]) ?>
 
 <h3><?= __('Last log') ?></h3>
-<?php if ($report->log === null) : ?>
+<?php if ($runLog === null) : ?>
     <div class="message"><?= __('No log file for this host') ?></div>
 <?php else : ?>
     <ol class="report-log">
-        <?php foreach ($report->log->entries() as $entry) : ?>
+        <?php foreach ($runLog->entries() as $entry) : ?>
             <li class="<?= $entry->cssClass() ?>"><div class="report-entry">
                 <?php if ($entry->time !== null) : ?>
                     <span class="report-time"><?= h($entry->time->format('Y-m-d H:i:s')) ?></span>
