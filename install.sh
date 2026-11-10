@@ -352,6 +352,10 @@ ask want_vm WPKG_ENABLE_WINDOWS_VM "Enable the Windows test VM? yes/no" "$saved_
 want_vm=$(to_bool "$want_vm")
 
 if [ "$want_vm" = yes ]; then
+    if [ -d wpkg-test/storage ] && [ ! -e services/windows-vm/storage ]; then
+        fail "The VM disk of the previous layout is in wpkg-test/storage: starting now would install a new Windows on an empty folder. Move it first, then run the script again:
+  mv wpkg-test/storage services/windows-vm/storage"
+    fi
     [ -r /dev/kvm ] && [ -w /dev/kvm ] || fail "The Windows VM needs /dev/kvm, readable and writable by this user (missing, or no access: check the kvm group)."
     own_vm_exists=$(docker ps -aq --filter "$project_label" --filter name=wpkg-test-client)
     own_vm_running=$(docker ps -q --filter "$project_label" --filter name=wpkg-test-client)
@@ -434,6 +438,8 @@ fi
 
 # Feed protection.
 saved_protect=$(env_get "$wpkg_env" WPKG_XML_PROTECT)
+# Installations made before the components may keep WPKG_XML_PROTECT in .env.
+[ "$saved_protect" = true ] || saved_protect=$(env_get .env WPKG_XML_PROTECT)
 [ "$saved_protect" = true ] || saved_protect=false
 ask xml_protect WPKG_XML_PROTECT "Protect the XML feeds with a password? true/false" "$saved_protect" valid_true_false
 xml_hash=""
@@ -580,8 +586,8 @@ for component in $components; do
     fi
 done
 
-# Installations made before the components kept the password hashes in .env.
-for hash_name in WPKG_ADMIN_PASSWORD_HASH WPKG_XML_PASSWORD_HASH; do
+# Installations made before the components kept the password hashes and WPKG_XML_PROTECT in .env.
+for hash_name in WPKG_ADMIN_PASSWORD_HASH WPKG_XML_PASSWORD_HASH WPKG_XML_PROTECT; do
     if grep -q "^$hash_name='[^']" .env && ! grep -q "^$hash_name='[^']" "$wpkg_env"; then
         env_set "$wpkg_env" "$hash_name" "$(env_get .env "$hash_name")"
     fi
