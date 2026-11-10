@@ -62,6 +62,12 @@ Sur une installation antérieure, le script déplace les hashes de `.env` vers `
 
 L'utilisateur Unix doit appartenir au groupe `docker`. Sur Fedora, les volumes liés portent l'option `:z` à cause de SELinux.
 
+Pour une démonstration, `DemoSeed` remplit une base vide avec un petit parc : deux salles, des portables, des logiciels courants, leurs profils et leurs entrées d'hôte. Il s'arrête si la base contient déjà des paquets, des profils ou des hôtes.
+
+```shell
+docker compose --profile tools run --rm --no-deps tools bin/cake seeds run DemoSeed
+```
+
 ## Services
 
 Chaque service est un composant : un dossier de `services/` qui porte son fichier Compose, sa configuration et son modèle de variables `<composant>.env.example`.

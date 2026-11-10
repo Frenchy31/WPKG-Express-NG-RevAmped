@@ -38,6 +38,8 @@ Le portable installe l'agent à sa prochaine exécution de WPKG :
 - `schtasks /query /tn \WPKG\Agent` affiche la tâche planifiée.
 - `schtasks /run /tn \WPKG\Agent` lance une synchronisation. Son résultat se trouve dans `%ProgramData%\WpkgAgent\logs\agent.log`.
 
+Si les postes envoient leur rapport au serveur (voir `client-log-package.md`), le tableau de bord regroupe les portables dont le rapport liste le package `wpkg-agent` sous **Agent WPKG**. Ce groupe suit les entrées d'hôte de plusieurs postes et précède celles d'un seul poste.
+
 ## Mettre à jour l'agent
 
 WPKG considère le package comme installé dès que `%ProgramData%\WpkgAgent\run.ps1` existe : de nouveaux fichiers sur le partage ne suffisent pas à atteindre les portables. Pour déployer une nouvelle version de l'agent, ou un nouveau `wpkg.js` :

@@ -7,6 +7,7 @@ namespace App\Test\TestCase\Controller;
 use App\Test\Support\AdminIntegrationTestCase;
 use App\Test\Support\ReportFixturesTrait;
 use Cake\Core\Configure;
+use Cake\I18n\I18n;
 use Cake\ORM\Locator\LocatorAwareTrait;
 
 /**
@@ -39,6 +40,8 @@ class HomeControllerTest extends AdminIntegrationTestCase
     protected function tearDown(): void
     {
         $this->removeReportFixtures();
+        // A French request leaves its locale behind, and later test classes compare English labels.
+        I18n::setLocale((string)Configure::read('App.defaultLocale'));
         parent::tearDown();
     }
 
@@ -67,6 +70,47 @@ class HomeControllerTest extends AdminIntegrationTestCase
         $this->assertResponseContains('en échec');
         $this->assertResponseContains('dernière exécution');
         $this->assertResponseNotContains('Needs attention');
+    }
+
+    /**
+     * Workstations running the agent come after the rooms and before the single workstations.
+     *
+     * @return void
+     */
+    public function testAgentGroupOrder(): void
+    {
+        $this->writeAgentReport('DEV-7');
+        $this->indexReportFixtures();
+
+        $this->get('/');
+
+        $this->assertResponseOk();
+        $body = (string)$this->_response->getBody();
+        $positions = array_map(
+            fn(string $label): int|false => strpos($body, '<strong>' . $label . '</strong>'),
+            ['room1-pc.+', 'WPKG agent', 'room2-pc.+', '.+'],
+        );
+        $this->assertNotContains(false, $positions);
+        $sorted = $positions;
+        sort($sorted);
+        $this->assertSame($sorted, $positions);
+        $this->assertResponseNotContains('<strong>^dev-[0-9]+$</strong>');
+    }
+
+    /**
+     * The agent group is translated.
+     *
+     * @return void
+     */
+    public function testFrenchAgentGroup(): void
+    {
+        $this->writeAgentReport('DEV-7');
+        $this->indexReportFixtures();
+        $this->cookie('wpkg_lang', 'fr');
+
+        $this->get('/');
+
+        $this->assertResponseContains('<strong>Agent WPKG</strong>');
     }
 
     /**

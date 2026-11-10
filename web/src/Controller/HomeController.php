@@ -40,7 +40,7 @@ class HomeController extends AppController
         $now = new DateTimeImmutable();
         $this->set([
             'configured' => $isConfigured,
-            'groups' => (new HostMatcher())->group($reports),
+            'groups' => (new HostMatcher())->groupForDashboard($reports),
             'summary' => new ReportSummary($reports, $now),
             'indexState' => $indexState,
             'indexOverdue' => IndexState::isOverdue($indexState, $now, $intervalSeconds),

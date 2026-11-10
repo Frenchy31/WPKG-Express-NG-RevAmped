@@ -126,7 +126,7 @@ final class ReportDirectory
         }
 
         [$log, $logError] = is_file($logPath) ? $this->readLog($logPath) : [null, null];
-        [$properties, $installedPackages, $xmlError] = is_file($xmlPath) ? $this->readXml($xmlPath) : [[], null, null];
+        [$properties, $packageIds, $xmlError] = is_file($xmlPath) ? $this->readXml($xmlPath) : [[], null, null];
         $modifiedAt = (new DateTimeImmutable())->setTimestamp(max(array_map('filemtime', $existing)));
 
         return new HostReport(
@@ -134,10 +134,11 @@ final class ReportDirectory
             $log,
             is_file($xmlPath),
             $properties,
-            $installedPackages,
+            $packageIds === null ? null : count($packageIds),
             $xmlError,
             $modifiedAt,
             $logError,
+            $packageIds ?? [],
         );
     }
 
@@ -161,7 +162,8 @@ final class ReportDirectory
      * Reads the host properties and the installed packages of a wpkg.xml file.
      *
      * @param string $xmlPath File path.
-     * @return array{0: array<string, string>, 1: int|null, 2: string|null} Properties, package count, error.
+     * @return array{0: array<string, string>, 1: list<string>|null, 2: string|null} Properties, package
+     *     identifiers, error.
      */
     public function readXml(string $xmlPath): array
     {
@@ -195,13 +197,13 @@ final class ReportDirectory
                 $properties[$name] = $root->getAttribute($name);
             }
         }
-        $installedPackages = 0;
+        $packageIds = [];
         foreach ($root->childNodes as $node) {
             if ($node instanceof DOMElement && $node->localName === 'package') {
-                $installedPackages++;
+                $packageIds[] = $node->getAttribute('id');
             }
         }
 
-        return [$properties, $installedPackages, null];
+        return [$properties, $packageIds, null];
     }
 }
