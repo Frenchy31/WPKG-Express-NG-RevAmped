@@ -127,4 +127,64 @@ class HostMatcherTest extends TestCase
         $this->assertSame('failed', $groups[1]->status()->value);
         $this->assertNull($groups[3]->profile());
     }
+
+    /**
+     * The dashboard lists entries with several workstations first, single workstations next, unmatched last.
+     *
+     * @return void
+     */
+    public function testGroupForDashboardWithoutAgent(): void
+    {
+        $this->fetchTable('Hosts')->updateAll(['enabled' => false], ['id' => 5]);
+        $reports = (new ReportDirectory($this->copyReportFixtures()))->all();
+
+        $groups = (new HostMatcher())->groupForDashboard($reports);
+
+        $this->assertSame([
+            'room1-pc.+' => ['ROOM1-PC01', 'ROOM1-PC02'],
+            'room2-pc.+' => ['ROOM2-PC05'],
+            '^dev-[0-9]+$' => ['DEV-7'],
+            'Unmatched' => ['BROKEN'],
+        ], $this->hostnamesByGroup($groups));
+    }
+
+    /**
+     * Workstations running the agent leave their entry for one group, placed before the single workstations.
+     *
+     * @return void
+     */
+    public function testGroupForDashboardWithAgent(): void
+    {
+        $this->fetchTable('Hosts')->updateAll(['enabled' => false], ['id' => 5]);
+        $this->copyReportFixtures();
+        $this->writeAgentReport('DEV-7');
+        $reports = (new ReportDirectory($this->reportsPath))->all();
+
+        $groups = (new HostMatcher())->groupForDashboard($reports);
+
+        $this->assertSame([
+            'room1-pc.+' => ['ROOM1-PC01', 'ROOM1-PC02'],
+            'WPKG agent' => ['DEV-7'],
+            'room2-pc.+' => ['ROOM2-PC05'],
+            'Unmatched' => ['BROKEN'],
+        ], $this->hostnamesByGroup($groups));
+        $this->assertNull($groups[1]->host);
+        $this->assertNull($groups[1]->profile());
+    }
+
+    /**
+     * Lists the workstations of each group, by group title.
+     *
+     * @param list<\App\Report\ReportGroup> $groups Groups.
+     * @return array<string, list<string>>
+     */
+    private function hostnamesByGroup(array $groups): array
+    {
+        $hostnames = [];
+        foreach ($groups as $group) {
+            $hostnames[$group->label()] = array_map(fn($report): string => $report->hostname, $group->reports);
+        }
+
+        return $hostnames;
+    }
 }

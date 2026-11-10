@@ -17,6 +17,11 @@ final readonly class HostReport
     public const int STALE_AFTER_SECONDS = 86400;
 
     /**
+     * Identifier of the package that installs the background agent, as in wpkg-agent/package.xml.
+     */
+    public const string AGENT_PACKAGE_ID = 'wpkg-agent';
+
+    /**
      * @param string $hostname File name stem, i.e. %COMPUTERNAME% of the workstation.
      * @param \App\Report\RunLog|null $log Log of the last run, null without a .log file.
      * @param bool $hasXml Whether a .xml file exists.
@@ -24,6 +29,7 @@ final readonly class HostReport
      * @param int|null $installedPackages Packages listed in the .xml file, null when it is missing or unreadable.
      * @param string|null $xmlError Why the .xml file could not be read.
      * @param \DateTimeImmutable $modifiedAt Last modification of the files.
+     * @param list<string> $packageIds Identifiers of the packages listed in the .xml file.
      */
     public function __construct(
         public string $hostname,
@@ -33,7 +39,18 @@ final readonly class HostReport
         public ?int $installedPackages,
         public ?string $xmlError,
         public DateTimeImmutable $modifiedAt,
+        public array $packageIds = [],
     ) {
+    }
+
+    /**
+     * Tells whether the background agent is installed on the workstation.
+     *
+     * @return bool
+     */
+    public function hasAgent(): bool
+    {
+        return in_array(self::AGENT_PACKAGE_ID, $this->packageIds, true);
     }
 
     /**

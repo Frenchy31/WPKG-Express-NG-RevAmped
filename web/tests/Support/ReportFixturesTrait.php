@@ -28,6 +28,23 @@ trait ReportFixturesTrait
     }
 
     /**
+     * Replaces the wpkg.xml of a workstation with one listing only the background agent package.
+     *
+     * @param string $hostname Workstation, as in the file names.
+     * @return void
+     */
+    protected function writeAgentReport(string $hostname): void
+    {
+        file_put_contents(
+            $this->reportsPath . DS . $hostname . '.xml',
+            '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
+            . '<wpkg:wpkg xmlns:wpkg="http://www.wpkg.org/settings" hostname="' . strtolower($hostname) . '">'
+            . '<package id="wpkg-agent" name="WPKG background agent" revision="1" priority="100" reboot="false"/>'
+            . '</wpkg:wpkg>',
+        );
+    }
+
+    /**
      * Deletes the temporary reports directory.
      *
      * @return void

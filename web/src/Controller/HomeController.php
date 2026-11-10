@@ -37,7 +37,7 @@ class HomeController extends AppController
         $this->set([
             'configured' => $directory->isConfigured(),
             'readable' => $directory->isReadable(),
-            'groups' => (new HostMatcher())->group($reports),
+            'groups' => (new HostMatcher())->groupForDashboard($reports),
             'summary' => new ReportSummary($reports, $now),
             'now' => $now,
         ]);

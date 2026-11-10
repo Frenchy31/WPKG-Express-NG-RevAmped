@@ -14,10 +14,12 @@ final readonly class ReportGroup
     /**
      * @param \App\Model\Entity\Host|null $host Matching host entry, null for the workstations no entry matches.
      * @param list<\App\Report\HostReport> $reports Reports, sorted by host name.
+     * @param string|null $title Title of a group gathered by another rule than its host entry.
      */
     public function __construct(
         public ?Host $host,
         public array $reports,
+        public ?string $title = null,
     ) {
     }
 
@@ -28,7 +30,7 @@ final readonly class ReportGroup
      */
     public function label(): string
     {
-        return $this->host === null ? __('Unmatched') : (string)$this->host->get('name');
+        return $this->title ?? ($this->host === null ? __('Unmatched') : (string)$this->host->get('name'));
     }
 
     /**
