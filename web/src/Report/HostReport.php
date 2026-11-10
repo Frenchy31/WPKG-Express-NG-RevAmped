@@ -8,6 +8,8 @@ use DateTimeImmutable;
 
 /**
  * Last run of one workstation, read from the files its WPKG_Client_Log package copies to the share.
+ *
+ * The pages get it from the table the reports indexer fills, the detail page from the files.
  */
 final readonly class HostReport
 {
@@ -18,22 +20,57 @@ final readonly class HostReport
 
     /**
      * @param string $hostname File name stem, i.e. %COMPUTERNAME% of the workstation.
-     * @param \App\Report\RunLog|null $log Log of the last run, null without a .log file.
+     * @param \App\Report\LogSummary|null $log Log of the last run, null without a .log file.
      * @param bool $hasXml Whether a .xml file exists.
      * @param array<string, string> $properties Attributes of the root element of the .xml file.
      * @param int|null $installedPackages Packages listed in the .xml file, null when it is missing or unreadable.
      * @param string|null $xmlError Why the .xml file could not be read.
      * @param \DateTimeImmutable $modifiedAt Last modification of the files.
+     * @param string|null $logError Why the .log file could not be read.
      */
     public function __construct(
         public string $hostname,
-        public ?RunLog $log,
+        public ?LogSummary $log,
         public bool $hasXml,
         public array $properties,
         public ?int $installedPackages,
         public ?string $xmlError,
         public DateTimeImmutable $modifiedAt,
+        public ?string $logError = null,
     ) {
+    }
+
+    /**
+     * Builds the report from a row of host_reports.
+     *
+     * @param array<string, mixed> $row Row, with its JSON columns still encoded.
+     * @return self
+     */
+    public static function fromRow(array $row): self
+    {
+        $log = null;
+        if ($row['log_mtime'] !== null) {
+            $log = new IndexedLog(
+                ReportStatus::from((string)$row['status']),
+                $row['started_at'] === null ? null : (new DateTimeImmutable())->setTimestamp((int)$row['started_at']),
+                $row['wpkg_version'],
+                self::decodeList($row['profiles']),
+                self::decodeList($row['succeeded']),
+                self::decodeList($row['errors']),
+                self::decodeList($row['warnings']),
+            );
+        }
+
+        return new self(
+            (string)$row['hostname'],
+            $log,
+            (bool)$row['has_xml'],
+            (array)json_decode((string)$row['properties'], true),
+            $row['installed_packages'] === null ? null : (int)$row['installed_packages'],
+            $row['xml_error'],
+            (new DateTimeImmutable())->setTimestamp((int)$row['file_modified_at']),
+            $row['log_error'],
+        );
     }
 
     /**
@@ -77,5 +114,16 @@ final readonly class HostReport
         $addresses = array_map('trim', explode(',', $this->properties['ipaddresses'] ?? ''));
 
         return array_values(array_filter($addresses, fn(string $address): bool => $address !== ''));
+    }
+
+    /**
+     * Decodes a JSON list stored in a text column.
+     *
+     * @param mixed $json Column value.
+     * @return list<string>
+     */
+    private static function decodeList(mixed $json): array
+    {
+        return array_values((array)json_decode((string)$json, true));
     }
 }
