@@ -130,7 +130,7 @@ Le dossier `logs` du partage est monté en lecture seule dans les conteneurs `wp
 
 ### Indexeur
 
-Les pages ne lisent jamais le partage : relire les 1 300 fichiers de 650 postes à chaque affichage les rendait lentes. Le service `reports-indexer` lance `bin/cake reports index` toutes les `WPKG_REPORTS_INDEX_INTERVAL` secondes (60 par défaut, dans `services/wpkg/wpkg.env`). À chaque passage, il compare la date de modification et la taille de chaque fichier aux valeurs enregistrées, ne relit que les fichiers nouveaux ou modifiés, et range un résumé par poste dans la table `host_reports`. Un poste dont les deux fichiers ont disparu est supprimé de la table. Le premier passage lit tous les fichiers ; les suivants ne relisent que les postes qui ont tourné depuis.
+Les pages ne lisent jamais le partage : relire les 1 300 fichiers de 650 postes à chaque affichage les rendait lentes. Le service `reports-indexer` lance `bin/cake reports index` toutes les `WPKG_REPORTS_INDEX_INTERVAL` secondes (60 par défaut, dans `services/wpkg/wpkg.env`). À chaque passage, il compare la date de modification et la taille de chaque fichier aux valeurs enregistrées, ne relit que les fichiers nouveaux ou modifiés, et range un résumé par poste dans la table `host_reports`. Il y garde aussi les identifiants des packages de `wpkg.xml`, d'où le tableau de bord tire le groupe « Agent WPKG ». Un poste dont les deux fichiers ont disparu est supprimé de la table. Le premier passage lit tous les fichiers ; les suivants ne relisent que les postes qui ont tourné depuis.
 
 `install.sh` démarre le service après la création des tables. Pour lancer un passage à la main :
 
