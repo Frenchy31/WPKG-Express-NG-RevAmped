@@ -19,3 +19,7 @@ services:
   wpkg:
     volumes:
       - ./services/samba/share/wpkg/logs:/var/lib/wpkg/reports:ro,z
+
+  reports-indexer:
+    volumes:
+      - ./services/samba/share/wpkg/logs:/var/lib/wpkg/reports:ro,z
