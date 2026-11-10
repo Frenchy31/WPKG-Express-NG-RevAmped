@@ -209,6 +209,49 @@ class ReportIndexerTest extends TestCase
     }
 
     /**
+     * The package ids of wpkg.xml are stored, empty without a readable file, and give hasAgent().
+     *
+     * @return void
+     */
+    public function testPackageIdsAreStored(): void
+    {
+        $this->writeAgentReport('DEV-7');
+
+        $this->indexReportFixtures();
+
+        $this->assertSame(['7zip', 'firefox'], json_decode($this->row('ROOM1-PC01')['package_ids'], true));
+        $this->assertSame(['wpkg-agent'], json_decode($this->row('DEV-7')['package_ids'], true));
+        $this->assertSame('[]', $this->row('BROKEN')['package_ids']);
+        $this->assertSame('[]', $this->row('ROOM1-PC02')['package_ids']);
+        $reports = [];
+        foreach ($this->fetchTable('HostReports')->allReports() as $report) {
+            $reports[$report->hostname] = $report;
+        }
+        $this->assertTrue($reports['DEV-7']->hasAgent());
+        $this->assertFalse($reports['ROOM1-PC01']->hasAgent());
+    }
+
+    /**
+     * Clearing the recorded xml dates, as the package_ids migration does, reads every wpkg.xml again.
+     *
+     * @return void
+     */
+    public function testClearedXmlDatesFillPackageIds(): void
+    {
+        $this->indexReportFixtures();
+        $this->fetchTable('HostReports')->updateAll(
+            ['package_ids' => '[]', 'xml_mtime' => null, 'xml_size' => null],
+            [],
+        );
+
+        $state = $this->indexReportFixtures();
+
+        $this->assertSame(3, $state->filesRead);
+        $this->assertSame(['7zip', 'firefox'], json_decode($this->row('ROOM1-PC01')['package_ids'], true));
+        $this->assertSame(0, $this->indexReportFixtures()->filesRead);
+    }
+
+    /**
      * A workstation whose two files are gone leaves the index, one whose second file remains stays.
      *
      * @return void

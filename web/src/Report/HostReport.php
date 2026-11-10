@@ -77,6 +77,7 @@ final readonly class HostReport
             $row['xml_error'],
             (new DateTimeImmutable())->setTimestamp((int)$row['file_modified_at']),
             $row['log_error'],
+            self::decodeList($row['package_ids']),
         );
     }
 

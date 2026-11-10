@@ -197,6 +197,7 @@ final class ReportIndexer
             'xml_error' => null,
             'properties' => '{}',
             'installed_packages' => null,
+            'package_ids' => '[]',
         ];
     }
 
@@ -238,7 +239,7 @@ final class ReportIndexer
      */
     private function xmlValues(string $xmlPath, array $file): array
     {
-        [$properties, $installedPackages, $xmlError] = $this->directory->readXml($xmlPath);
+        [$properties, $packageIds, $xmlError] = $this->directory->readXml($xmlPath);
 
         return [
             'xml_mtime' => $file['mtime'],
@@ -246,7 +247,8 @@ final class ReportIndexer
             'has_xml' => true,
             'xml_error' => $xmlError,
             'properties' => $this->encode($properties),
-            'installed_packages' => $installedPackages,
+            'installed_packages' => $packageIds === null ? null : count($packageIds),
+            'package_ids' => $this->encode($packageIds ?? []),
         ];
     }
 
