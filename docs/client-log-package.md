@@ -54,11 +54,11 @@ Dans WPKG Express NG :
 
 ## Côté serveur
 
-1. Monter le dossier `logs` du partage, en lecture seule, dans le conteneur `wpkg`. La stack locale le fait dans `compose.yaml` :
+1. Monter le dossier `logs` du partage, en lecture seule, dans le conteneur `wpkg`. La stack locale le fait dans `services/samba/compose.yaml` :
 
    ```yaml
    volumes:
-     - ./samba-conf/shared/wpkg/logs:/var/lib/wpkg/reports:ro,z
+     - ./services/samba/share/wpkg/logs:/var/lib/wpkg/reports:ro,z
    ```
 
 2. Définir la variable d'environnement `WPKG_REPORTS_PATH` avec le chemin dans le conteneur : `/var/lib/wpkg/reports`. Lorsqu'elle est vide, la page **Reports** l'indique. La page **Admin** affiche sa valeur actuelle.

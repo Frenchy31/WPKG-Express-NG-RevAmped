@@ -73,4 +73,4 @@ Désinstaller : `powershell -File %ProgramData%\WpkgAgent\uninstall.ps1`, ou ret
 docker run --rm -v "$PWD/wpkg-agent:/agent:ro,z" mcr.microsoft.com/powershell:latest pwsh -NoProfile -File /agent/tests/run.ps1
 ```
 
-Ces tests couvrent la logique, sous PowerShell 7. Windows PowerShell 5.1 se comporte différemment : toute modification doit aussi passer sur la VM (`wpkg-test/README.md`).
+Ces tests couvrent la logique, sous PowerShell 7. Windows PowerShell 5.1 se comporte différemment : toute modification doit aussi passer sur la VM (`services/windows-vm/README.md`).

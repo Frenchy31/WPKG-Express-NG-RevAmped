@@ -7,38 +7,46 @@ Pile : PHP 8.5, CakePHP 5.4, MySQL, Apache, Docker Compose. Le code est dans `we
 
 ## Démarrage
 
-`./install.sh` installe tout depuis un clone neuf : `.env`, mot de passe administrateur, images, conteneurs et tables. Il vérifie d'abord que Docker est accessible et que les ports 80, 139 et 445, le sous-réseau `172.19.0.0/16` et les noms de conteneurs `mysql` et `samba` sont libres. Étapes manuelles équivalentes :
+`./install.sh` installe tout depuis un clone neuf : `.env`, fichiers d'environnement des composants, mot de passe administrateur, images, conteneurs et tables. Il vérifie d'abord que Docker est accessible et que le port HTTP (`WPKG_HTTP_PORT`, 80 par défaut), les ports 139 et 445 si `samba` est actif, le sous-réseau `172.19.0.0/16` et les noms de conteneurs des composants actifs sont libres. Étapes manuelles équivalentes :
 
-1. Créer `.env` à partir de `.env.example`.
-2. Générer le hash du mot de passe administrateur, puis le coller dans `.env` entre apostrophes :
+1. Créer `.env` à partir de `.env.example`, puis un fichier `services/<composant>/<composant>.env` à partir de chaque `services/<composant>/<composant>.env.example` des composants actifs.
+2. Générer le hash du mot de passe administrateur, puis le coller dans `services/wpkg/wpkg.env` entre apostrophes :
    ```shell
    docker compose --profile tools run --rm --no-deps tools composer install --no-scripts
    docker compose --profile tools run --rm --no-deps tools bin/cake hash_password 'mot-de-passe'
    ```
 3. Démarrer la pile et créer les tables :
    ```shell
-   docker compose up -d --build mysql samba wpkg
+   docker compose up -d --build wpkg mysql samba
    docker compose exec wpkg bin/cake migrations migrate
    ```
-4. Ouvrir <http://localhost/>.
+4. Ouvrir <http://localhost/> (ou le port choisi dans `WPKG_HTTP_PORT`).
 
 L'utilisateur Unix doit appartenir au groupe `docker`. Sur Fedora, les volumes liés portent l'option `:z` à cause de SELinux.
 
 ## Services
 
-| Service | Rôle | Accès |
-|---|---|---|
-| `wpkg` | Application web | Port 80 |
-| `mysql` | Base de données | Réseau interne |
-| `samba` | Partage `\\172.19.0.4\WPKG` | Ports 139 et 445 |
-| `tools` | Composer, migrations, PHPUnit (profil `tools`) | Sans objet |
-| `wpkg-test-client` | VM Windows de test | Ports 8006 et 3389 |
+Chaque service est un composant : un dossier de `services/` qui porte son fichier Compose, sa configuration et son modèle de variables `<composant>.env.example`.
+
+| Composant | Service | Rôle | Accès |
+|---|---|---|---|
+| `wpkg` | `wpkg` | Application web | Port `WPKG_HTTP_PORT` (80 par défaut) |
+| `mysql` | `mysql` | Base de données | Réseau interne |
+| `samba` | `samba` | Partage `\\172.19.0.4\WPKG` | Ports 139 et 445 |
+| `tools` | `tools` | Composer, migrations, PHPUnit (profil `tools`) | Sans objet |
+| `windows-vm` | `wpkg-test-client` | VM Windows de test, désactivée par défaut | Ports 8006 et 3389 |
 
 `legacy/` contient l'application PHP 5.6 d'origine et sa pile figée. Elle sert uniquement à capturer les flux de référence : ne jamais la déployer.
 
 ## Configuration
 
-La configuration se fait par variables d'environnement, décrites dans `web/config/app.php`. Points d'attention :
+La liste des composants actifs est la variable `COMPOSE_FILE` de `.env` : le `compose.yaml` racine, puis un fichier `services/<composant>/compose.yaml` par composant actif. Pour désactiver `mysql`, `samba` ou `tools`, retirer son fichier de la liste ; pour activer la VM Windows, ajouter `services/windows-vm/compose.yaml`. Aucun fichier versionné n'est modifié. Relancer ensuite `./install.sh`, qui crée les fichiers d'environnement manquants, ou `docker compose up -d`. Un composant absent n'existe pas pour Compose.
+
+Les modifications propres au poste, par exemple un proxy Traefik, vont dans un fichier `compose.local.yaml`, ignoré par git, ajouté à la main en fin de `COMPOSE_FILE`. Les modifications locales d'un ancien `compose.yaml` sont à reporter dans ce fichier.
+
+Les valeurs de chaque service sont dans `services/<composant>/<composant>.env`, copie du modèle `.env.example` voisin et ignorée par git. Elles contiennent pour l'instant des valeurs de développement : les changer avant tout déploiement partagé. Les chemins de `compose.yaml` et des composants sont relatifs à la racine du dépôt.
+
+La configuration de l'application se fait par variables d'environnement (`services/wpkg/wpkg.env`), décrites dans `web/config/app.php`. Points d'attention :
 
 - `APP_FULL_BASE_URL` est obligatoire en production.
 - Chaque nom utilisé par les postes dans `hosts_path` doit figurer dans `WPKG_ALLOWED_HOSTS`, sinon leurs requêtes sont refusées en 400.
@@ -70,7 +78,7 @@ Un package exécuté en dernier sur les postes réalise la copie : sa définitio
 %COMSPEC% /C if exist C:\admin\wpkg-%COMPUTERNAME%.log copy /Y C:\admin\wpkg-%COMPUTERNAME%.log %SOFTWARE%\..\logs\%COMPUTERNAME%.log
 ```
 
-Le dossier `logs` du partage est monté en lecture seule dans le conteneur `wpkg`. En local, il s'agit de `samba-conf/shared/wpkg/logs`.
+Le dossier `logs` du partage est monté en lecture seule dans le conteneur `wpkg`. En local, il s'agit de `services/samba/share/wpkg/logs`.
 
 Les postes sont regroupés sous la première entrée d'hôte active qui les reconnaît, avec la règle de `wpkg.js`. Couleurs :
 
@@ -93,7 +101,7 @@ cd wpkg-client && npm test
 
 La CI GitLab exécute PHPUnit et les tests de `wpkg.js`. Les tests de `wpkg.js` tournent sous Node.js, sans dépendance, avec des bouchons du Windows Script Host.
 
-Les tests de bout en bout sur la VM Windows sont décrits dans `wpkg-test/README.md`. Les résultats sont dans `TESTS.md`.
+Les tests de bout en bout sur la VM Windows sont décrits dans `services/windows-vm/README.md`. Les résultats sont dans `TESTS.md`.
 
 ## Migration depuis l'application d'origine
 

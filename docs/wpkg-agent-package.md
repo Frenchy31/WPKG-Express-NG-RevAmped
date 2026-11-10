@@ -13,7 +13,7 @@ Cette page explique comment installer l'agent d'arrière-plan de `wpkg-agent/` s
 Copier `install.ps1`, `run.ps1`, `uninstall.ps1` et `WpkgAgent.psm1` dans un dossier `agent`, à côté de `wpkg.js` sur le partage. Avec la pile locale :
 
 ```shell
-mkdir -p samba-conf/shared/wpkg/agent && cp wpkg-agent/*.ps1 wpkg-agent/*.psm1 samba-conf/shared/wpkg/agent/
+mkdir -p services/samba/share/wpkg/agent && cp wpkg-agent/*.ps1 wpkg-agent/*.psm1 services/samba/share/wpkg/agent/
 ```
 
 `install.ps1` copie aussi sur le poste le `wpkg.js` du dossier parent. L'agent exécute cette copie, et non celle du partage.
