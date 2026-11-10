@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Test\TestCase\Report;
 
 use App\Report\HostMatcher;
-use App\Report\ReportDirectory;
 use App\Test\Support\ReferenceDataTrait;
 use App\Test\Support\ReportFixturesTrait;
 use Cake\ORM\Locator\LocatorAwareTrait;
@@ -110,7 +109,9 @@ class HostMatcherTest extends TestCase
     public function testGroup(): void
     {
         $this->fetchTable('Hosts')->updateAll(['enabled' => false], ['id' => 5]);
-        $reports = (new ReportDirectory($this->copyReportFixtures()))->all();
+        $this->copyReportFixtures();
+        $this->indexReportFixtures();
+        $reports = $this->fetchTable('HostReports')->allReports();
 
         $groups = (new HostMatcher())->group($reports);
 
