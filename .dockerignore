@@ -1,6 +1,10 @@
 *
 !web
-!docker
+!services
+services/*
+!services/wpkg
+services/wpkg/*
+!services/wpkg/php.ini
 web/vendor
 web/tmp
 web/logs

@@ -1,0 +1,18 @@
+services:
+  wpkg:
+    image: my-wpkg
+    build:
+      context: .
+      dockerfile: services/wpkg/Dockerfile
+      target: prod
+    # Values come from services/wpkg/wpkg.env (see wpkg.env.example). Unlike "${VAR}" interpolation,
+    # env_file is not overridden by a variable of the shell that runs docker compose.
+    env_file: services/wpkg/wpkg.env
+    ports:
+      - "${WPKG_HTTP_PORT:-80}:80"
+    volumes:
+      - ./services/wpkg/apache/sites:/etc/apache2/sites-available:z
+      - ./services/wpkg/apache/certificates:/etc/apache2/ssl:z
+    networks:
+      backend:
+        ipv4_address: 172.19.0.5

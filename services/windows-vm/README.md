@@ -10,14 +10,27 @@ Windows disk image under KVM and exposes it like any other container.
 
 ## One-time setup
 
-Nothing manual: `compose.yaml`'s `samba.environment.USER_1` (`administrateur;wpkgtest`)
+Nothing manual: `USER_1` (`administrateur;<password>`) in `services/samba/samba.env`
 makes the `samba` container create the "administrateur" Samba user referenced in
-`samba-conf/smb.conf`'s `valid users` automatically on every start, with a simple
-fixed password (`wpkgtest`) for local testing only. `wpkg-test/oem/install.bat`'s
-`SMBPASS` already matches it. Change (or remove) that `USER_1` value before this
-is anything other than a throwaway local test environment.
+`services/samba/smb.conf`'s `valid users` automatically on every start. `./install.sh` sets
+the password, and writes it to `services/windows-vm/oem/smb-credentials.bat` (git-ignored, mode 600),
+which `services/windows-vm/oem/install.bat` loads with `call`: the password is no longer in a
+versioned script. `install.bat` only runs on the first boot of Windows: after changing the
+Samba password, run `net use` again in the VM.
 
 ## Bring it up
+
+The VM is a component that is off by default. Enable it through `./install.sh` (question
+"Enable the Windows test VM?", or `WPKG_ENABLE_WINDOWS_VM=yes`; `samba` must stay enabled). The script
+first checks that `/dev/kvm` is readable and writable, that the ports 8006 and 3389 are free and that the
+disk of `services/windows-vm/storage/` has the `DISK_SIZE` of `services/windows-vm/windows-vm.env`
+(48G by default); on any failure it stops before changing a file. It then adds
+`services/windows-vm/compose.yaml` to `COMPOSE_FILE`, sets `PASSWORD` (typed twice, or generated and
+shown once, letters and digits only, variable `WPKG_VM_PASSWORD`), writes `smb-credentials.bat`, and
+starts the VM without waiting for the end of the Windows installation. `RAM_SIZE`, `CPU_CORES` and
+`DISK_SIZE` can be edited in `windows-vm.env` before the first start.
+
+To start it again later:
 
 ```
 docker compose up -d wpkg-test-client
@@ -25,17 +38,17 @@ docker compose up -d wpkg-test-client
 
 - Watch the Windows install at `http://localhost:8006` (noVNC). First boot
   (installing Windows itself) takes roughly 15-40 minutes.
-- Once installed, `wpkg-test/oem/install.bat` runs automatically: it maps the
+- Once installed, `services/windows-vm/oem/install.bat` runs automatically: it maps the
   share as `Z:`, does one immediate `/dryrun /debug` run of `wpkg.js`, and
   registers a scheduled task that runs a real `wpkg.js /synchronize` every 15
   minutes.
 - For interactive/manual runs, connect over RDP at `localhost:3389`
-  (Administrator / the `PASSWORD` set in `compose.yaml`) and run
+  (Administrator / the `PASSWORD` set in `services/windows-vm/windows-vm.env`) and run
   `cscript Z:\wpkg\wpkg.js` yourself from an elevated `cmd.exe`.
 
 ## What it's testing
 
-`samba-conf/shared/wpkg/config.xml` points `hosts_path`, `profiles_path` and `packages_path` at the
+`services/samba/share/wpkg/config.xml` points `hosts_path`, `profiles_path` and `packages_path` at the
 `wpkg` service (`http://172.19.0.5/...`). To test against the XML files of the share instead, set
 them back to `packages`, `profiles` and `hosts`.
 
@@ -46,7 +59,7 @@ upload, import, feed generation and the real client:
   the two cases the PHP 5 application could not generate correctly;
 - `7zip` downloads and silently installs the real 7-Zip.
 
-The hostname of the current VM is `ADMINIS-XXXXXXX`, not the `HOSTNAME` set in `compose.yaml`. The
+The hostname of the current VM is `ADMINIS-XXXXXXX`, not the `HOSTNAME` set in `services/windows-vm/windows-vm.env`. The
 data set matches it with `adminis-.+`.
 
 ## Running a scenario
@@ -56,11 +69,11 @@ run, open an elevated `cmd.exe` on the desktop (noVNC, RDP, or `sendkey` on the 
 `/run/shm/monitor.sock` inside the container) and run:
 
 ```
-net use Z: \\172.19.0.4\wpkg wpkgtest /user:administrateur /persistent:yes
+net use Z: \\172.19.0.4\wpkg <Samba password> /user:administrateur /persistent:yes
 cscript //NoLogo Z:\wpkg\wpkg.js /synchronize /noreboot /debug > Z:\wpkg\logs\run.txt 2>&1
 ```
 
-Add `/dryrun` to change nothing. The output lands in `samba-conf/shared/wpkg/logs/`.
+Add `/dryrun` to change nothing. The output lands in `services/samba/share/wpkg/logs/`.
 
 ## Verifying a run
 
@@ -77,7 +90,7 @@ The results of the PHP 8 validation, failure scenarios included, are in `TESTS.m
 `e2e/nomad/` deploys `wpkg-agent` through WPKG itself. Copy the agent to the share first:
 
 ```
-mkdir -p samba-conf/shared/wpkg/agent && cp wpkg-agent/*.ps1 wpkg-agent/*.psm1 samba-conf/shared/wpkg/agent/
+mkdir -p services/samba/share/wpkg/agent && cp wpkg-agent/*.ps1 wpkg-agent/*.psm1 services/samba/share/wpkg/agent/
 ```
 
 The virtual cable is unplugged from the host, through the QEMU monitor of the container:
@@ -94,5 +107,5 @@ Use `on` to plug it back. Windows then sees `Media disconnected`, then a real ne
 docker compose stop wpkg-test-client
 ```
 
-`./wpkg-test/storage` holds the VM disk and is kept by default so you don't
+`./services/windows-vm/storage` holds the VM disk and is kept by default so you don't
 have to reinstall Windows next time — delete it for a clean slate.

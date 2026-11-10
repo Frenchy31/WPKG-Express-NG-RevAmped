@@ -1,0 +1,20 @@
+services:
+  # Test-only: composer, migrations, PHPUnit against the mounted sources.
+  tools:
+    image: my-wpkg-tools
+    build:
+      context: .
+      dockerfile: services/wpkg/Dockerfile
+      target: dev
+    profiles: ["tools"]
+    user: "${UID:-1000}:${GID:-1000}"
+    env_file:
+      - services/wpkg/wpkg.env
+      - services/tools/tools.env
+    environment:
+      HOME: /tmp
+      COMPOSER_HOME: /tmp/composer
+    volumes:
+      - ./web:/var/www/html:z
+    networks:
+      - backend

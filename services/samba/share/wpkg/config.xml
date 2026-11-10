@@ -569,7 +569,7 @@
 	-->
 	<!--
 		Pointed at the share itself (not the default %TEMP%) so run logs are
-		readable from the Linux host at samba-conf/shared/wpkg/logs/ without
+		readable from the Linux host at services/samba/share/wpkg/logs/ without
 		needing to RDP into the test VM.
 	-->
 	<param name='log_file_path' value='Z:\wpkg\logs' />

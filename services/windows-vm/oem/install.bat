@@ -5,11 +5,9 @@
 :: runs wpkg.js, so results can be read back from the Linux host over the
 :: share without needing to RDP in every time.
 
-set SMBUSER=administrateur
-set SMBPASS=wpkgtest
+:: SMBUSER and SMBPASS come from smb-credentials.bat, written next to this file by install.sh (git-ignored).
+call "%~dp0smb-credentials.bat"
 set SHARE=\\172.19.0.4\wpkg
-
-:: SMBPASS above must match compose.yaml's samba.environment.USER_1 value.
 
 net use Z: %SHARE% %SMBPASS% /user:%SMBUSER% /persistent:yes
 

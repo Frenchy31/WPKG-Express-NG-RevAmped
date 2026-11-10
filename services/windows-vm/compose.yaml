@@ -1,0 +1,22 @@
+services:
+  # Test-only: a real Windows VM (via QEMU/KVM, not a native Windows container --
+  # those require a Windows Docker host) used to exercise wpkg-client/wpkg.js
+  # end-to-end against the samba share. Change PASSWORD before relying on this
+  # for anything beyond local testing. See services/windows-vm/README.md.
+  wpkg-test-client:
+    image: dockurr/windows
+    container_name: wpkg-test-client
+    env_file: services/windows-vm/windows-vm.env
+    devices:
+      - /dev/kvm
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "8006:8006"
+      - "3389:3389"
+    volumes:
+      - ./services/windows-vm/storage:/storage:z
+      - ./services/windows-vm/oem:/oem:z
+    networks:
+      - backend
+    stop_grace_period: 2m

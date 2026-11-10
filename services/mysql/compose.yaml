@@ -1,0 +1,29 @@
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    env_file: services/mysql/mysql.env
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./services/mysql/init:/docker-entrypoint-initdb.d:ro,z
+    healthcheck:
+      # The password comes from the container environment: it must not appear in this file.
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysqladmin ping -h 127.0.0.1 -uwpkg"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      - backend
+
+  wpkg:
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  tools:
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
