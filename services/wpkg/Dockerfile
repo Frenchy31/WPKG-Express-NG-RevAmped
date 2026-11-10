@@ -7,7 +7,7 @@ RUN a2enmod rewrite \
  && apt-get purge -y --auto-remove libicu-dev libzip-dev \
  && apt-get install -y --no-install-recommends libicu76 libzip5 \
  && rm -rf /var/lib/apt/lists/*
-COPY docker/php.ini /usr/local/etc/php/conf.d/wpkg.ini
+COPY services/wpkg/php.ini /usr/local/etc/php/conf.d/wpkg.ini
 WORKDIR /var/www/html
 
 # Tooling image: bind-mounts ./web and carries composer for tests and migrations.

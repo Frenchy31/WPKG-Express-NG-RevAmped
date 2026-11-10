@@ -1,4 +1,6 @@
 .env
+services/*/*.env
+compose.local.yaml
 .idea/
 .phpcs-cache
 node_modules/
@@ -9,6 +11,14 @@ web/logs/*
 !web/logs/.gitkeep
 web/.phpunit.cache/
 # Disk images of the Windows VM.
+services/windows-vm/storage/
+# Certificates and keys of the web server.
+services/wpkg/apache/certificates/*
+!services/wpkg/apache/certificates/.gitkeep
+# Reports of the workstations.
+services/samba/share/wpkg/logs/*
+!services/samba/share/wpkg/logs/.gitkeep
+# Old locations, kept ignored: an existing checkout keeps this data on disk after pulling.
 wpkg-test/storage/
 samba-conf/shared/wpkg/logs/*
 !samba-conf/shared/wpkg/logs/.gitkeep
@@ -18,4 +28,5 @@ legacy/wpkg-express-ng/
 2026-07-17-*.txt
 .composer-cache/
 # Copy of wpkg-agent/ for the Windows VM.
+services/samba/share/wpkg/agent/
 samba-conf/shared/wpkg/agent/

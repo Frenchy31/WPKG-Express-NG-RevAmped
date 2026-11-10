@@ -1,0 +1,21 @@
+services:
+  samba:
+    image: dperson/samba
+    container_name: samba
+    # USER_1 is the test-only account matching smb.conf's "valid users = administrateur".
+    # dperson/samba's entrypoint creates this user/password on every start regardless of the
+    # custom smb.conf mounted below. Change/remove for anything beyond local testing.
+    env_file: services/samba/samba.env
+    ports:
+      - "139:139"
+      - "445:445"
+    volumes:
+      - ./services/samba/smb.conf:/etc/samba/smb.conf:ro,z
+      - ./services/samba/share:/home/WPKG:z
+    networks:
+      backend:
+        ipv4_address: 172.19.0.4
+
+  wpkg:
+    volumes:
+      - ./services/samba/share/wpkg/logs:/var/lib/wpkg/reports:ro,z
