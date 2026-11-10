@@ -7,9 +7,47 @@ Pile : PHP 8.5, CakePHP 5.4, MySQL, Apache, Docker Compose. Le code est dans `we
 
 ## Démarrage
 
-`./install.sh` installe tout depuis un clone neuf : `.env`, fichiers d'environnement des composants, mot de passe administrateur, images, conteneurs et tables. Il vérifie d'abord que Docker est accessible et que le port HTTP (`WPKG_HTTP_PORT`, 80 par défaut), les ports 139 et 445 si `samba` est actif, le sous-réseau `172.19.0.0/16` et les noms de conteneurs des composants actifs sont libres. Étapes manuelles équivalentes :
+`./install.sh` installe tout depuis un clone neuf : `.env`, fichiers d'environnement des composants, mots de passe, images, conteneurs et tables. Il ne modifie aucun fichier avant d'avoir collecté et vérifié toutes les réponses : Docker accessible, fuseau horaire connu de PHP, ports libres (HTTP, 139 et 445 si `samba` est actif, 8006 et 3389 pour la VM), sous-réseau `172.19.0.0/16`, noms de conteneurs, et pour la VM Windows `/dev/kvm` et l'espace disque.
 
-1. Créer `.env` à partir de `.env.example`, puis un fichier `services/<composant>/<composant>.env` à partir de chaque `services/<composant>/<composant>.env.example` des composants actifs.
+Avec un terminal, le script pose ces questions et propose en défaut la valeur déjà enregistrée :
+
+| Question | Variable d'environnement | Défaut |
+|---|---|---|
+| Nom du serveur (donne `APP_FULL_BASE_URL`) | `WPKG_SERVER_NAME` | `hostname -f` |
+| Noms et adresses utilisés par les postes (`WPKG_ALLOWED_HOSTS`) | `WPKG_ALLOWED_HOSTS` | nom du serveur, nom court, première adresse de l'hôte ; `wpkg` et `172.19.0.5` sont toujours ajoutés |
+| Port HTTP | `WPKG_HTTP_PORT` | 80 |
+| Fuseau horaire (`APP_DEFAULT_TIMEZONE`), refusé s'il est inconnu de PHP | `WPKG_TIMEZONE` | celui de l'hôte (`UTC` sur une installation existante) |
+| Langue de l'interface (`APP_DEFAULT_LOCALE`) | `WPKG_LOCALE` | `en_US` (ou `fr_FR`) |
+| Activer `samba` | `WPKG_ENABLE_SAMBA` | `yes` |
+| Activer `windows-vm` (exige `samba`) | `WPKG_ENABLE_WINDOWS_VM` | `no` |
+| Mot de passe de `admin` | `WPKG_ADMIN_PASSWORD` | généré |
+| Mot de passe du compte Samba `administrateur` | `WPKG_SAMBA_PASSWORD` | généré |
+| Mot de passe de la VM Windows | `WPKG_VM_PASSWORD` | généré |
+| Protéger les flux XML par mot de passe | `WPKG_XML_PROTECT` (`true`/`false`) | `false` |
+| Mot de passe des flux (utilisateur `wpkg`) | `WPKG_XML_PASSWORD` | généré |
+
+Sans terminal, chaque question prend la valeur de sa variable d'environnement, sinon son défaut. Exemple d'installation non interactive :
+
+```shell
+WPKG_SERVER_NAME=wpkg.example.org WPKG_TIMEZONE=Europe/Paris WPKG_LOCALE=fr_FR \
+  WPKG_ADMIN_PASSWORD='mot de passe' ./install.sh </dev/null
+```
+
+Mots de passe :
+
+- `SECURITY_SALT` et les mots de passe MySQL `root` et `wpkg` sont générés à la première installation, jamais affichés ni régénérés.
+- Les mots de passe Samba et de la VM sont demandés deux fois. Laissés vides (ou sans terminal et sans variable), ils sont générés et affichés une seule fois : les noter. Ils ne contiennent que `[A-Za-z0-9]`, et une valeur saisie avec un autre caractère est refusée.
+- Un mot de passe déjà enregistré est conservé et n'est plus demandé, sauf si sa variable est donnée.
+- Aucun mot de passe ne passe sur une ligne de commande. Les fichiers `.env` et `services/*/*.env` ont les droits `600`.
+- Avec `WPKG_XML_PROTECT=true`, le hash est écrit dans `WPKG_XML_PASSWORD_HASH`. **`wpkg-agent` refuse les flux protégés** (voir `wpkg-agent/README.md`).
+
+Désactiver un composant arrête et supprime son conteneur, sans toucher à ses données (volume, dossier `storage/`). Activée, la VM Windows est démarrée sans attendre la fin de l'installation de Windows ; le script affiche l'adresse de sa console, `http://<serveur>:8006`.
+
+Sur une installation antérieure, le script déplace les hashes de `.env` vers `services/wpkg/wpkg.env`, reprend les valeurs de développement qui ont initialisé les données (`your_root_password` et `your_password` pour MySQL, `wpkgtest` pour Samba, `changeme-test` pour la VM), garde le fuseau `UTC` sauf choix explicite, remplace l'ancien sel de développement (les sessions ouvertes sont fermées) et liste à la fin les valeurs de développement encore utilisées : à changer avant tout déploiement partagé. Les datetime de la base n'ont pas de fuseau : changer `APP_DEFAULT_TIMEZONE` décale l'affichage des dates déjà enregistrées.
+
+Étapes manuelles équivalentes, pour un composant à la main :
+
+1. Créer `.env` à partir de `.env.example`, puis un fichier `services/<composant>/<composant>.env` à partir de chaque `services/<composant>/<composant>.env.example` des composants actifs, et renseigner les valeurs vides.
 2. Générer le hash du mot de passe administrateur, puis le coller dans `services/wpkg/wpkg.env` entre apostrophes :
    ```shell
    docker compose --profile tools run --rm --no-deps tools composer install --no-scripts
@@ -44,7 +82,11 @@ La liste des composants actifs est la variable `COMPOSE_FILE` de `.env` : le `co
 
 Les modifications propres au poste, par exemple un proxy Traefik, vont dans un fichier `compose.local.yaml`, ignoré par git, ajouté à la main en fin de `COMPOSE_FILE`. Les modifications locales d'un ancien `compose.yaml` sont à reporter dans ce fichier.
 
-Les valeurs de chaque service sont dans `services/<composant>/<composant>.env`, copie du modèle `.env.example` voisin et ignorée par git. Elles contiennent pour l'instant des valeurs de développement : les changer avant tout déploiement partagé. Les chemins de `compose.yaml` et des composants sont relatifs à la racine du dépôt.
+Les valeurs de chaque service sont dans `services/<composant>/<composant>.env`, copie du modèle `.env.example` voisin, remplie par `./install.sh` et ignorée par git. Les modèles ne contiennent ni mot de passe, ni sel, ni nom de serveur. Les chemins de `compose.yaml` et des composants sont relatifs à la racine du dépôt.
+
+Pour changer une valeur : modifier le fichier `services/<composant>/<composant>.env`, puis lancer `docker compose up -d`, qui recrée le conteneur concerné ; ou relancer `./install.sh`, qui repose les questions avec les valeurs enregistrées en défaut. Un nouveau mot de passe MySQL ne s'applique pas à un volume `mysql_data` existant. Le mot de passe du compte Samba de la VM n'est lu qu'au premier démarrage de Windows : après un changement, refaire `net use` dans la VM. `RAM_SIZE`, `CPU_CORES` et `DISK_SIZE` de `services/windows-vm/windows-vm.env` se règlent avant le premier démarrage de la VM.
+
+Réglages PHP, dans `services/wpkg/wpkg.env` : `PHP_MEMORY_LIMIT` (256M), `PHP_UPLOAD_MAX_FILESIZE` (16M) et `PHP_POST_MAX_SIZE` (16M). `php.ini` les lit au démarrage du conteneur : `docker compose up -d` suffit, sans reconstruire l'image. `date.timezone` suit `APP_DEFAULT_TIMEZONE`.
 
 La configuration de l'application se fait par variables d'environnement (`services/wpkg/wpkg.env`), décrites dans `web/config/app.php`. Points d'attention :
 

@@ -10,19 +10,27 @@ Windows disk image under KVM and exposes it like any other container.
 
 ## One-time setup
 
-Nothing manual: `USER_1` (`administrateur;wpkgtest`) in `services/samba/samba.env`
+Nothing manual: `USER_1` (`administrateur;<password>`) in `services/samba/samba.env`
 makes the `samba` container create the "administrateur" Samba user referenced in
-`services/samba/smb.conf`'s `valid users` automatically on every start, with a simple
-fixed password (`wpkgtest`) for local testing only. `services/windows-vm/oem/install.bat`'s
-`SMBPASS` already matches it. Change (or remove) that `USER_1` value before this
-is anything other than a throwaway local test environment.
+`services/samba/smb.conf`'s `valid users` automatically on every start. `./install.sh` sets
+the password, and writes it to `services/windows-vm/oem/smb-credentials.bat` (git-ignored, mode 600),
+which `services/windows-vm/oem/install.bat` loads with `call`: the password is no longer in a
+versioned script. `install.bat` only runs on the first boot of Windows: after changing the
+Samba password, run `net use` again in the VM.
 
 ## Bring it up
 
-The VM is a component that is off by default. Add `services/windows-vm/compose.yaml` to `COMPOSE_FILE`
-in `.env`, then create its settings (`./install.sh` does it, or copy `windows-vm.env.example` to
-`windows-vm.env`). It needs `/dev/kvm`, a 48 GB disk in `services/windows-vm/storage/` and the free
-ports 8006 and 3389. Also keep the `samba` component enabled.
+The VM is a component that is off by default. Enable it through `./install.sh` (question
+"Enable the Windows test VM?", or `WPKG_ENABLE_WINDOWS_VM=yes`; `samba` must stay enabled). The script
+first checks that `/dev/kvm` is readable and writable, that the ports 8006 and 3389 are free and that the
+disk of `services/windows-vm/storage/` has the `DISK_SIZE` of `services/windows-vm/windows-vm.env`
+(48G by default); on any failure it stops before changing a file. It then adds
+`services/windows-vm/compose.yaml` to `COMPOSE_FILE`, sets `PASSWORD` (typed twice, or generated and
+shown once, letters and digits only, variable `WPKG_VM_PASSWORD`), writes `smb-credentials.bat`, and
+starts the VM without waiting for the end of the Windows installation. `RAM_SIZE`, `CPU_CORES` and
+`DISK_SIZE` can be edited in `windows-vm.env` before the first start.
+
+To start it again later:
 
 ```
 docker compose up -d wpkg-test-client
@@ -61,7 +69,7 @@ run, open an elevated `cmd.exe` on the desktop (noVNC, RDP, or `sendkey` on the 
 `/run/shm/monitor.sock` inside the container) and run:
 
 ```
-net use Z: \\172.19.0.4\wpkg wpkgtest /user:administrateur /persistent:yes
+net use Z: \\172.19.0.4\wpkg <Samba password> /user:administrateur /persistent:yes
 cscript //NoLogo Z:\wpkg\wpkg.js /synchronize /noreboot /debug > Z:\wpkg\logs\run.txt 2>&1
 ```
 
