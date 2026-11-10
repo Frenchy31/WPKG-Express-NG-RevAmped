@@ -12,6 +12,8 @@ web/logs/*
 web/.phpunit.cache/
 # Disk images of the Windows VM.
 services/windows-vm/storage/
+# Samba account read by services/windows-vm/oem/install.bat, written by install.sh.
+services/windows-vm/oem/smb-credentials.bat
 # Certificates and keys of the web server.
 services/wpkg/apache/certificates/*
 !services/wpkg/apache/certificates/.gitkeep
