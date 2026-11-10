@@ -106,7 +106,7 @@ Si `WPKG_XML_PROTECT=true`, les URL prennent la forme `http://USER:PASS@SERVEUR/
 
 ## Rapports des postes
 
-La page `/reports` affiche la dernière exécution de `wpkg.js` sur chaque poste. Elle lit, dans le dossier `WPKG_REPORTS_PATH`, les deux fichiers que chaque poste y copie à chaque exécution :
+La page `/reports` et le tableau de bord (`/`) affichent la dernière exécution de `wpkg.js` sur chaque poste. Elles lisent le dossier `WPKG_REPORTS_PATH`, où chaque poste copie à chaque exécution deux fichiers :
 
 | Fichier | Contenu |
 |---|---|
@@ -120,7 +120,21 @@ Un package exécuté en dernier sur les postes réalise la copie : sa définitio
 %COMSPEC% /C if exist C:\admin\wpkg-%COMPUTERNAME%.log copy /Y C:\admin\wpkg-%COMPUTERNAME%.log %SOFTWARE%\..\logs\%COMPUTERNAME%.log
 ```
 
-Le dossier `logs` du partage est monté en lecture seule dans le conteneur `wpkg`. En local, il s'agit de `services/samba/share/wpkg/logs`.
+Le dossier `logs` du partage est monté en lecture seule dans les conteneurs `wpkg` et `reports-indexer`. En local, il s'agit de `services/samba/share/wpkg/logs`.
+
+### Indexeur
+
+Les pages ne lisent jamais le partage : relire les 1 300 fichiers de 650 postes à chaque affichage les rendait lentes. Le service `reports-indexer` lance `bin/cake reports index` toutes les `WPKG_REPORTS_INDEX_INTERVAL` secondes (60 par défaut, dans `services/wpkg/wpkg.env`). À chaque passage, il compare la date de modification et la taille de chaque fichier aux valeurs enregistrées, ne relit que les fichiers nouveaux ou modifiés, et range un résumé par poste dans la table `host_reports`. Un poste dont les deux fichiers ont disparu est supprimé de la table. Le premier passage lit tous les fichiers ; les suivants ne relisent que les postes qui ont tourné depuis.
+
+`install.sh` démarre le service après la création des tables. Pour lancer un passage à la main :
+
+```shell
+docker compose exec -u www-data reports-indexer bin/cake reports index
+```
+
+La commande affiche le nombre de fichiers vus et relus, le nombre de postes supprimés et la durée du passage. Deux passages ne tournent jamais en même temps : le second s'arrête aussitôt.
+
+Les pages affichent l'heure de fin du dernier passage. Elles affichent un avertissement quand ce passage date de plus de trois intervalles, ou quand aucun n'a jamais eu lieu : le service `reports-indexer` est arrêté ou en échec (`docker compose logs reports-indexer`). Le détail d'un poste (`/reports/<POSTE>`) lit son journal directement : il est toujours complet et à jour, même quand la liste a du retard.
 
 Les postes sont regroupés sous la première entrée d'hôte active qui les reconnaît, avec la règle de `wpkg.js`. Couleurs :
 
