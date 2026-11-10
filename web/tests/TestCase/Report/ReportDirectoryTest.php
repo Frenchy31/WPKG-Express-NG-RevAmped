@@ -63,6 +63,8 @@ class ReportDirectoryTest extends TestCase
         $this->assertSame(ReportStatus::Success, $report->status());
         $this->assertTrue($report->hasXml);
         $this->assertSame(2, $report->installedPackages);
+        $this->assertSame(['7zip', 'firefox'], $report->packageIds);
+        $this->assertFalse($report->hasAgent());
         $this->assertSame('microsoft windows 11 éducation, , , 10.0.26200', $report->properties['os']);
         $this->assertSame(['192.168.1.21'], $report->ipAddresses());
         $this->assertNull($report->xmlError);

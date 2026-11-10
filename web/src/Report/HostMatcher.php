@@ -75,6 +75,46 @@ final class HostMatcher
     }
 
     /**
+     * Groups reports for the dashboard: entries matching several workstations, then every workstation
+     * running the background agent, then entries matching a single workstation, unmatched workstations last.
+     *
+     * Laptops often have a host entry of their own: listed among the rooms, they hide them.
+     *
+     * @param list<\App\Report\HostReport> $reports Reports.
+     * @return list<\App\Report\ReportGroup>
+     */
+    public function groupForDashboard(array $reports): array
+    {
+        $agentReports = [];
+        $otherReports = [];
+        foreach ($reports as $report) {
+            if ($report->hasAgent()) {
+                $agentReports[] = $report;
+            } else {
+                $otherReports[] = $report;
+            }
+        }
+
+        $sharedGroups = [];
+        $singleGroups = [];
+        $unmatchedGroups = [];
+        foreach ($this->group($otherReports) as $group) {
+            if ($group->host === null) {
+                $unmatchedGroups[] = $group;
+            } elseif (count($group->reports) > 1) {
+                $sharedGroups[] = $group;
+            } else {
+                $singleGroups[] = $group;
+            }
+        }
+        if ($agentReports !== []) {
+            $sharedGroups[] = new ReportGroup(null, $this->sorted($agentReports), __('WPKG agent'));
+        }
+
+        return [...$sharedGroups, ...$singleGroups, ...$unmatchedGroups];
+    }
+
+    /**
      * Returns the host entries hosts.xml exposes, in feed order.
      *
      * @return list<\App\Model\Entity\Host>

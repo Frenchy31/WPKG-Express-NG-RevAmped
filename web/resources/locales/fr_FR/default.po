@@ -300,6 +300,9 @@ msgstr "Le fichier est mal formé."
 msgid "Unmatched"
 msgstr "Non rattachés"
 
+msgid "WPKG agent"
+msgstr "Agent WPKG"
+
 msgid "Success"
 msgstr "Succès"
 
