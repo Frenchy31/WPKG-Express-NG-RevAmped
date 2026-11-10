@@ -299,6 +299,21 @@ msgstr ""
 msgid "The file is empty."
 msgstr ""
 
+msgid "The file cannot be read."
+msgstr ""
+
+msgid "The reports indexer has never run: start the reports-indexer service."
+msgstr ""
+
+msgid "The last indexing failed: {0}"
+msgstr ""
+
+msgid "The reports indexer has not run since {0}: the reports below may be out of date."
+msgstr ""
+
+msgid "Last indexing: {0}"
+msgstr ""
+
 msgid "The file is not well-formed."
 msgstr ""
 
