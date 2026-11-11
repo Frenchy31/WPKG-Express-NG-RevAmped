@@ -756,9 +756,22 @@ hr {
 }
 
 .fleet-key {
-  margin-top: 8px;
-  font-size: 12px;
-  color: var(--ink-muted);
+  margin-bottom: 12px;
+}
+
+.fleet-key label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.fleet-key .fleet-swatch {
+  margin-right: 0;
+}
+
+.fleet-filter {
+  margin-bottom: 16px;
 }
 
 .fleet-swatch {

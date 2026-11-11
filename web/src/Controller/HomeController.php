@@ -8,6 +8,7 @@ use App\Report\HostMatcher;
 use App\Report\IndexState;
 use App\Report\ReportDirectory;
 use App\Report\ReportSummary;
+use App\Report\StatusFilter;
 use Cake\Core\Configure;
 use Cake\ORM\Table;
 use DateTimeImmutable;
@@ -38,9 +39,13 @@ class HomeController extends AppController
         $indexState = $this->fetchTable('ReportIndexState')->latest();
         $intervalSeconds = (int)Configure::read('Wpkg.reportsIndexInterval');
         $now = new DateTimeImmutable();
+        $groups = (new HostMatcher())->groupForDashboard($reports);
+        $statusFilter = StatusFilter::fromQuery($this->request->getQueryParams());
         $this->set([
             'configured' => $isConfigured,
-            'groups' => (new HostMatcher())->groupForDashboard($reports),
+            'groups' => $groups,
+            'statusFilter' => $statusFilter,
+            'visibleReports' => $statusFilter->visibleReports($groups, $now),
             'summary' => new ReportSummary($reports, $now),
             'indexState' => $indexState,
             'indexOverdue' => IndexState::isOverdue($indexState, $now, $intervalSeconds),

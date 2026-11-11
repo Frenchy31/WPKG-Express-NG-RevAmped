@@ -4,12 +4,15 @@
  *
  * @var \App\View\AppView $this
  * @var list<\App\Report\ReportGroup> $groups
+ * @var \App\Report\StatusFilter $statusFilter
+ * @var array<int, list<\App\Report\HostReport>> $visibleReports
  * @var \App\Report\ReportSummary $summary
  * @var \DateTimeImmutable $now
  */
 
 use App\Report\ReportStatus;
 use App\Report\ReportSummary;
+use App\Report\StatusFilter;
 
 $totals = $summary->totals();
 $staleCount = $summary->staleCount();
@@ -67,6 +70,21 @@ $barLabel = implode(', ', array_map(
     ReportSummary::STATUS_ORDER,
 ));
 $needingAttention = $summary->needsAttention();
+$filterChoices = [];
+foreach ([ReportStatus::Success, ReportStatus::Failed, ReportStatus::Warning, ReportStatus::Unknown] as $status) {
+    $filterChoices[] = [
+        'value' => $status->value,
+        'swatch' => $status->cssClass(),
+        'text' => trim($glyphs[$status->value] . ' ' . $status->label()),
+        'count' => $totals[$status->value],
+    ];
+}
+$filterChoices[] = [
+    'value' => StatusFilter::STALE,
+    'swatch' => 'stale',
+    'text' => __('No report for more than 24 hours'),
+    'count' => $staleCount,
+];
 ?>
 <h2><?= __('Summary') ?></h2><hr class="hbar" />
 <div class="fleet-summary">
@@ -87,8 +105,28 @@ $needingAttention = $summary->needsAttention();
 <div class="fleet-columns">
     <section class="fleet-map">
         <h2><?= __('Workstations') ?></h2><hr class="hbar" />
-        <?php foreach ($groups as $group) : ?>
+        <form class="fleet-filter" method="get" action="<?= h($this->Url->build('/')) ?>">
+            <input type="hidden" name="filter" value="1" />
+            <ul class="fleet-key">
+                <?php foreach ($filterChoices as $choice) : ?>
+                    <li>
+                        <label>
+                            <input type="checkbox" name="status[]" value="<?= h($choice['value']) ?>"<?= $statusFilter->isChecked($choice['value']) ? ' checked' : '' ?> />
+                            <span class="fleet-swatch <?= h($choice['swatch']) ?>"></span><?= h($choice['text']) ?> <?= $choice['count'] ?>
+                        </label>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+            <button type="submit"><?= __('Filter') ?></button>
+        </form>
+        <?php if ($visibleReports === []) : ?>
+            <p><?= __('No workstation matches the selected statuses.') ?></p>
+        <?php endif; ?>
+        <?php foreach ($groups as $position => $group) : ?>
             <?php
+            if (!isset($visibleReports[$position])) {
+                continue;
+            }
             $groupCounts = $group->countByStatus();
             $breakdown = [];
             foreach ([ReportStatus::Failed, ReportStatus::Warning, ReportStatus::Unknown] as $status) {
@@ -111,7 +149,7 @@ $needingAttention = $summary->needsAttention();
                     <span class="report-note"><?= h(implode(', ', [$hostCount, ...$breakdown])) ?></span>
                 </div>
                 <div class="fleet-cells">
-                    <?php foreach ($group->reports as $report) : ?>
+                    <?php foreach ($visibleReports[$position] as $report) : ?>
                         <?php
                         $status = $report->status();
                         $detail = match ($status) {
@@ -144,13 +182,6 @@ $needingAttention = $summary->needsAttention();
                 </div>
             </div>
         <?php endforeach; ?>
-        <ul class="fleet-key">
-            <li><span class="fleet-swatch status-success"></span><?= h(ReportStatus::Success->label()) ?></li>
-            <li><span class="fleet-swatch status-failed"></span>✕ <?= h(ReportStatus::Failed->label()) ?></li>
-            <li><span class="fleet-swatch status-warning"></span>! <?= h(ReportStatus::Warning->label()) ?></li>
-            <li><span class="fleet-swatch status-unknown"></span>? <?= h(ReportStatus::Unknown->label()) ?></li>
-            <li><span class="fleet-swatch stale"></span><?= __('No report for more than 24 hours') ?></li>
-        </ul>
     </section>
     <section class="fleet-attention">
         <h2><?= __('Needs attention') ?></h2><hr class="hbar" />

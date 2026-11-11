@@ -1055,6 +1055,12 @@ msgstr "dernière exécution {0}"
 msgid "No report for more than 24 hours"
 msgstr "Aucun rapport depuis plus de 24 heures"
 
+msgid "Filter"
+msgstr "Filtrer"
+
+msgid "No workstation matches the selected statuses."
+msgstr "Aucun poste ne correspond aux statuts choisis."
+
 msgid "Needs attention"
 msgstr "À traiter"
 

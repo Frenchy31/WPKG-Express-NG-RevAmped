@@ -18,6 +18,9 @@ class HomeControllerTest extends AdminIntegrationTestCase
     use LocatorAwareTrait;
     use ReportFixturesTrait;
 
+    private const string ALL_STATUSES = 'filter=1&status[]=success&status[]=failed&status[]=warning'
+        . '&status[]=unknown&status[]=stale';
+
     /**
      * @inheritDoc
      */
@@ -69,6 +72,10 @@ class HomeControllerTest extends AdminIntegrationTestCase
         $this->assertResponseContains('Ancien 3');
         $this->assertResponseContains('en échec');
         $this->assertResponseContains('dernière exécution');
+        $this->assertResponseContains('Filtrer</button>');
+        $this->assertResponseContains('Succès 1');
+        $this->assertResponseContains('Aucun rapport depuis plus de 24 heures 3');
+        $this->assertResponseNotContains('Aucun poste ne correspond');
         $this->assertResponseNotContains('Needs attention');
     }
 
@@ -82,7 +89,7 @@ class HomeControllerTest extends AdminIntegrationTestCase
         $this->writeAgentReport('DEV-7');
         $this->indexReportFixtures();
 
-        $this->get('/');
+        $this->get('/?' . self::ALL_STATUSES);
 
         $this->assertResponseOk();
         $body = (string)$this->_response->getBody();
@@ -108,7 +115,7 @@ class HomeControllerTest extends AdminIntegrationTestCase
         $this->indexReportFixtures();
         $this->cookie('wpkg_lang', 'fr');
 
-        $this->get('/');
+        $this->get('/?' . self::ALL_STATUSES);
 
         $this->assertResponseContains('<strong>Agent WPKG</strong>');
     }
@@ -143,12 +150,12 @@ class HomeControllerTest extends AdminIntegrationTestCase
      */
     public function testRoomMap(): void
     {
-        $this->get('/');
+        $this->get('/?' . self::ALL_STATUSES);
 
         $this->assertResponseOk();
         $this->assertResponseContains('<h2>Workstations</h2>');
         $this->assertSame(5, substr_count((string)$this->_response->getBody(), 'class="fleet-cell '));
-        foreach (['BROKEN', 'DEV-7', 'ROOM1-PC01', 'ROOM1-PC02', 'ROOM2-PC05'] as $hostname) {
+        foreach (['DEV-7', 'BROKEN', 'ROOM1-PC01', 'ROOM1-PC02', 'ROOM2-PC05'] as $hostname) {
             $this->assertResponseContains('href="/reports/' . $hostname . '"');
         }
         $this->assertResponseContains(
@@ -157,6 +164,273 @@ class HomeControllerTest extends AdminIntegrationTestCase
         $this->assertResponseContains('fleet-cell status-warning stale');
         $this->assertResponseContains('room1-pc.+');
         $this->assertResponseContains('2 hosts, 1 failed');
+    }
+
+    /**
+     * Hostnames of the cells of the last response, in page order.
+     *
+     * @return list<string>
+     */
+    private function cellHostnames(): array
+    {
+        $pattern = '#class="fleet-cell [^"]*" href="/reports/([^"]+)"#';
+        preg_match_all($pattern, (string)$this->_response->getBody(), $matches);
+
+        return $matches[1];
+    }
+
+    /**
+     * Without parameter the map shows the failed and warning workstations, and checks their boxes.
+     *
+     * @return void
+     */
+    public function testDefaultFilter(): void
+    {
+        $this->get('/');
+
+        $this->assertResponseOk();
+        $this->assertSame(['ROOM1-PC02', 'ROOM2-PC05'], $this->cellHostnames());
+        $this->assertResponseContains('<input type="hidden" name="filter" value="1" />');
+        $this->assertResponseContains('name="status[]" value="failed" checked />');
+        $this->assertResponseContains('name="status[]" value="warning" checked />');
+        $this->assertResponseContains('name="status[]" value="success" />');
+        $this->assertResponseContains('name="status[]" value="unknown" />');
+        $this->assertResponseContains('name="status[]" value="stale" />');
+        $this->assertResponseContains('Filter</button>');
+        $this->assertResponseNotContains('No workstation matches');
+        $this->assertSame(0, substr_count((string)$this->_response->getBody(), ' style="'));
+    }
+
+    /**
+     * The key is the filter: five labelled boxes in order, with the counts of the whole fleet.
+     *
+     * @return void
+     */
+    public function testFilterEntries(): void
+    {
+        $this->get('/');
+
+        preg_match('#<form class="fleet-filter".*?</form>#s', (string)$this->_response->getBody(), $form);
+        $body = $form[0];
+        $this->assertSame(5, substr_count($body, '<label>'));
+        $this->assertSame(5, substr_count($body, '<input type="checkbox" name="status[]" value="'));
+        $entries = [
+            'value="success" /><span class="fleet-swatch status-success"></span>Success 1',
+            'value="failed" checked /><span class="fleet-swatch status-failed"></span>✕ Failed 1',
+            'value="warning" checked /><span class="fleet-swatch status-warning"></span>! Warning 1',
+            'value="unknown" /><span class="fleet-swatch status-unknown"></span>? Unknown 2',
+            'value="stale" /><span class="fleet-swatch stale"></span>No report for more than 24 hours 3',
+        ];
+        $positions = array_map(
+            fn(string $entry): int|false => strpos((string)preg_replace('/>\s+</', '><', $body), $entry),
+            $entries,
+        );
+        $this->assertNotContains(false, $positions);
+        $sorted = $positions;
+        sort($sorted);
+        $this->assertSame($sorted, $positions);
+    }
+
+    /**
+     * Each status alone shows its workstations only.
+     *
+     * @return void
+     */
+    public function testEachStatusAlone(): void
+    {
+        $expected = [
+            'success' => ['ROOM1-PC01'],
+            'failed' => ['ROOM1-PC02'],
+            'warning' => ['ROOM2-PC05'],
+            'unknown' => ['DEV-7', 'BROKEN'],
+        ];
+        foreach ($expected as $status => $hostnames) {
+            $this->get('/?filter=1&status[]=' . $status);
+
+            $this->assertResponseOk();
+            $this->assertSame($hostnames, $this->cellHostnames(), $status);
+            $this->assertResponseContains('value="' . $status . '" checked />');
+        }
+    }
+
+    /**
+     * Stale adds the workstations that did not report, whatever their status, to the checked statuses.
+     *
+     * @return void
+     */
+    public function testStaleAlone(): void
+    {
+        $this->get('/?filter=1&status[]=stale');
+
+        $this->assertSame(['ROOM1-PC01', 'ROOM1-PC02', 'ROOM2-PC05'], $this->cellHostnames());
+    }
+
+    /**
+     * Stale is added to a status, not intersected with it.
+     *
+     * @return void
+     */
+    public function testStaleWithStatus(): void
+    {
+        $this->get('/?filter=1&status[]=unknown&status[]=stale');
+
+        $this->assertSame(
+            ['ROOM1-PC01', 'ROOM1-PC02', 'ROOM2-PC05', 'DEV-7', 'BROKEN'],
+            $this->cellHostnames(),
+        );
+    }
+
+    /**
+     * A failed workstation whose report is old stays on the default map, a successful one is hidden.
+     *
+     * @return void
+     */
+    public function testDefaultShowsStaleFailureAndHidesStaleSuccess(): void
+    {
+        $this->get('/');
+
+        $this->assertResponseContains(
+            'aria-label="ROOM1-PC02: Failed, 1 error, last run 2020-01-01 03:00:00 AM (more than 24 hours ago)"',
+        );
+        $this->assertResponseContains('fleet-cell status-failed stale');
+        $this->assertNotContains('ROOM1-PC01', $this->cellHostnames());
+    }
+
+    /**
+     * A group without visible workstation disappears, the others keep their whole counts.
+     *
+     * @return void
+     */
+    public function testGroupsKeepOrderAndWholeCounts(): void
+    {
+        $this->get('/');
+
+        $this->assertResponseContains('<strong>room1-pc.+</strong>');
+        $this->assertResponseContains('<strong>room2-pc.+</strong>');
+        $this->assertResponseNotContains('<strong>.+</strong>');
+        $this->assertResponseContains('2 hosts, 1 failed');
+        $body = (string)$this->_response->getBody();
+        $this->assertLessThan(
+            strpos($body, '<strong>room2-pc.+</strong>'),
+            strpos($body, '<strong>room1-pc.+</strong>'),
+        );
+    }
+
+    /**
+     * Nothing matches: a message replaces the map.
+     *
+     * @return void
+     */
+    public function testNoMatchMessage(): void
+    {
+        $this->get('/?filter=1&status[]=success&status[]=unknown');
+        $this->assertSame(['ROOM1-PC01', 'DEV-7', 'BROKEN'], $this->cellHostnames());
+        $this->assertResponseNotContains('No workstation matches');
+
+        foreach (['/?filter=1&status[]=nothing', '/?filter=1'] as $url) {
+            $this->get($url);
+
+            $this->assertResponseOk();
+            $this->assertSame([], $this->cellHostnames());
+            $this->assertResponseNotContains('fleet-group');
+            $this->assertResponseContains('<p>No workstation matches the selected statuses.</p>');
+        }
+    }
+
+    /**
+     * Submitting the form with nothing checked does not bring the default back.
+     *
+     * @return void
+     */
+    public function testNothingCheckedIsNotTheDefault(): void
+    {
+        $this->get('/?filter=1');
+
+        $this->assertResponseNotContains('checked');
+        $this->assertResponseContains('No workstation matches the selected statuses.');
+    }
+
+    /**
+     * An unknown value is ignored, a known one next to it still applies.
+     *
+     * @return void
+     */
+    public function testUnknownValueIgnored(): void
+    {
+        $this->get('/?filter=1&status[]=bogus&status[]=failed&status[]=Stale');
+
+        $this->assertResponseOk();
+        $this->assertSame(['ROOM1-PC02'], $this->cellHostnames());
+        $this->assertResponseNotContains('value="stale" checked');
+        $this->assertResponseNotContains('bogus');
+    }
+
+    /**
+     * A scalar status parameter is read as one value.
+     *
+     * @return void
+     */
+    public function testScalarStatusParameter(): void
+    {
+        $this->get('/?filter=1&status=warning');
+
+        $this->assertSame(['ROOM2-PC05'], $this->cellHostnames());
+    }
+
+    /**
+     * The sentence, the bar, its legend and the attention list ignore the filter.
+     *
+     * @return void
+     */
+    public function testSummaryIgnoresFilter(): void
+    {
+        $extract = function (): array {
+            $body = (string)$this->_response->getBody();
+            preg_match('#<div class="fleet-summary">.*?</ul>#s', $body, $summary);
+            preg_match('#<section class="fleet-attention">.*?</section>#s', $body, $attention);
+
+            return [$summary[0], $attention[0]];
+        };
+        $this->get('/');
+        $default = $extract();
+        foreach (['/?filter=1', '/?' . self::ALL_STATUSES, '/?filter=1&status[]=success'] as $url) {
+            $this->get($url);
+
+            $this->assertSame($default, $extract(), $url);
+        }
+        $this->assertStringContainsString('1 workstation failed its last run.', $default[0]);
+    }
+
+    /**
+     * The filter texts are French with the wpkg_lang cookie.
+     *
+     * @return void
+     */
+    public function testFrenchFilter(): void
+    {
+        $this->cookie('wpkg_lang', 'fr');
+
+        $this->get('/?filter=1');
+
+        $this->assertResponseContains('Filtrer</button>');
+        $this->assertResponseContains('<p>Aucun poste ne correspond aux statuts choisis.</p>');
+        $this->assertResponseContains('✕ Échec 1');
+        $this->assertResponseNotContains('No workstation matches');
+    }
+
+    /**
+     * Without reports directory there is no filter.
+     *
+     * @return void
+     */
+    public function testNoFilterWhenNotConfigured(): void
+    {
+        Configure::write('Wpkg.reportsPath', '');
+
+        $this->get('/?filter=1');
+
+        $this->assertResponseNotContains('status[]');
+        $this->assertResponseNotContains('Filter</button>');
     }
 
     /**
@@ -257,7 +531,7 @@ class HomeControllerTest extends AdminIntegrationTestCase
         $this->get('/');
 
         $this->assertResponseOk();
-        $this->assertSame(5, substr_count((string)$this->_response->getBody(), 'class="fleet-cell '));
+        $this->assertSame(2, substr_count((string)$this->_response->getBody(), 'class="fleet-cell '));
         $this->assertResponseContains('1 workstation failed its last run.');
         $this->assertResponseNotContains('Reports directory cannot be read');
         $this->assertResponseContains('# Enabled');
