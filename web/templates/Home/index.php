@@ -4,6 +4,8 @@
  * @var array<string, array<string, mixed>> $statistics
  * @var bool $configured
  * @var list<\App\Report\ReportGroup> $groups
+ * @var \App\Report\StatusFilter $statusFilter
+ * @var array<int, list<\App\Report\HostReport>> $visibleReports
  * @var \App\Report\ReportSummary $summary
  * @var \App\Report\IndexState|null $indexState
  * @var bool $indexOverdue
@@ -19,7 +21,13 @@ $tableLabels = ['Packages' => __('Packages'), 'Profiles' => __('Profiles'), 'Hos
     <?php if ($groups === []) : ?>
         <div class="message"><?= __('No reports found') ?></div>
     <?php else : ?>
-        <?= $this->element('fleet_dashboard', ['groups' => $groups, 'summary' => $summary, 'now' => $now]) ?>
+        <?= $this->element('fleet_dashboard', [
+            'groups' => $groups,
+            'statusFilter' => $statusFilter,
+            'visibleReports' => $visibleReports,
+            'summary' => $summary,
+            'now' => $now,
+        ]) ?>
     <?php endif; ?>
 <?php endif; ?>
 <div id="stats-container">

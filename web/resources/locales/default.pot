@@ -1060,6 +1060,12 @@ msgstr ""
 msgid "No report for more than 24 hours"
 msgstr ""
 
+msgid "Filter"
+msgstr ""
+
+msgid "No workstation matches the selected statuses."
+msgstr ""
+
 msgid "Needs attention"
 msgstr ""
 
