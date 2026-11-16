@@ -20,7 +20,8 @@ Avec un terminal, le script pose ces questions et propose en défaut la valeur d
 | Langue de l'interface (`APP_DEFAULT_LOCALE`) | `WPKG_LOCALE` | `en_US` (ou `fr_FR`) |
 | Activer `samba` | `WPKG_ENABLE_SAMBA` | `yes` |
 | Activer `windows-vm` (exige `samba`) | `WPKG_ENABLE_WINDOWS_VM` | `no` |
-| Mot de passe de `admin` | `WPKG_ADMIN_PASSWORD` | généré |
+| Identifiant de l'administrateur : lettres, chiffres, `.`, `_`, `-` et `@` | `WPKG_ADMIN_USER` | `admin` |
+| Mot de passe de l'administrateur | `WPKG_ADMIN_PASSWORD` | généré |
 | Mot de passe du compte Samba `administrateur` | `WPKG_SAMBA_PASSWORD` | généré |
 | Mot de passe de la VM Windows | `WPKG_VM_PASSWORD` | généré |
 | Protéger les flux XML par mot de passe | `WPKG_XML_PROTECT` (`true`/`false`) | `false` |

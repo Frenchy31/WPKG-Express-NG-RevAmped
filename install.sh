@@ -18,7 +18,8 @@
 #   WPKG_LOCALE             interface language, en_US or fr_FR (default: en_US)
 #   WPKG_ENABLE_SAMBA       yes or no (default: yes)
 #   WPKG_ENABLE_WINDOWS_VM  yes or no (default: no; needs samba, /dev/kvm, free ports 8006 and 3389, disk space)
-#   WPKG_ADMIN_PASSWORD     password of the "admin" user (any characters)
+#   WPKG_ADMIN_USER         login of the administrator (default: admin; letters, digits, '.', '_', '-' and '@')
+#   WPKG_ADMIN_PASSWORD     password of the administrator (any characters)
 #   WPKG_SAMBA_PASSWORD     password of the Samba account "administrateur" (letters and digits only)
 #   WPKG_VM_PASSWORD        password of the Windows VM (letters and digits only)
 #   WPKG_XML_PROTECT        true or false: protect the XML feeds with a password (default: false)
@@ -48,7 +49,7 @@ vm_env=services/windows-vm/windows-vm.env
 vm_credentials=services/windows-vm/oem/smb-credentials.bat
 
 # Set through printf -v by ask and collect_password.
-server_name="" allowed_hosts="" http_port="" timezone="" locale="" xml_protect="" want_samba="" want_vm=""
+server_name="" allowed_hosts="" http_port="" timezone="" locale="" xml_protect="" want_samba="" want_vm="" admin_user=""
 admin_password="" xml_password="" samba_password="" vm_password=""
 
 interactive=false
@@ -249,6 +250,13 @@ valid_locale() {
     esac
 }
 
+# Written unquoted in wpkg.env: quotes, '$', '#', '\' and spaces could change the value Compose reads.
+valid_admin_user() {
+    case $1 in
+        '' | *[!A-Za-z0-9._@-]*) reason="'$1' is not a valid login: use only letters, digits, '.', '_', '-' and '@'."; return 1 ;;
+    esac
+}
+
 valid_port() {
     case $1 in
         '' | *[!0-9]*) reason="'$1' is not a port number."; return 1 ;;
@@ -424,14 +432,17 @@ fi
 saved_locale=$(env_get "$wpkg_env" APP_DEFAULT_LOCALE)
 ask locale WPKG_LOCALE "Interface language (en_US or fr_FR)" "${saved_locale:-en_US}" valid_locale
 
-step "Choosing the passwords"
+step "Choosing the administrator and the passwords"
 legacy_used=""
+
+saved_admin_user=$(env_get "$wpkg_env" WPKG_ADMIN_USER)
+ask admin_user WPKG_ADMIN_USER "Administrator login" "${saved_admin_user:-admin}" valid_admin_user
 
 # Admin password: asked when no hash is saved, or when WPKG_ADMIN_PASSWORD is set.
 admin_hash=""
 if [ -n "${WPKG_ADMIN_PASSWORD:-}" ] || ! hash_saved WPKG_ADMIN_PASSWORD_HASH; then
     collect_password admin_password WPKG_ADMIN_PASSWORD "Admin password" any reject
-    [ "$password_generated" = false ] || note_generated "Admin password (user admin)" "$admin_password"
+    [ "$password_generated" = false ] || note_generated "Admin password (user $admin_user)" "$admin_password"
     ensure_image
     admin_hash=$(hash_password admin_password)
 fi
@@ -605,6 +616,7 @@ env_set "$wpkg_env" APP_FULL_BASE_URL "$url"
 env_set "$wpkg_env" WPKG_ALLOWED_HOSTS "$allowed_hosts"
 env_set "$wpkg_env" APP_DEFAULT_TIMEZONE "$timezone"
 env_set "$wpkg_env" APP_DEFAULT_LOCALE "$locale"
+env_set "$wpkg_env" WPKG_ADMIN_USER "$admin_user"
 env_set "$wpkg_env" WPKG_XML_PROTECT "$xml_protect"
 [ -z "$admin_hash" ] || env_set "$wpkg_env" WPKG_ADMIN_PASSWORD_HASH "'$admin_hash'"
 [ -z "$xml_hash" ] || env_set "$wpkg_env" WPKG_XML_PASSWORD_HASH "'$xml_hash'"
@@ -680,7 +692,7 @@ cat <<EOF
 
 WPKG Express NG is installed.
 
-  Web interface   $url/   (user: admin)
+  Web interface   $url/   (user: $admin_user)
   Feeds for wpkg.js   $url/hosts.xml, profiles.xml, packages.xml
 EOF
 if enabled samba; then
