@@ -134,7 +134,8 @@ class PackagesFeed extends XmlFeed
         }
         foreach ($action->get('exit_codes') as $exitCode) {
             $writer->startElement('exit');
-            $writer->writeAttribute('code', $exitCode->get('code'));
+            // A restored database may type the column as an integer, and strict types reject an int here.
+            $writer->writeAttribute('code', (string)$exitCode->get('code'));
             $reboot = ExitCodeReboot::tryFrom($exitCode->get('reboot'))?->xmlValue();
             if ($reboot !== null) {
                 $writer->writeAttribute('reboot', $reboot);

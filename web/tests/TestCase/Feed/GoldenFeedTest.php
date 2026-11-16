@@ -151,6 +151,23 @@ class GoldenFeedTest extends TestCase
     }
 
     /**
+     * An integer exit code column, as in a restored database, still renders the exit codes.
+     *
+     * @return void
+     */
+    public function testIntegerExitCodeColumnIsRendered(): void
+    {
+        // An integer column cannot hold the keyword.
+        $exitCodes = $this->getTableLocator()->get('ExitCodes');
+        $exitCodes->deleteAll(['code' => 'any']);
+        $exitCodes->getSchema()->setColumnType('code', 'integer');
+
+        $xml = $this->feed('packages', true, false)->document();
+
+        $this->assertStringContainsString('<exit code="3010" reboot="true"/>', $xml);
+    }
+
+    /**
      * Generated documents satisfy the schemas shipped with wpkg.js, once the root is namespaced.
      *
      * @param string $scenario Capture scenario.
