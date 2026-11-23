@@ -11,7 +11,9 @@ use App\Backup\DumpFormat;
 use App\Test\Support\DatabaseSnapshotTrait;
 use App\Test\Support\ReferenceDataTrait;
 use Cake\Core\Configure;
+use Cake\Database\Connection;
 use Cake\Database\Exception\QueryException;
+use Cake\Datasource\ConnectionManager;
 use Cake\I18n\I18n;
 use Cake\TestSuite\TestCase;
 use DateTimeImmutable;
@@ -87,6 +89,61 @@ class DatabaseBackupTest extends TestCase
         $this->assertStringNotContainsString('phinxlog', $file);
         $this->assertStringNotContainsString('cake_migrations', $file);
         $this->assertStringEndsWith(DumpFormat::footer($this->rowCount()), $file);
+    }
+
+    /**
+     * Rows committed while the export runs stay out of it: every table is read from the same snapshot, and the
+     * footer counts what the file holds.
+     *
+     * @return void
+     */
+    public function testExportReadsOneSnapshotWhateverIsWrittenMeanwhile(): void
+    {
+        ConnectionManager::setConfig('snapshot_writer', ConnectionManager::getConfig('test'));
+        /** @var \Cake\Database\Connection $writer */
+        $writer = ConnectionManager::get('snapshot_writer');
+        $repository = new class ($this->testConnection(), $writer) extends BackupRepository {
+            private bool $hasWritten = false;
+
+            /**
+             * @param \Cake\Database\Connection $connection Connection of the export.
+             * @param \Cake\Database\Connection $writer Another connection, which commits each statement at once.
+             */
+            public function __construct(Connection $connection, private readonly Connection $writer)
+            {
+                parent::__construct($connection);
+            }
+
+            /**
+             * Reads as usual, then commits a row from the other connection after the first read.
+             *
+             * @inheritDoc
+             */
+            public function rowsAfter(string $table, int $lastId, int $limit): array
+            {
+                $rows = parent::rowsAfter($table, $lastId, $limit);
+                if (!$this->hasWritten) {
+                    $this->hasWritten = true;
+                    $this->writer->execute(
+                        "INSERT INTO `variables` (`ref_id`, `ref_type`, `name`, `value`) VALUES (1, 2, 'LATE', 'y')",
+                    );
+                }
+
+                return $rows;
+            }
+        };
+        $rowCount = $this->rowCount();
+        $backup = new DatabaseBackup($repository);
+
+        try {
+            $file = (string)$backup->export(new DateTimeImmutable('2026-11-23 10:45:12 UTC'));
+        } finally {
+            $writer->execute("DELETE FROM `variables` WHERE `name` = 'LATE'");
+            ConnectionManager::drop('snapshot_writer');
+        }
+
+        $this->assertStringNotContainsString("'LATE'", $file);
+        $this->assertStringEndsWith(DumpFormat::footer($rowCount), $file);
     }
 
     /**
