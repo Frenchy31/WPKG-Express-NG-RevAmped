@@ -42,6 +42,13 @@ Mots de passe :
 - Aucun mot de passe ne passe sur une ligne de commande. Les fichiers `.env` et `services/*/*.env` ont les droits `600`.
 - Avec `WPKG_XML_PROTECT=true`, le hash est écrit dans `WPKG_XML_PASSWORD_HASH`. **`wpkg-agent` refuse les flux protégés** (voir `wpkg-agent/README.md`).
 
+Compte Samba :
+
+- Le compte `administrateur` prend l'UID et le GID du propriétaire de `services/samba/share` (`stat -c '%u %g'`), et son groupe s'appelle `wpkg`. Il écrit ainsi dans `services/samba/share/wpkg/logs` avec les droits de la personne qui a cloné le dépôt, quel que soit son UID. Le script écrit `USER_1=administrateur;<mot de passe>;<uid>;wpkg;<gid>` dans `services/samba/samba.env`, sans `chown` ni `sudo`.
+- L'image `dperson/samba` démarre sans le compte, sans le dire, quand elle refuse un numéro. Avant d'écrire quoi que ce soit, le script rejoue donc la création du compte dans un conteneur jetable. Un UID pris par un compte système de l'image (33 `xfs`, 100 `smbuser`) ou supérieur à `256000` arrête l'installation : cloner le dépôt avec un compte ordinaire. Un GID refusé (100 est le groupe `users`) est remplacé par l'UID, car seul le nom du groupe compte pour Samba.
+- Dépôt cloné par `root` : le compte ne peut pas avoir l'UID 0. Exécuté en `root`, le script donne `services/samba/share/wpkg/logs` à l'UID 1000, qui devient celui du compte. Exécuté par un autre compte, il s'arrête et affiche le `chown` à lancer sur le dépôt.
+- Relancer le script sur une installation existante garde le mot de passe et les journaux, et réécrit `USER_1` : Compose recrée alors le conteneur `samba`, et les postes connectés perdent leur connexion le temps du redémarrage. Si `wpkg/logs` contient un fichier d'un autre propriétaire que le compte (écrit par `root`, ou par l'ancien compte d'UID 1000 après un `chmod` fait à la main), les postes ne pourraient pas le réécrire : exécuté en `root`, le script rend le dossier au compte ; sinon il s'arrête et affiche le `chown` à lancer. Aucun journal n'est supprimé ni déplacé.
+
 Désactiver un composant arrête et supprime son conteneur, sans toucher à ses données (volume, dossier `storage/`). Activée, la VM Windows est démarrée sans attendre la fin de l'installation de Windows ; le script affiche l'adresse de sa console, `http://<serveur>:8006`.
 
 Sur une installation antérieure, le script déplace les hashes de `.env` vers `services/wpkg/wpkg.env`, reprend les valeurs de développement qui ont initialisé les données (`your_root_password` et `your_password` pour MySQL, `wpkgtest` pour Samba, `changeme-test` pour la VM), garde le fuseau `UTC` sauf choix explicite, remplace l'ancien sel de développement (les sessions ouvertes sont fermées) et liste à la fin les valeurs de développement encore utilisées : à changer avant tout déploiement partagé. Les datetime de la base n'ont pas de fuseau : changer `APP_DEFAULT_TIMEZONE` décale l'affichage des dates déjà enregistrées.
@@ -127,7 +134,7 @@ Un package exécuté en dernier sur les postes réalise la copie : sa définitio
 %COMSPEC% /C if exist C:\admin\wpkg-%COMPUTERNAME%.log copy /Y C:\admin\wpkg-%COMPUTERNAME%.log %SOFTWARE%\..\logs\%COMPUTERNAME%.log
 ```
 
-Le dossier `logs` du partage est monté en lecture seule dans les conteneurs `wpkg` et `reports-indexer`. En local, il s'agit de `services/samba/share/wpkg/logs`.
+Le dossier `logs` du partage est monté en lecture seule dans les conteneurs `wpkg` et `reports-indexer`. En local, il s'agit de `services/samba/share/wpkg/logs`. Les postes y écrivent avec le compte Samba `administrateur`, dont l'UID est celui du propriétaire du partage (voir Démarrage) : les fichiers qu'il crée (mode 744, valeur par défaut de Samba) restent lisibles par les deux conteneurs.
 
 ### Indexeur
 

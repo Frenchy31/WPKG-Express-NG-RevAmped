@@ -10,7 +10,7 @@ Windows disk image under KVM and exposes it like any other container.
 
 ## One-time setup
 
-Nothing manual: `USER_1` (`administrateur;<password>`) in `services/samba/samba.env`
+Nothing manual: `USER_1` (`administrateur;<password>;<uid>;wpkg;<gid>`) in `services/samba/samba.env`
 makes the `samba` container create the "administrateur" Samba user referenced in
 `services/samba/smb.conf`'s `valid users` automatically on every start. `./install.sh` sets
 the password, and writes it to `services/windows-vm/oem/smb-credentials.bat` (git-ignored, mode 600),
