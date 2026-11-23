@@ -47,6 +47,7 @@ $yesNo = fn(mixed $flag): string => $flag ? __('Yes') : __('No');
     <?= $this->Html->link(__('Profiles'), '/profiles.xml') ?><br />
     <?= $this->Html->link(__('Hosts'), '/hosts.xml') ?><br />
 </fieldset>
+<?= $this->element('database_backup') ?>
 <h2><?= __('Settings') ?></h2><hr class="hbar" />
 <p><?= __('Settings come from environment variables and take effect when the application restarts.') ?></p>
 <fieldset class="systemsettings">
@@ -67,4 +68,3 @@ $yesNo = fn(mixed $flag): string => $flag ? __('Yes') : __('No');
     <legend><?= __('Reports') ?></legend>
     <div class="inputwrap"><label><?= __('Directory:') ?></label><?= $settings['reportsPath'] === '' ? __('Not configured') : h($settings['reportsPath']) ?></div>
 </fieldset>
-<?= $this->element('database_backup') ?>
