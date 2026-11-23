@@ -1218,3 +1218,49 @@ msgstr "Erreur"
 
 msgid "Back to the summary"
 msgstr "Retour au résumé"
+
+msgid "Delete {0} orphan row? This cannot be undone."
+msgid_plural "Delete {0} orphan rows? This cannot be undone."
+msgstr[0] "Supprimer {0} ligne orpheline ? Cette action est irréversible."
+msgstr[1] "Supprimer {0} lignes orphelines ? Cette action est irréversible."
+
+msgid "Database cleanup"
+msgstr "Nettoyage de la base"
+
+msgid "An orphan row points to a record that no longer exists. Nothing changes until you click Clean."
+msgstr "Une ligne orpheline pointe vers un enregistrement qui n'existe plus. Rien ne change tant que vous ne cliquez pas sur Nettoyer."
+
+msgid "Table"
+msgstr "Table"
+
+msgid "Checked columns"
+msgstr "Colonnes vérifiées"
+
+msgid "Orphan rows"
+msgstr "Lignes orphelines"
+
+msgid "No orphan rows to delete."
+msgstr "Aucune ligne orpheline à supprimer."
+
+msgid "Clean"
+msgstr "Nettoyer"
+
+msgid "Hosts whose main profile does not exist"
+msgstr "Hosts dont le profile principal n'existe pas"
+
+msgid "The cleanup keeps these hosts. Open each one and choose an existing main profile."
+msgstr "Le nettoyage conserve ces hosts. Ouvrir chaque host et choisir un profile principal existant."
+
+msgid "Missing profile id"
+msgstr "Id du profile manquant"
+
+msgid "{0} orphan row deleted."
+msgid_plural "{0} orphan rows deleted."
+msgstr[0] "{0} ligne orpheline supprimée."
+msgstr[1] "{0} lignes orphelines supprimées."
+
+msgid "Rows deleted"
+msgstr "Lignes supprimées"
+
+msgid "Back to Admin"
+msgstr "Retour à l'administration"
