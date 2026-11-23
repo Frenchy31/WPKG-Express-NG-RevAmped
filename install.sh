@@ -35,8 +35,8 @@
 # Least privilege: every workstation holds the credentials of the Samba account, so it must be able to write
 # the reports of wpkg/logs and nothing else (wpkg.js and config.xml run as SYSTEM on the whole fleet). The account
 # gets a dedicated uid, never the one of the owner of services/samba/share (70000, or the next number that no
-# account nor group of this host has), and the group of that owner, wpkg in the container: USER_1 in samba.env
-# holds "name;password;uid;wpkg;gid", and smb.conf lets in the group wpkg, never a name. The script sets wpkg/logs
+# account nor group of this host has), and the group of that owner, wpkg in the container: SAMBA_USER_1 in
+# samba.env holds "name;password;uid;wpkg;gid", and smb.conf lets in the group wpkg, never a name. The script sets wpkg/logs
 # to the mode 2775 (setgid, group-writable) and makes the files it holds group-writable; the rest of the share
 # stays as cloned, read-only for the account (the script checks that the account can read it). Run as the owner of
 # the clone, it needs no root. Entries of wpkg/logs that it cannot repair (another owner, another group) make it
@@ -105,6 +105,18 @@ env_set() {
     mv "$file.new" "$file"
 }
 
+# env_unset FILE KEY: removes the lines of KEY, a setting that no longer exists. Same care as env_set.
+env_unset() {
+    local file=$1 key=$2 line
+    [ -f "$file" ] || return 0
+    : > "$file.new"
+    chmod 600 "$file.new"
+    while IFS= read -r line || [ -n "$line" ]; do
+        case $line in "$key="*) ;; *) printf '%s\n' "$line" >> "$file.new" ;; esac
+    done < "$file"
+    mv "$file.new" "$file"
+}
+
 # env_merge FILE EXAMPLE: appends the keys of EXAMPLE that FILE lacks (new settings of a newer version).
 env_merge() {
     local line key
@@ -161,7 +173,7 @@ ask() {
     printf -v "$result" '%s' "$value"
 }
 
-# check_password VALUE: only the characters that pass unescaped through DATABASE_URL, USER_1 and a .bat file.
+# check_password VALUE: only the characters that pass unescaped through DATABASE_URL, SAMBA_USER_1 and a .bat file.
 check_password() {
     case $1 in
         *[!A-Za-z0-9]*)
@@ -266,10 +278,9 @@ valid_locale() {
 }
 
 # check_samba_ids UID GID NAME: replays in a throwaway container what the entrypoint of the samba image does for
-# USER_1. The entrypoint ignores a failure and starts without the account, so a number that the image already
-# uses (uid 33 is xfs, gid 100 is users) or refuses (above 256000 for the BusyBox of dperson/samba), and a name that
-# it already has (guest, nobody, smbuser, root), must be caught here. On failure $reason holds the message of the
-# failing command.
+# SAMBA_USER_1. The entrypoint ignores a failure and starts without the account, so a number that the image
+# already uses (uid 33 is xfs, gid 100 is users) or refuses, and a name that it already has (guest, nobody, smbuser,
+# root), must be caught here. On failure $reason holds the message of the failing command.
 check_samba_ids() {
     reason=$(docker run --rm --entrypoint sh "$samba_image" -c \
         'addgroup --gid "$2" wpkg 2>&1 && adduser -D -H -G wpkg -u "$1" "$3" 2>&1' sh "$1" "$2" "$3") \
@@ -279,7 +290,8 @@ check_samba_ids() {
 # First number tried for the dedicated uid of the Samba account: above UID_MAX (60000) of login.defs on Debian,
 # Ubuntu, Fedora and RHEL, above the dynamic users of systemd (up to 65535), below the sub-uid ranges (100000 on
 # Debian, 524288 on Fedora) and the ids of directory services (200000 and more), and used by no account of the
-# images (measured: dperson/samba, adrianmusante/samba). dperson/samba cannot go above 256000.
+# images (measured: dperson/samba, adrianmusante/samba), and below the 256000 that the BusyBox of dperson/samba
+# accepts.
 samba_base_id=70000
 
 # free_samba_id OWNER_UID: the first number from samba_base_id that no account nor group of this host has, and that
@@ -300,7 +312,7 @@ valid_admin_user() {
     esac
 }
 
-# Name of the Samba account. It reaches the eval and the grep "^name:" of the dperson/samba entrypoint, samba.env
+# Name of the Samba account. It reaches the eval and the grep "^name:" of the entrypoint of the image, samba.env
 # and smb-credentials.bat unquoted, so only the characters of a portable Unix login are allowed: a lowercase letter,
 # then lowercase letters, digits, '_' and '-', 32 at most. BusyBox adduser and Samba take more (capitals, '.', a
 # first digit or '_', a last '$'), but capitals stay out: Samba ignores the case of an account while /etc/passwd
@@ -457,10 +469,13 @@ fi
 # any workstation could rewrite wpkg.js), and the group of that owner, which gives it the write right on wpkg/logs
 # only, where the workstations copy their reports. The rest of the share stays as cloned (755 and 644): read-only
 # for the account.
-samba_user="" samba_uid="" samba_gid="" fix_logs=false logs_owner="" samba_account_changed=false
+samba_user="" samba_uid="" samba_gid="" fix_logs=false logs_owner="" samba_renew_volumes=false
 samba_logs=services/samba/share/wpkg/logs
-# USER_1 is "name;password;uid;wpkg;gid", or "name;password" before the numbers.
-saved_user_1=$(env_get "$samba_env" USER_1)
+# SAMBA_USER_1 is "name;password;uid;wpkg;gid". Before the image changed it was USER_1, which held "name;password" at
+# first, then the numbers: the value is still read from there, and USER_1 is removed when SAMBA_USER_1 is written.
+saved_user_1=$(env_get "$samba_env" SAMBA_USER_1)
+legacy_user_1=$(env_get "$samba_env" USER_1)
+[ -n "$saved_user_1" ] || saved_user_1=$legacy_user_1
 saved_samba_user=""
 case $saved_user_1 in *";"*) saved_samba_user=${saved_user_1%%;*} ;; esac
 if [ "$want_samba" = yes ]; then
@@ -472,6 +487,9 @@ if [ "$want_samba" = yes ]; then
     fi
     step "Checking the Samba share"
     samba_image=$(sed -n 's/^    image: *//p' services/samba/compose.yaml)
+    # The container that exists was made from another image (a new tag): see the removal of its volumes below.
+    samba_container_image=$(docker inspect --type container --format '{{ .Config.Image }}' samba 2> /dev/null || true)
+    [ -z "$samba_container_image" ] || [ "$samba_container_image" = "$samba_image" ] || samba_renew_volumes=true
     read -r share_uid share_gid <<< "$(stat -c '%u %g' services/samba/share)"
     run_uid=$(id -u)
     samba_uid=$(free_samba_id "$share_uid")
@@ -775,8 +793,10 @@ if enabled samba; then
         echo "Made $samba_logs writable for the group $samba_gid of the Samba account (mode 2775, setgid)."
     fi
     samba_user_1="$samba_user;$samba_password;$samba_uid;wpkg;$samba_gid"
-    [ "$samba_user_1" = "$saved_user_1" ] || samba_account_changed=true
-    env_set "$samba_env" USER_1 "$samba_user_1"
+    [ "$samba_user_1" = "$saved_user_1" ] || samba_renew_volumes=true
+    [ -z "$legacy_user_1" ] || samba_renew_volumes=true
+    env_set "$samba_env" SAMBA_USER_1 "$samba_user_1"
+    env_unset "$samba_env" USER_1
 fi
 if enabled windows-vm; then
     env_set "$vm_env" PASSWORD "$vm_password"
@@ -799,11 +819,12 @@ up_services=(wpkg)
 enabled mysql && up_services+=(mysql)
 enabled samba && up_services+=(samba)
 step "Starting ${up_services[*]}"
-# The dperson/samba image keeps /etc and /var/lib/samba in anonymous volumes, which Compose reattaches to the
-# container it recreates when USER_1 changes: the previous account would stay usable and its uid would block the
-# creation of the new one. Removing the container with its anonymous volumes lets the entrypoint build the account
-# from samba.env alone, and leaves no dangling volume behind.
-if [ "$samba_account_changed" = true ]; then
+# The samba image keeps /etc and /var/lib/samba in anonymous volumes, which Compose reattaches to the container it
+# recreates when SAMBA_USER_1 or the image changes: the previous account would stay usable, its uid would block the
+# creation of the new one, and the /etc of the previous image would hide the one of the new image. Removing the
+# container with its anonymous volumes lets the entrypoint build the account from samba.env alone, and leaves no
+# dangling volume behind.
+if [ "$samba_renew_volumes" = true ]; then
     docker compose rm --stop --force --volumes samba
 fi
 # --remove-orphans removes the container of a disabled component; its volume and storage folder stay.

@@ -1,16 +1,19 @@
 services:
   samba:
-    image: dperson/samba
+    image: adrianmusante/samba:4.23.14
     container_name: samba
-    # USER_1 is the test-only account of the workstations: smb.conf's "valid users = @wpkg" lets in its group,
+    # Exact tag, never latest: Samba 4.23.8 on Alpine 3.24. It replaces dperson/samba (Samba 4.12.2 on Alpine 3.12, no
+    # update since 2021): same entrypoint, with its variables prefixed, SAMBA_USER_1 instead of USER_1.
+    # SAMBA_USER_1 is the test-only account of the workstations: smb.conf's "valid users = @wpkg" lets in its group,
     # whatever its name.
-    # dperson/samba's entrypoint creates this user/password on every start regardless of the
-    # custom smb.conf mounted below. Change/remove for anything beyond local testing.
+    # The entrypoint creates this user/password on every start regardless of the custom smb.conf mounted below.
+    # Change/remove for anything beyond local testing.
     # Its uid is dedicated, never the one of the owner of ./services/samba/share (install.sh picks it), and its
     # group wpkg has the gid of the group of that folder: the account writes wpkg/logs through the group, and
     # nowhere else.
     # The image keeps /etc and /var/lib/samba in anonymous volumes, which Compose reattaches to a recreated
-    # container: the account of the previous USER_1 would stay. After editing samba.env by hand, run
+    # container: the account of the previous SAMBA_USER_1 would stay, and the /etc of the previous image would hide
+    # the one of a new tag. After editing samba.env by hand or changing the tag, run
     # docker compose rm --stop --force --volumes samba, then docker compose up -d samba (install.sh does).
     env_file: services/samba/samba.env
     ports:
