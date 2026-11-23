@@ -10,6 +10,7 @@ use App\Backup\DatabaseBackup;
 use App\Backup\DumpFormat;
 use App\Test\Support\DatabaseSnapshotTrait;
 use App\Test\Support\ReferenceDataTrait;
+use Cake\Core\Configure;
 use Cake\Database\Exception\QueryException;
 use Cake\I18n\I18n;
 use Cake\TestSuite\TestCase;
@@ -548,6 +549,57 @@ class DatabaseBackupTest extends TestCase
             $connection->execute('ALTER TABLE `variables` ENGINE = InnoDB');
         }
         $this->assertSame([], $repository->nonTransactionalTables());
+    }
+
+    /**
+     * The schema version is read where the Migrations plugin records its migrations: `phinxlog` on a database
+     * created by an older plugin, `cake_migrations` on a newer one. Whichever of the two the test database lacks is
+     * created for the test, holding a recognizable version.
+     *
+     * @return void
+     */
+    public function testSchemaVersionFollowsTheTableTheMigrationsPluginUses(): void
+    {
+        $connection = $this->testConnection();
+        $dialect = $connection->getDriver()->schemaDialect();
+        $hasLegacyTable = $dialect->hasTable('phinxlog');
+        $hasUnifiedTable = $dialect->hasTable('cake_migrations');
+        $migrations = glob(CONFIG . 'Migrations' . DS . '*.php') ?: [];
+        $applied = (string)max(array_map(fn(string $path): int => (int)basename($path), $migrations));
+        $sentinel = '29991231235959';
+        $repository = new BackupRepository($connection);
+
+        try {
+            if (!$hasLegacyTable) {
+                $connection->execute('CREATE TABLE `phinxlog` (`version` BIGINT NOT NULL PRIMARY KEY)');
+                $connection->execute('INSERT INTO `phinxlog` (`version`) VALUES (' . $sentinel . ')');
+            }
+            if (!$hasUnifiedTable) {
+                $connection->execute(
+                    'CREATE TABLE `cake_migrations` (`version` BIGINT NOT NULL, `plugin` VARCHAR(100))',
+                );
+                $connection->execute(
+                    'INSERT INTO `cake_migrations` (`version`, `plugin`) VALUES '
+                    . '(' . $sentinel . ', NULL), (' . ((int)$sentinel + 1) . ", 'SomePlugin')",
+                );
+            }
+
+            Configure::write('Migrations.legacyTables', true);
+            $this->assertSame($hasLegacyTable ? $applied : $sentinel, $repository->schemaVersion());
+
+            Configure::write('Migrations.legacyTables', false);
+            $this->assertSame($hasUnifiedTable ? $applied : $sentinel, $repository->schemaVersion());
+
+            Configure::delete('Migrations.legacyTables');
+            $this->assertSame($hasLegacyTable ? $applied : $sentinel, $repository->schemaVersion());
+        } finally {
+            Configure::delete('Migrations.legacyTables');
+            foreach ([['phinxlog', $hasLegacyTable], ['cake_migrations', $hasUnifiedTable]] as [$table, $existed]) {
+                if (!$existed) {
+                    $connection->execute('DROP TABLE IF EXISTS `' . $table . '`');
+                }
+            }
+        }
     }
 
     /**
