@@ -48,6 +48,21 @@ msgstr "La ligne {0} ne fait pas partie d'un export de cette application."
 msgid "The file is incomplete: the end of the export is missing."
 msgstr "Le fichier est incomplet : la fin de l'export est absente."
 
+msgid "The database was replaced with the content of the file: {0} rows imported."
+msgstr "La base a été remplacée par le contenu du fichier : {0} lignes importées."
+
+msgid "The database was emptied."
+msgstr "La base a été vidée."
+
+msgid "Select the file to import."
+msgstr "Choisissez le fichier à importer."
+
+msgid "The file is larger than the upload limit of {0}."
+msgstr "Le fichier dépasse la taille maximale d'envoi de {0}."
+
+msgid "The file could not be uploaded."
+msgstr "Le fichier n'a pas pu être envoyé."
+
 msgid "The Exit Code has been saved."
 msgstr "L'exit code a été enregistré."
 
@@ -1054,6 +1069,45 @@ msgstr "Parent :"
 
 msgid "Delete this check and its children?"
 msgstr "Supprimer ce check et ses enfants ?"
+
+msgid "Packages missing from the new feeds will be uninstalled on the workstations at their next run."
+msgstr "Les packages absents des nouveaux flux seront désinstallés des postes à leur prochaine exécution."
+
+msgid "Database"
+msgstr "Base de données"
+
+msgid "The database holds the hosts, profiles and packages with their settings. The reports of the workstations are not part of it: the indexer rebuilds them."
+msgstr "La base contient les hosts, profiles et packages avec leurs réglages. Les rapports des postes n'en font pas partie : l'indexeur les reconstruit."
+
+msgid "Export the database"
+msgstr "Exporter la base de données"
+
+msgid "Download the structure and the data as an SQL file."
+msgstr "Télécharge la structure et les données dans un fichier SQL."
+
+msgid "Import an export"
+msgstr "Importer un export"
+
+msgid "Replaces the whole content of the database with a file produced by the export, at the same schema version. If anything fails, the database stays as it was."
+msgstr "Remplace tout le contenu de la base par un fichier produit par l'export, à la même version de schéma. Si une étape échoue, la base reste telle qu'elle était."
+
+msgid "File: "
+msgstr "Fichier : "
+
+msgid "Replace the whole content of the database with this file?"
+msgstr "Remplacer tout le contenu de la base par ce fichier ?"
+
+msgid "Reset the database"
+msgstr "Réinitialiser la base de données"
+
+msgid "Deletes every host, profile and package. Export the database first if you may need it again."
+msgstr "Supprime tous les hosts, profiles et packages. Exportez d'abord la base si vous pensez en avoir encore besoin."
+
+msgid "Reset"
+msgstr "Réinitialiser"
+
+msgid "Empty the database?"
+msgstr "Vider la base ?"
 
 msgid "Code:"
 msgstr "Code :"

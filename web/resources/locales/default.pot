@@ -53,6 +53,21 @@ msgstr ""
 msgid "The file is incomplete: the end of the export is missing."
 msgstr ""
 
+msgid "The database was replaced with the content of the file: {0} rows imported."
+msgstr ""
+
+msgid "The database was emptied."
+msgstr ""
+
+msgid "Select the file to import."
+msgstr ""
+
+msgid "The file is larger than the upload limit of {0}."
+msgstr ""
+
+msgid "The file could not be uploaded."
+msgstr ""
+
 msgid "The Exit Code has been saved."
 msgstr ""
 
@@ -1058,6 +1073,45 @@ msgid "Parent:"
 msgstr ""
 
 msgid "Delete this check and its children?"
+msgstr ""
+
+msgid "Packages missing from the new feeds will be uninstalled on the workstations at their next run."
+msgstr ""
+
+msgid "Database"
+msgstr ""
+
+msgid "The database holds the hosts, profiles and packages with their settings. The reports of the workstations are not part of it: the indexer rebuilds them."
+msgstr ""
+
+msgid "Export the database"
+msgstr ""
+
+msgid "Download the structure and the data as an SQL file."
+msgstr ""
+
+msgid "Import an export"
+msgstr ""
+
+msgid "Replaces the whole content of the database with a file produced by the export, at the same schema version. If anything fails, the database stays as it was."
+msgstr ""
+
+msgid "File: "
+msgstr ""
+
+msgid "Replace the whole content of the database with this file?"
+msgstr ""
+
+msgid "Reset the database"
+msgstr ""
+
+msgid "Deletes every host, profile and package. Export the database first if you may need it again."
+msgstr ""
+
+msgid "Reset"
+msgstr ""
+
+msgid "Empty the database?"
 msgstr ""
 
 msgid "Code:"

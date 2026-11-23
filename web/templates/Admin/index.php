@@ -67,3 +67,4 @@ $yesNo = fn(mixed $flag): string => $flag ? __('Yes') : __('No');
     <legend><?= __('Reports') ?></legend>
     <div class="inputwrap"><label><?= __('Directory:') ?></label><?= $settings['reportsPath'] === '' ? __('Not configured') : h($settings['reportsPath']) ?></div>
 </fieldset>
+<?= $this->element('database_backup') ?>
