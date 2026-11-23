@@ -20,7 +20,9 @@
 #   WPKG_ENABLE_WINDOWS_VM  yes or no (default: no; needs samba, /dev/kvm, free ports 8006 and 3389, disk space)
 #   WPKG_ADMIN_USER         login of the administrator (default: admin; letters, digits, '.', '_', '-' and '@')
 #   WPKG_ADMIN_PASSWORD     password of the administrator (any characters)
-#   WPKG_SAMBA_PASSWORD     password of the Samba account "administrateur" (letters and digits only)
+#   WPKG_SAMBA_USER         name of the Samba account of the workstations (default: the saved one, else administrateur;
+#                           a lowercase letter, then lowercase letters, digits, '_' and '-'; 32 characters at most)
+#   WPKG_SAMBA_PASSWORD     password of the Samba account (letters and digits only)
 #   WPKG_VM_PASSWORD        password of the Windows VM (letters and digits only)
 #   WPKG_XML_PROTECT        true or false: protect the XML feeds with a password (default: false)
 #   WPKG_XML_PASSWORD       password of the feeds, user "wpkg" (any characters)
@@ -32,9 +34,11 @@
 #
 # The Samba account takes the uid and gid of the owner of services/samba/share, so that it writes the reports
 # of the workstations into wpkg/logs whoever cloned the repository: USER_1 in samba.env holds
-# "administrateur;password;uid;wpkg;gid". The image cannot create an account with the uid 0: when root owns
-# the share, run this script as root, which gives wpkg/logs to the uid 1000. Files of wpkg/logs that the
-# account does not own are given back to it the same way; any other user is told the chown to run.
+# "name;password;uid;wpkg;gid", and smb.conf lets in the group wpkg, never a name. The image cannot create an
+# account with the uid 0: when root owns the share, run this script as root, which gives wpkg/logs to the
+# uid 1000. Files of wpkg/logs that the account does not own are given back to it the same way; any other
+# user is told the chown to run. Renaming the account removes the old one: the workstations that use it lose
+# access to the share until their credentials are updated.
 set -euo pipefail
 
 export LC_ALL=C
@@ -256,13 +260,13 @@ valid_locale() {
     esac
 }
 
-# check_samba_ids UID GID: replays in a throwaway container what the entrypoint of dperson/samba does for
+# check_samba_ids UID GID NAME: replays in a throwaway container what the entrypoint of dperson/samba does for
 # USER_1. The entrypoint ignores a failure and starts without the account, so a number that the image already
-# uses (uid 33 is xfs, gid 100 is users) or refuses (above 256000) must be caught here. On failure $reason
-# holds the message of the failing command.
+# uses (uid 33 is xfs, gid 100 is users) or refuses (above 256000), and a name that it already has (guest,
+# nobody, smbuser, root), must be caught here. On failure $reason holds the message of the failing command.
 check_samba_ids() {
     reason=$(docker run --rm --entrypoint sh dperson/samba -c \
-        'addgroup --gid "$2" wpkg 2>&1 && adduser -D -H -G wpkg -u "$1" administrateur 2>&1' sh "$1" "$2") \
+        'addgroup --gid "$2" wpkg 2>&1 && adduser -D -H -G wpkg -u "$1" "$3" 2>&1' sh "$1" "$2" "$3") \
         || { reason=${reason:-"docker could not run the dperson/samba image"}; return 1; }
 }
 
@@ -271,6 +275,22 @@ valid_admin_user() {
     case $1 in
         '' | *[!A-Za-z0-9._@-]*) reason="'$1' is not a valid login: use only letters, digits, '.', '_', '-' and '@'."; return 1 ;;
     esac
+}
+
+# Name of the Samba account. It reaches the eval and the grep "^name:" of the dperson/samba entrypoint, samba.env
+# and smb-credentials.bat unquoted, so only the characters of a portable Unix login are allowed: a lowercase letter,
+# then lowercase letters, digits, '_' and '-', 32 at most. BusyBox adduser and Samba take more (capitals, '.', a
+# first digit or '_', a last '$'), but capitals stay out: Samba ignores the case of an account while /etc/passwd
+# keeps it, so Wpkg and wpkg would be two Unix users for one Samba account. '.' stays out too: the grep reads it as a
+# wildcard, r.ot would match root, adduser would be skipped, and the container would start without the account.
+valid_samba_user() {
+    case $1 in
+        '' | [!a-z]* | *[!a-z0-9_-]*)
+            reason="'$1' is not a valid Samba account name: use a lowercase letter, then lowercase letters, digits, '_' and '-'."
+            return 1
+            ;;
+    esac
+    if [ "${#1}" -gt 32 ]; then reason="'$1' has more than 32 characters."; return 1; fi
 }
 
 valid_port() {
@@ -409,11 +429,22 @@ if [ "$want_vm" = yes ]; then
     fi
 fi
 
-# The account of the samba container takes the numbers of the owner of the share, so that it writes wherever
-# the clone's owner does: the workstations copy their reports into wpkg/logs.
-samba_uid="" samba_gid="" fix_logs=false
+# The account of the samba container: its name comes first, because the checks replay its creation. It takes
+# the numbers of the owner of the share, so that it writes wherever the clone's owner does: the workstations
+# copy their reports into wpkg/logs.
+samba_user="" samba_uid="" samba_gid="" fix_logs=false
 samba_logs=services/samba/share/wpkg/logs
+# USER_1 is "name;password;uid;wpkg;gid", or "name;password" before the numbers.
+saved_user_1=$(env_get "$samba_env" USER_1)
+saved_samba_user=""
+case $saved_user_1 in *";"*) saved_samba_user=${saved_user_1%%;*} ;; esac
 if [ "$want_samba" = yes ]; then
+    step "Choosing the Samba account"
+    ask samba_user WPKG_SAMBA_USER "Samba account name (login of the workstations on the share)" "${saved_samba_user:-administrateur}" valid_samba_user
+    if [ -n "$saved_samba_user" ] && [ "$samba_user" != "$saved_samba_user" ]; then
+        printf 'Warning: the Samba account %s becomes %s. The old account is removed: the workstations that connect with it lose access to the share until their credentials are updated.\n' \
+            "$saved_samba_user" "$samba_user"
+    fi
     step "Checking the Samba share"
     read -r samba_uid samba_gid <<< "$(stat -c '%u %g' services/samba/share)"
     if [ "$samba_uid" = 0 ]; then
@@ -422,7 +453,7 @@ if [ "$want_samba" = yes ]; then
         samba_uid=1000 samba_gid=1000
     fi
     ids_ok=true
-    check_samba_ids "$samba_uid" "$samba_gid" || ids_ok=false
+    check_samba_ids "$samba_uid" "$samba_gid" "$samba_user" || ids_ok=false
     # Only the name of the group matters to Samba: take the uid when the gid is refused (100 is the group
     # "users" of the image, and the primary group of every account on some distributions).
     if [ "$ids_ok" = false ] && [ "${reason%%:*}" = addgroup ] && [ "$samba_gid" != "$samba_uid" ]; then
@@ -430,9 +461,16 @@ if [ "$want_samba" = yes ]; then
             "$samba_gid" "$reason" "$samba_uid"
         samba_gid=$samba_uid
         ids_ok=true
-        check_samba_ids "$samba_uid" "$samba_gid" || ids_ok=false
+        check_samba_ids "$samba_uid" "$samba_gid" "$samba_user" || ids_ok=false
     fi
-    [ "$ids_ok" = true ] || fail "The dperson/samba image cannot create the Samba account with the uid $samba_uid and the gid $samba_gid ($reason). The uid comes from the owner of services/samba/share: clone the repository with a regular account whose numbers the image accepts."
+    if [ "$ids_ok" = false ]; then
+        case $reason in
+            "adduser: user '$samba_user' in use"*)
+                fail "The dperson/samba image already has an account named '$samba_user' ($reason). Choose another name (WPKG_SAMBA_USER)."
+                ;;
+        esac
+        fail "The dperson/samba image cannot create the Samba account '$samba_user' with the uid $samba_uid and the gid $samba_gid ($reason). The uid comes from the owner of services/samba/share: clone the repository with a regular account whose numbers the image accepts."
+    fi
     # A file of another owner (made by root, or by the account of an earlier installation) could not be rewritten.
     foreign=$(find "$samba_logs" ! -uid "$samba_uid" -print -quit)
     if [ -n "$foreign" ]; then
@@ -543,8 +581,7 @@ fi
 # Samba account.
 samba_password=""
 if [ "$want_samba" = yes ]; then
-    # USER_1 is "administrateur;password;uid;wpkg;gid", or "administrateur;password" before the numbers.
-    saved_user_1=$(env_get "$samba_env" USER_1)
+    # The saved password is the second field of USER_1, whatever the name.
     samba_password=""
     case $saved_user_1 in *";"*) samba_password=${saved_user_1#*;} ;; esac
     samba_password=${samba_password%%;*}
@@ -554,12 +591,12 @@ if [ "$want_samba" = yes ]; then
         if [ "$existing" = true ] && [ "$vm_storage_found" = true ]; then
             samba_password=$legacy_samba
         else
-            collect_password samba_password WPKG_SAMBA_PASSWORD "Samba password for the account administrateur (empty: generate one)" strict generate
-            [ "$password_generated" = false ] || note_generated "Samba password (account administrateur)" "$samba_password"
+            collect_password samba_password WPKG_SAMBA_PASSWORD "Samba password for the account $samba_user (empty: generate one)" strict generate
+            [ "$password_generated" = false ] || note_generated "Samba password (account $samba_user)" "$samba_password"
         fi
     fi
     [ "$samba_password" != "$legacy_samba" ] || legacy_used="$legacy_used
-  Samba password (administrateur): $legacy_samba"
+  Samba password ($samba_user): $legacy_samba"
 fi
 
 # Windows VM password.
@@ -687,13 +724,13 @@ if enabled samba; then
         chown -hR "$samba_uid:$samba_gid" "$samba_logs"
         echo "Gave $samba_logs to the uid $samba_uid, the Samba account."
     fi
-    env_set "$samba_env" USER_1 "administrateur;$samba_password;$samba_uid;wpkg;$samba_gid"
+    env_set "$samba_env" USER_1 "$samba_user;$samba_password;$samba_uid;wpkg;$samba_gid"
 fi
 if enabled windows-vm; then
     env_set "$vm_env" PASSWORD "$vm_password"
     : > "$vm_credentials"
     chmod 600 "$vm_credentials"
-    printf 'set SMBUSER=administrateur\r\nset SMBPASS=%s\r\n' "$samba_password" >> "$vm_credentials"
+    printf 'set SMBUSER=%s\r\nset SMBPASS=%s\r\n' "$samba_user" "$samba_password" >> "$vm_credentials"
 fi
 
 if [ "$salt_replaced" = true ]; then
@@ -755,7 +792,7 @@ WPKG Express NG is installed.
   Feeds for wpkg.js   $url/hosts.xml, profiles.xml, packages.xml
 EOF
 if enabled samba; then
-    printf '  Samba share     \\\\%s\\WPKG   (account: administrateur)\n' "$server_name"
+    printf '  Samba share     \\\\%s\\WPKG   (account: %s)\n' "$server_name" "$samba_user"
 fi
 if enabled windows-vm; then
     printf '  Windows VM console   http://%s:8006\n' "$server_name"
