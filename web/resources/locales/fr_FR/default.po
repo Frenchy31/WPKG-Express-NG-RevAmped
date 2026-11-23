@@ -21,6 +21,33 @@ msgstr "Identifiant ou mot de passe incorrect"
 msgid "Logged out successfully."
 msgstr "Déconnexion réussie."
 
+msgid "This file is not an export of this application."
+msgstr "Ce fichier n'est pas un export de cette application."
+
+msgid "The file was exported from schema version {0}, the database is at version {1}. Import it into a database at the same version."
+msgstr "Le fichier a été exporté avec la version de schéma {0}, alors que la base est à la version {1}. Importez-le dans une base à la même version."
+
+msgid "The columns of the table \"{0}\" in the file differ from the database."
+msgstr "Les colonnes de la table « {0} » du fichier diffèrent de celles de la base."
+
+msgid "The database rejected the file: {0}"
+msgstr "La base a refusé le fichier : {0}"
+
+msgid "The table \"{0}\" uses the {1} storage engine, which cannot undo a failed operation. Convert it to InnoDB first."
+msgstr "La table « {0} » utilise le moteur de stockage {1}, qui ne peut pas annuler une opération échouée. Convertissez-la d'abord en InnoDB."
+
+msgid "The file announces {0} rows but contains {1}: it is incomplete or was edited."
+msgstr "Le fichier annonce {0} lignes mais en contient {1} : il est incomplet ou a été modifié."
+
+msgid "Line {0} refers to the table \"{1}\", which the export does not save."
+msgstr "La ligne {0} cite la table « {1} », que l'export ne sauvegarde pas."
+
+msgid "Line {0} is not part of an export of this application."
+msgstr "La ligne {0} ne fait pas partie d'un export de cette application."
+
+msgid "The file is incomplete: the end of the export is missing."
+msgstr "Le fichier est incomplet : la fin de l'export est absente."
+
 msgid "The Exit Code has been saved."
 msgstr "L'exit code a été enregistré."
 

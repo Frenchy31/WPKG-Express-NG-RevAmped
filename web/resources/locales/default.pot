@@ -26,6 +26,33 @@ msgstr ""
 msgid "Logged out successfully."
 msgstr ""
 
+msgid "This file is not an export of this application."
+msgstr ""
+
+msgid "The file was exported from schema version {0}, the database is at version {1}. Import it into a database at the same version."
+msgstr ""
+
+msgid "The columns of the table \"{0}\" in the file differ from the database."
+msgstr ""
+
+msgid "The database rejected the file: {0}"
+msgstr ""
+
+msgid "The table \"{0}\" uses the {1} storage engine, which cannot undo a failed operation. Convert it to InnoDB first."
+msgstr ""
+
+msgid "The file announces {0} rows but contains {1}: it is incomplete or was edited."
+msgstr ""
+
+msgid "Line {0} refers to the table \"{1}\", which the export does not save."
+msgstr ""
+
+msgid "Line {0} is not part of an export of this application."
+msgstr ""
+
+msgid "The file is incomplete: the end of the export is missing."
+msgstr ""
+
 msgid "The Exit Code has been saved."
 msgstr ""
 
