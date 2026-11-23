@@ -20,7 +20,9 @@
 #   WPKG_ENABLE_WINDOWS_VM  yes or no (default: no; needs samba, /dev/kvm, free ports 8006 and 3389, disk space)
 #   WPKG_ADMIN_USER         login of the administrator (default: admin; letters, digits, '.', '_', '-' and '@')
 #   WPKG_ADMIN_PASSWORD     password of the administrator (any characters)
-#   WPKG_SAMBA_PASSWORD     password of the Samba account "administrateur" (letters and digits only)
+#   WPKG_SAMBA_USER         name of the Samba account of the workstations (default: the saved one, else administrateur;
+#                           a lowercase letter, then lowercase letters, digits, '_' and '-'; 32 characters at most)
+#   WPKG_SAMBA_PASSWORD     password of the Samba account (letters and digits only)
 #   WPKG_VM_PASSWORD        password of the Windows VM (letters and digits only)
 #   WPKG_XML_PROTECT        true or false: protect the XML feeds with a password (default: false)
 #   WPKG_XML_PASSWORD       password of the feeds, user "wpkg" (any characters)
@@ -29,6 +31,19 @@
 # A password left empty (or without a terminal and without its variable) is generated and printed once.
 # A password already saved is kept unless its variable is set. No password is ever put on a command line.
 # Running the script again keeps every saved value, then rebuilds and restarts the stack.
+#
+# Least privilege: every workstation holds the credentials of the Samba account, so it must be able to write
+# the reports of wpkg/logs and nothing else (wpkg.js and config.xml run as SYSTEM on the whole fleet). The account
+# gets a dedicated uid, never the one of the owner of services/samba/share (70000, or the next number that no
+# account nor group of this host has), and the group of that owner, wpkg in the container: SAMBA_USER_1 in
+# samba.env holds "name;password;uid;wpkg;gid", and smb.conf lets in the group wpkg, never a name. The script sets wpkg/logs
+# to the mode 2775 (setgid, group-writable) and makes the files it holds group-writable; the rest of the share
+# stays as cloned, read-only for the account (the script checks that the account can read it). Run as the owner of
+# the clone, it needs no root. Entries of wpkg/logs that it cannot repair (another owner, another group) make it
+# print the chown to run as root. When root owns the share, or the image refuses the group of the owner (100 is
+# the group "users" of the image), run this script as root: it gives wpkg/logs to the account and to a dedicated
+# group of the same number. Renaming the account removes the old one: the workstations that use it lose access
+# to the share until their credentials are updated.
 set -euo pipefail
 
 export LC_ALL=C
@@ -90,6 +105,18 @@ env_set() {
     mv "$file.new" "$file"
 }
 
+# env_unset FILE KEY: removes the lines of KEY, a setting that no longer exists. Same care as env_set.
+env_unset() {
+    local file=$1 key=$2 line
+    [ -f "$file" ] || return 0
+    : > "$file.new"
+    chmod 600 "$file.new"
+    while IFS= read -r line || [ -n "$line" ]; do
+        case $line in "$key="*) ;; *) printf '%s\n' "$line" >> "$file.new" ;; esac
+    done < "$file"
+    mv "$file.new" "$file"
+}
+
 # env_merge FILE EXAMPLE: appends the keys of EXAMPLE that FILE lacks (new settings of a newer version).
 env_merge() {
     local line key
@@ -146,7 +173,7 @@ ask() {
     printf -v "$result" '%s' "$value"
 }
 
-# check_password VALUE: only the characters that pass unescaped through DATABASE_URL, USER_1 and a .bat file.
+# check_password VALUE: only the characters that pass unescaped through DATABASE_URL, SAMBA_USER_1 and a .bat file.
 check_password() {
     case $1 in
         *[!A-Za-z0-9]*)
@@ -250,11 +277,55 @@ valid_locale() {
     esac
 }
 
+# check_samba_ids UID GID NAME: replays in a throwaway container what the entrypoint of the samba image does for
+# SAMBA_USER_1. The entrypoint ignores a failure and starts without the account, so a number that the image
+# already uses (uid 33 is xfs, gid 100 is users) or refuses, and a name that it already has (guest, nobody, smbuser,
+# root), must be caught here. On failure $reason holds the message of the failing command.
+check_samba_ids() {
+    reason=$(docker run --rm --entrypoint sh "$samba_image" -c \
+        'addgroup --gid "$2" wpkg 2>&1 && adduser -D -H -G wpkg -u "$1" "$3" 2>&1' sh "$1" "$2" "$3") \
+        || { reason=${reason:-"docker could not run the $samba_image image"}; return 1; }
+}
+
+# First number tried for the dedicated uid of the Samba account: above UID_MAX (60000) of login.defs on Debian,
+# Ubuntu, Fedora and RHEL, above the dynamic users of systemd (up to 65535), below the sub-uid ranges (100000 on
+# Debian, 524288 on Fedora) and the ids of directory services (200000 and more), and used by no account of the
+# images (measured: dperson/samba, adrianmusante/samba), and below the 256000 that the BusyBox of dperson/samba
+# accepts.
+samba_base_id=70000
+
+# free_samba_id OWNER_UID: the first number from samba_base_id that no account nor group of this host has, and that
+# is not the owner of the share: a host account with that number would own what the workstations write, and the
+# owner of the share must not be the account.
+free_samba_id() {
+    local id=$samba_base_id
+    while [ "$id" = "$1" ] || getent passwd "$id" > /dev/null || getent group "$id" > /dev/null; do
+        id=$((id + 1))
+    done
+    printf '%s' "$id"
+}
+
 # Written unquoted in wpkg.env: quotes, '$', '#', '\' and spaces could change the value Compose reads.
 valid_admin_user() {
     case $1 in
         '' | *[!A-Za-z0-9._@-]*) reason="'$1' is not a valid login: use only letters, digits, '.', '_', '-' and '@'."; return 1 ;;
     esac
+}
+
+# Name of the Samba account. It reaches the eval and the grep "^name:" of the entrypoint of the image, samba.env
+# and smb-credentials.bat unquoted, so only the characters of a portable Unix login are allowed: a lowercase letter,
+# then lowercase letters, digits, '_' and '-', 32 at most. BusyBox adduser and Samba take more (capitals, '.', a
+# first digit or '_', a last '$'), but capitals stay out: Samba ignores the case of an account while /etc/passwd
+# keeps it, so Wpkg and wpkg would be two Unix users for one Samba account. '.' stays out too: the grep reads it as a
+# wildcard, r.ot would match root, adduser would be skipped, and the container would start without the account.
+valid_samba_user() {
+    case $1 in
+        '' | [!a-z]* | *[!a-z0-9_-]*)
+            reason="'$1' is not a valid Samba account name: use a lowercase letter, then lowercase letters, digits, '_' and '-'."
+            return 1
+            ;;
+    esac
+    if [ "${#1}" -gt 32 ]; then reason="'$1' has more than 32 characters."; return 1; fi
 }
 
 valid_port() {
@@ -393,6 +464,87 @@ if [ "$want_vm" = yes ]; then
     fi
 fi
 
+# The account of the samba container: its name comes first, because the checks replay its creation. Least
+# privilege: it gets a dedicated uid, never the one of the owner of the share (it would own the whole tree, and
+# any workstation could rewrite wpkg.js), and the group of that owner, which gives it the write right on wpkg/logs
+# only, where the workstations copy their reports. The rest of the share stays as cloned (755 and 644): read-only
+# for the account.
+samba_user="" samba_uid="" samba_gid="" fix_logs=false logs_owner="" samba_renew_volumes=false
+samba_logs=services/samba/share/wpkg/logs
+# SAMBA_USER_1 is "name;password;uid;wpkg;gid". Before the image changed it was USER_1, which held "name;password" at
+# first, then the numbers: the value is still read from there, and USER_1 is removed when SAMBA_USER_1 is written.
+saved_user_1=$(env_get "$samba_env" SAMBA_USER_1)
+legacy_user_1=$(env_get "$samba_env" USER_1)
+[ -n "$saved_user_1" ] || saved_user_1=$legacy_user_1
+saved_samba_user=""
+case $saved_user_1 in *";"*) saved_samba_user=${saved_user_1%%;*} ;; esac
+if [ "$want_samba" = yes ]; then
+    step "Choosing the Samba account"
+    ask samba_user WPKG_SAMBA_USER "Samba account name (login of the workstations on the share)" "${saved_samba_user:-administrateur}" valid_samba_user
+    if [ -n "$saved_samba_user" ] && [ "$samba_user" != "$saved_samba_user" ]; then
+        printf 'Warning: the Samba account %s becomes %s. The old account is removed: the workstations that connect with it lose access to the share until their credentials are updated.\n' \
+            "$saved_samba_user" "$samba_user"
+    fi
+    step "Checking the Samba share"
+    samba_image=$(sed -n 's/^    image: *//p' services/samba/compose.yaml)
+    # The container that exists was made from another image (a new tag): see the removal of its volumes below.
+    samba_container_image=$(docker inspect --type container --format '{{ .Config.Image }}' samba 2> /dev/null || true)
+    [ -z "$samba_container_image" ] || [ "$samba_container_image" = "$samba_image" ] || samba_renew_volumes=true
+    read -r share_uid share_gid <<< "$(stat -c '%u %g' services/samba/share)"
+    run_uid=$(id -u)
+    samba_uid=$(free_samba_id "$share_uid")
+    samba_gid=$share_gid
+    logs_owner=$share_uid:$share_gid
+    if [ "$share_uid" = 0 ]; then
+        [ "$run_uid" = 0 ] || fail "services/samba/share belongs to root, whose group the image refuses for the Samba account. Run this script as root, which gives wpkg/logs to the uid and gid $samba_uid, or give the clone to a regular account and run the script again:
+  sudo chown -R $run_uid:$(id -g) $(printf '%q' "$PWD")"
+        samba_gid=$samba_uid
+        logs_owner=$samba_uid:$samba_gid
+    fi
+    ids_ok=true
+    check_samba_ids "$samba_uid" "$samba_gid" "$samba_user" || ids_ok=false
+    # The account writes wpkg/logs through the group of the share, and the image may refuse that gid (100 is its
+    # group "users", the primary group of every account on some distributions): only root can give wpkg/logs to
+    # another group.
+    if [ "$ids_ok" = false ] && [ "${reason%%:*}" = addgroup ] && [ "$samba_gid" = "$share_gid" ]; then
+        [ "$run_uid" = 0 ] || fail "The $samba_image image refuses the gid $share_gid of the group of services/samba/share ($reason), and the Samba account writes wpkg/logs through that group. Clone the repository with an account whose primary group is another one, or run this script as root, which gives wpkg/logs to the uid and gid $samba_uid."
+        samba_gid=$samba_uid
+        logs_owner=$samba_uid:$samba_gid
+        ids_ok=true
+        check_samba_ids "$samba_uid" "$samba_gid" "$samba_user" || ids_ok=false
+    fi
+    if [ "$ids_ok" = false ]; then
+        case $reason in
+            "adduser: user '$samba_user' in use"*)
+                fail "The $samba_image image already has an account named '$samba_user' ($reason). Choose another name (WPKG_SAMBA_USER)."
+                ;;
+        esac
+        fail "The $samba_image image cannot create the Samba account '$samba_user' with the uid $samba_uid and the gid $samba_gid ($reason)."
+    fi
+    # The account no longer owns the tree: it reads it through the group of the clone, or as "other". A clone made
+    # with the umask 077 has neither, and the workstations could not read wpkg.js nor the packages.
+    unreadable=$(find services/samba/share -path "$samba_logs" -prune -o \( \
+        \( -type d ! \( \( -gid "$samba_gid" -perm -g=rx \) -o -perm -o=rx \) \) -o \
+        \( -type f ! \( \( -gid "$samba_gid" -perm -g=r \) -o -perm -o=r \) \) \) -print -quit)
+    if [ -n "$unreadable" ]; then
+        read_bits=g+rX
+        [ "$samba_gid" = "$share_gid" ] || read_bits=o+rX
+        fail "$unreadable cannot be read by the Samba account, which does not own the share: it reads through the group of the clone, or as 'other'. A restrictive umask made the clone. As its owner, make the share readable, then run this script again:
+  chmod -R $read_bits $(printf '%q' "$PWD/services/samba/share")"
+    fi
+    # wpkg/logs: the group of the account, setgid, group-writable files and folders. Only root can give an entry to
+    # another owner or group; the owner can only make it group-writable.
+    logs_wrong=(\( -type d -o -type f \)
+        \( ! -gid "$samba_gid" -o \( -type d ! -perm -g=rwx \) -o \( -type f ! -perm -g=rw \) -o \( -path "$samba_logs" ! -perm -2000 \) \))
+    if [ -n "$(find "$samba_logs" "${logs_wrong[@]}" -print -quit)" ]; then
+        fix_logs=true
+        blocked=""
+        [ "$run_uid" = 0 ] || blocked=$(find "$samba_logs" "${logs_wrong[@]}" \( ! -uid "$run_uid" -o ! -gid "$samba_gid" \) -print -quit)
+        [ -z "$blocked" ] || fail "$blocked belongs to another uid or group than this clone, so the Samba account could not write it. As root, give wpkg/logs back to the owner of the share, then run this script again (no report is lost):
+  sudo chown -R $logs_owner $(printf '%q' "$PWD/$samba_logs")"
+    fi
+fi
+
 step "Choosing the server"
 saved_url=$(env_get "$wpkg_env" APP_FULL_BASE_URL)
 saved_name=${saved_url#http://}
@@ -494,21 +646,22 @@ fi
 # Samba account.
 samba_password=""
 if [ "$want_samba" = yes ]; then
-    saved_user_1=$(env_get "$samba_env" USER_1)
-    samba_password=${saved_user_1#*;}
-    [ "$saved_user_1" != "$samba_password" ] || samba_password=""
+    # The saved password is the second field of USER_1, whatever the name.
+    samba_password=""
+    case $saved_user_1 in *";"*) samba_password=${saved_user_1#*;} ;; esac
+    samba_password=${samba_password%%;*}
     if [ -n "${WPKG_SAMBA_PASSWORD:-}" ]; then
         collect_password samba_password WPKG_SAMBA_PASSWORD "Samba password" strict generate
     elif [ -z "$samba_password" ]; then
         if [ "$existing" = true ] && [ "$vm_storage_found" = true ]; then
             samba_password=$legacy_samba
         else
-            collect_password samba_password WPKG_SAMBA_PASSWORD "Samba password for the account administrateur (empty: generate one)" strict generate
-            [ "$password_generated" = false ] || note_generated "Samba password (account administrateur)" "$samba_password"
+            collect_password samba_password WPKG_SAMBA_PASSWORD "Samba password for the account $samba_user (empty: generate one)" strict generate
+            [ "$password_generated" = false ] || note_generated "Samba password (account $samba_user)" "$samba_password"
         fi
     fi
     [ "$samba_password" != "$legacy_samba" ] || legacy_used="$legacy_used
-  Samba password (administrateur): $legacy_samba"
+  Samba password ($samba_user): $legacy_samba"
 fi
 
 # Windows VM password.
@@ -632,13 +785,24 @@ if enabled mysql; then
     fi
 fi
 if enabled samba; then
-    env_set "$samba_env" USER_1 "administrateur;$samba_password"
+    if [ "$fix_logs" = true ]; then
+        [ "$(id -u)" != 0 ] || chown -hR "$logs_owner" "$samba_logs"
+        find "$samba_logs" -type d ! -perm -g=rwx -exec chmod g+rwx {} +
+        find "$samba_logs" -type f ! -perm -g=rw -exec chmod g+rw {} +
+        [ -g "$samba_logs" ] || chmod g+s "$samba_logs"
+        echo "Made $samba_logs writable for the group $samba_gid of the Samba account (mode 2775, setgid)."
+    fi
+    samba_user_1="$samba_user;$samba_password;$samba_uid;wpkg;$samba_gid"
+    [ "$samba_user_1" = "$saved_user_1" ] || samba_renew_volumes=true
+    [ -z "$legacy_user_1" ] || samba_renew_volumes=true
+    env_set "$samba_env" SAMBA_USER_1 "$samba_user_1"
+    env_unset "$samba_env" USER_1
 fi
 if enabled windows-vm; then
     env_set "$vm_env" PASSWORD "$vm_password"
     : > "$vm_credentials"
     chmod 600 "$vm_credentials"
-    printf 'set SMBUSER=administrateur\r\nset SMBPASS=%s\r\n' "$samba_password" >> "$vm_credentials"
+    printf 'set SMBUSER=%s\r\nset SMBPASS=%s\r\n' "$samba_user" "$samba_password" >> "$vm_credentials"
 fi
 
 if [ "$salt_replaced" = true ]; then
@@ -655,6 +819,14 @@ up_services=(wpkg)
 enabled mysql && up_services+=(mysql)
 enabled samba && up_services+=(samba)
 step "Starting ${up_services[*]}"
+# The samba image keeps /etc and /var/lib/samba in anonymous volumes, which Compose reattaches to the container it
+# recreates when SAMBA_USER_1 or the image changes: the previous account would stay usable, its uid would block the
+# creation of the new one, and the /etc of the previous image would hide the one of the new image. Removing the
+# container with its anonymous volumes lets the entrypoint build the account from samba.env alone, and leaves no
+# dangling volume behind.
+if [ "$samba_renew_volumes" = true ]; then
+    docker compose rm --stop --force --volumes samba
+fi
 # --remove-orphans removes the container of a disabled component; its volume and storage folder stay.
 docker compose up -d --wait --remove-orphans "${up_services[@]}"
 
@@ -696,7 +868,7 @@ WPKG Express NG is installed.
   Feeds for wpkg.js   $url/hosts.xml, profiles.xml, packages.xml
 EOF
 if enabled samba; then
-    printf '  Samba share     \\\\%s\\WPKG   (account: administrateur)\n' "$server_name"
+    printf '  Samba share     \\\\%s\\WPKG   (account: %s)\n' "$server_name" "$samba_user"
 fi
 if enabled windows-vm; then
     printf '  Windows VM console   http://%s:8006\n' "$server_name"
