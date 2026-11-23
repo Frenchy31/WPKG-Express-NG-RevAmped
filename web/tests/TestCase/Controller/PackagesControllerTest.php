@@ -252,6 +252,30 @@ class PackagesControllerTest extends AdminIntegrationTestCase
     }
 
     /**
+     * A check without lft and rght, as legacy databases hold, is deleted alone: the Tree behavior failed on it
+     * with an SQL syntax error.
+     *
+     * @return void
+     */
+    public function testDeleteCheckOutsideNestedSet(): void
+    {
+        $checks = $this->fetchTable('PackageChecks');
+        $checks->getConnection()->execute(
+            'INSERT INTO package_checks (id, package_id, type, `condition`, parent_id, lft, rght) '
+            . 'VALUES (500, 2, 3, 19, NULL, NULL, NULL)',
+        );
+        $treeBefore = $checks->find()->select(['id', 'lft', 'rght'])->where(['id !=' => 500])
+            ->orderBy(['id' => 'ASC'])->enableHydration(false)->toArray();
+
+        $this->post('/package-checks/delete/500');
+
+        $this->assertFlashMessage('Package Check deleted.');
+        $this->assertFalse($checks->exists(['id' => 500]));
+        $this->assertSame($treeBefore, $checks->find()->select(['id', 'lft', 'rght'])
+            ->orderBy(['id' => 'ASC'])->enableHydration(false)->toArray());
+    }
+
+    /**
      * Editing a logical check keeps it in place, and its count reaches the feed.
      *
      * @return void

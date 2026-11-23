@@ -1308,3 +1308,58 @@ msgstr ""
 msgid "Back to the summary"
 msgstr ""
 
+msgid "Delete {0} orphan row? This cannot be undone."
+msgid_plural "Delete {0} orphan rows? This cannot be undone."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Database cleanup"
+msgstr ""
+
+msgid "An orphan row points to a record that no longer exists. Nothing changes until you click Clean."
+msgstr ""
+
+msgid "Table"
+msgstr ""
+
+msgid "Checked columns"
+msgstr ""
+
+msgid "Orphan rows"
+msgstr ""
+
+msgid "No orphan rows to delete."
+msgstr ""
+
+msgid "Clean"
+msgstr ""
+
+msgid "Hosts whose main profile does not exist"
+msgstr ""
+
+msgid "The cleanup keeps these hosts. Open each one and choose an existing main profile."
+msgstr ""
+
+msgid "Missing profile id"
+msgstr ""
+
+msgid "{0} orphan row deleted."
+msgid_plural "{0} orphan rows deleted."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Rows deleted"
+msgstr ""
+
+msgid "Back to Admin"
+msgstr ""
+
+
+msgid "The database rejected the cleanup: {0}"
+msgstr ""
+
+msgid "Package check {0} could not be deleted."
+msgstr ""
+
+msgid "The Profile ''{0}'' cannot be deleted or disabled because the following profile(s) depend on it: {1}"
+msgstr ""
