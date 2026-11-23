@@ -30,9 +30,9 @@ class DatabaseBackupTest extends TestCase
 
     /**
      * Tables the export leaves out on purpose: the indexer rebuilds the reports, and the Migrations plugin keeps its
-     * own record of the migrations.
+     * own record of the migrations and of the seeds that ran.
      */
-    private const array LEFT_OUT = ['host_reports', 'report_index_state', 'phinxlog', 'cake_migrations'];
+    private const array LEFT_OUT = ['host_reports', 'report_index_state', 'phinxlog', 'cake_migrations', 'cake_seeds'];
 
     private DatabaseBackup $backup;
 
