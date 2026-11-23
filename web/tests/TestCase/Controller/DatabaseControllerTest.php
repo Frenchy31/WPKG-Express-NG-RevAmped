@@ -74,7 +74,8 @@ class DatabaseControllerTest extends AdminIntegrationTestCase
     }
 
     /**
-     * The whole procedure of the Admin page: export, reset, import. The three feeds come back byte for byte.
+     * The whole procedure of the Admin page: export, reset, import. The three feeds come back byte for byte, as
+     * the workstations download them and in every format the feeds can take.
      *
      * @return void
      */
@@ -82,12 +83,14 @@ class DatabaseControllerTest extends AdminIntegrationTestCase
     {
         $snapshot = $this->snapshot();
         $feeds = $this->feedDocuments();
+        $servedFeeds = $this->servedFeeds();
         $this->post('/database/export');
         $file = (string)$this->_response->getBody();
 
         $this->post('/database/reset');
         $this->assertSame(0, $this->rowCount());
         $this->assertNotSame($feeds, $this->feedDocuments());
+        $this->assertNotSame($servedFeeds, $this->servedFeeds());
 
         $this->post('/database/import', ['backup' => $this->upload($file)]);
 
@@ -97,6 +100,7 @@ class DatabaseControllerTest extends AdminIntegrationTestCase
         );
         $this->assertSame($snapshot, $this->snapshot());
         $this->assertSame($feeds, $this->feedDocuments());
+        $this->assertSame($servedFeeds, $this->servedFeeds());
     }
 
     /**
@@ -343,6 +347,23 @@ class DatabaseControllerTest extends AdminIntegrationTestCase
 
         $this->post('/database/reset');
         $this->assertFlashMessage('La base a été vidée.');
+    }
+
+    /**
+     * Downloads hosts.xml, profiles.xml and packages.xml the way the workstations do.
+     *
+     * @return array<string, string> Body of each feed by file name.
+     */
+    private function servedFeeds(): array
+    {
+        $bodies = [];
+        foreach (['hosts', 'profiles', 'packages'] as $feed) {
+            $this->get('/' . $feed . '.xml');
+            $this->assertResponseOk();
+            $bodies[$feed . '.xml'] = (string)$this->_response->getBody();
+        }
+
+        return $bodies;
     }
 
     /**
