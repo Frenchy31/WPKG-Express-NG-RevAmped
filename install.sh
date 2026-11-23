@@ -32,7 +32,9 @@
 #
 # The Samba account takes the uid and gid of the owner of services/samba/share, so that it writes the reports
 # of the workstations into wpkg/logs whoever cloned the repository: USER_1 in samba.env holds
-# "administrateur;password;uid;wpkg;gid".
+# "administrateur;password;uid;wpkg;gid". The image cannot create an account with the uid 0: when root owns
+# the share, run this script as root, which gives wpkg/logs to the uid 1000. Files of wpkg/logs that the
+# account does not own are given back to it the same way; any other user is told the chown to run.
 set -euo pipefail
 
 export LC_ALL=C
@@ -409,10 +411,16 @@ fi
 
 # The account of the samba container takes the numbers of the owner of the share, so that it writes wherever
 # the clone's owner does: the workstations copy their reports into wpkg/logs.
-samba_uid="" samba_gid=""
+samba_uid="" samba_gid="" fix_logs=false
+samba_logs=services/samba/share/wpkg/logs
 if [ "$want_samba" = yes ]; then
     step "Checking the Samba share"
     read -r samba_uid samba_gid <<< "$(stat -c '%u %g' services/samba/share)"
+    if [ "$samba_uid" = 0 ]; then
+        [ "$(id -u)" = 0 ] || fail "services/samba/share belongs to root, and the Samba account cannot take the uid 0. Run this script as root, which gives wpkg/logs to the uid 1000, or give the clone to a regular account and run the script again:
+  sudo chown -R $(id -u):$(id -g) $(printf '%q' "$PWD")"
+        samba_uid=1000 samba_gid=1000
+    fi
     ids_ok=true
     check_samba_ids "$samba_uid" "$samba_gid" || ids_ok=false
     # Only the name of the group matters to Samba: take the uid when the gid is refused (100 is the group
@@ -425,6 +433,13 @@ if [ "$want_samba" = yes ]; then
         check_samba_ids "$samba_uid" "$samba_gid" || ids_ok=false
     fi
     [ "$ids_ok" = true ] || fail "The dperson/samba image cannot create the Samba account with the uid $samba_uid and the gid $samba_gid ($reason). The uid comes from the owner of services/samba/share: clone the repository with a regular account whose numbers the image accepts."
+    # A file of another owner (made by root, or by the account of an earlier installation) could not be rewritten.
+    foreign=$(find "$samba_logs" ! -uid "$samba_uid" -print -quit)
+    if [ -n "$foreign" ]; then
+        [ "$(id -u)" = 0 ] || fail "$foreign does not belong to the uid $samba_uid of the Samba account, so the workstations could not write it. As root, give wpkg/logs to that uid, then run this script again (no report is lost):
+  sudo chown -R $samba_uid:$samba_gid $(printf '%q' "$PWD/$samba_logs")"
+        fix_logs=true
+    fi
 fi
 
 step "Choosing the server"
@@ -668,6 +683,10 @@ if enabled mysql; then
     fi
 fi
 if enabled samba; then
+    if [ "$fix_logs" = true ]; then
+        chown -hR "$samba_uid:$samba_gid" "$samba_logs"
+        echo "Gave $samba_logs to the uid $samba_uid, the Samba account."
+    fi
     env_set "$samba_env" USER_1 "administrateur;$samba_password;$samba_uid;wpkg;$samba_gid"
 fi
 if enabled windows-vm; then
