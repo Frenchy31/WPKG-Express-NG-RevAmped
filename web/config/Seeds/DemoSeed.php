@@ -19,6 +19,18 @@ class DemoSeed extends BaseSeed
     private const string CREATED = '2026-09-01 08:00:00';
 
     /**
+     * Lets the seed run again after a reset of the database: the Migrations plugin otherwise skips a seed it
+     * has already logged in cake_seeds, which a reset does not empty. The check on existing rows keeps a second
+     * run harmless.
+     *
+     * @return bool
+     */
+    public function isIdempotent(): bool
+    {
+        return true;
+    }
+
+    /**
      * Inserts the demonstration fleet.
      *
      * @return void
