@@ -10,7 +10,7 @@ Windows disk image under KVM and exposes it like any other container.
 
 ## One-time setup
 
-Nothing manual: `USER_1` (`<name>;<password>;<uid>;wpkg;<gid>`) in `services/samba/samba.env`
+Nothing manual: `SAMBA_USER_1` (`<name>;<password>;<uid>;wpkg;<gid>`) in `services/samba/samba.env`
 makes the `samba` container create the Samba account on every start (its name is `WPKG_SAMBA_USER`,
 `administrateur` by default), and `services/samba/smb.conf`'s `valid users = @wpkg` lets in its group. The
 account owns nothing: it writes `wpkg/logs` through that group and can only read the rest of the share, which
