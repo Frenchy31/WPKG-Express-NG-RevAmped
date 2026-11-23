@@ -1270,3 +1270,6 @@ msgstr "La base de données a refusé le nettoyage : {0}"
 
 msgid "Package check {0} could not be deleted."
 msgstr "Le package check {0} n'a pas pu être supprimé."
+
+msgid "The Profile ''{0}'' cannot be deleted or disabled because the following profile(s) depend on it: {1}"
+msgstr "Le profile « {0} » ne peut pas être supprimé ni désactivé car les profiles suivants en dépendent : {1}"

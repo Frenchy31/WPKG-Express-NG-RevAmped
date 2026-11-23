@@ -130,6 +130,25 @@ class ProfilesTable extends Table
     }
 
     /**
+     * Returns the profiles depending on a profile.
+     *
+     * @param int $profileId Profile id.
+     * @return array<\App\Model\Entity\Profile>
+     */
+    public function dependents(int $profileId): array
+    {
+        return $this->find()
+            ->matching(
+                'ProfileDependencies',
+                fn(SelectQuery $dependencies): SelectQuery => $dependencies
+                    ->where(['ProfileDependencies.id' => $profileId]),
+            )
+            ->orderBy(['Profiles.id_text' => 'ASC'])
+            ->all()
+            ->toList();
+    }
+
+    /**
      * Lists enabled profiles as id => id_text.
      *
      * @param array<int> $excludedIds Profiles to leave out.

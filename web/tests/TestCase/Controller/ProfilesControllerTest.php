@@ -60,6 +60,39 @@ class ProfilesControllerTest extends AdminIntegrationTestCase
     }
 
     /**
+     * A profile another profile depends on can be neither disabled nor deleted: deleting it left a
+     * profiles_profiles row pointing to nothing.
+     *
+     * @return void
+     */
+    public function testDependedOnProfileIsProtected(): void
+    {
+        $this->post('/profiles/enable/4');
+        $this->post('/profiles/edit/2', [
+            'id_text' => 'office',
+            'enabled' => '1',
+            'profile_dependencies' => ['_ids' => [4]],
+        ]);
+        $message = "The Profile 'retired' cannot be deleted or disabled because the following profile(s) depend on it: "
+            . 'office';
+
+        $this->post('/profiles/disable/4');
+        $this->assertFlashMessageAt(0, $message);
+        $this->assertTrue($this->fetchTable('Profiles')->get(4)->enabled);
+
+        $this->post('/profiles/delete/4');
+        $this->assertFlashMessageAt(0, $message);
+        $this->assertTrue($this->fetchTable('Profiles')->exists(['id' => 4]));
+        $this->assertTrue($this->fetchTable('Profiles')->ProfileDependencies->junction()->exists([
+            'profile_id' => 2,
+            'dependency_id' => 4,
+        ]));
+
+        $this->post('/profiles/edit/4', ['id_text' => 'retired', 'enabled' => '0']);
+        $this->assertTrue($this->fetchTable('Profiles')->get(4)->enabled);
+    }
+
+    /**
      * A profile no host relies on can be disabled and deleted.
      *
      * @return void

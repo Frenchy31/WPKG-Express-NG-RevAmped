@@ -233,7 +233,7 @@ class ProfilesController extends AppController
     }
 
     /**
-     * Deletes a profile unless a host uses it as main profile.
+     * Deletes a profile unless a host uses it as main profile or another profile depends on it.
      *
      * @param int $id Profile id.
      * @return \Cake\Http\Response|null
@@ -270,7 +270,7 @@ class ProfilesController extends AppController
     }
 
     /**
-     * Disables a profile unless a host uses it as main profile.
+     * Disables a profile unless a host uses it as main profile or another profile depends on it.
      *
      * @param int $id Profile id.
      * @return \Cake\Http\Response|null
@@ -338,7 +338,8 @@ class ProfilesController extends AppController
     }
 
     /**
-     * Explains why a profile cannot be disabled or deleted.
+     * Explains why a profile cannot be disabled or deleted: a host uses it as main profile, or another profile
+     * depends on it.
      *
      * @param int $id Profile id.
      * @return string|null Message, null when nothing blocks.
@@ -346,15 +347,24 @@ class ProfilesController extends AppController
     private function disableBlocker(int $id): ?string
     {
         $profile = $this->Profiles->get($id, contain: ['MainHosts']);
-        if (!$profile->main_hosts) {
+        if ($profile->main_hosts) {
+            return __(
+                'The Profile \'\'{0}\'\' cannot be deleted or disabled because it is the main profile '
+                . 'for the following host(s): {1}',
+                $profile->id_text,
+                implode(', ', array_map(fn($host): string => $host->name, $profile->main_hosts)),
+            );
+        }
+
+        $dependents = $this->Profiles->dependents($id);
+        if (!$dependents) {
             return null;
         }
 
         return __(
-            'The Profile \'\'{0}\'\' cannot be deleted or disabled because it is the main profile for the following '
-            . 'host(s): {1}',
+            'The Profile \'\'{0}\'\' cannot be deleted or disabled because the following profile(s) depend on it: {1}',
             $profile->id_text,
-            implode(', ', array_map(fn($host): string => $host->name, $profile->main_hosts)),
+            implode(', ', array_map(fn($dependent): string => $dependent->id_text, $dependents)),
         );
     }
 }

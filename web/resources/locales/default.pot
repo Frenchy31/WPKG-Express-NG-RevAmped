@@ -1276,3 +1276,6 @@ msgstr ""
 
 msgid "Package check {0} could not be deleted."
 msgstr ""
+
+msgid "The Profile ''{0}'' cannot be deleted or disabled because the following profile(s) depend on it: {1}"
+msgstr ""
