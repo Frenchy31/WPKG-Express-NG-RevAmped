@@ -28,6 +28,12 @@ class DatabaseBackupTest extends TestCase
     use DatabaseSnapshotTrait;
     use ReferenceDataTrait;
 
+    /**
+     * Tables the export leaves out on purpose: the indexer rebuilds the reports, and the Migrations plugin keeps its
+     * own record of the migrations.
+     */
+    private const array LEFT_OUT = ['host_reports', 'report_index_state', 'phinxlog', 'cake_migrations'];
+
     private DatabaseBackup $backup;
 
     /**
@@ -89,6 +95,24 @@ class DatabaseBackupTest extends TestCase
         $this->assertStringNotContainsString('phinxlog', $file);
         $this->assertStringNotContainsString('cake_migrations', $file);
         $this->assertStringEndsWith(DumpFormat::footer($this->rowCount()), $file);
+    }
+
+    /**
+     * A table created by a migration is saved by the export or listed as left out: otherwise a reset and an import
+     * would lose its content without any message.
+     *
+     * @return void
+     */
+    public function testEveryTableOfTheSchemaIsSavedOrLeftOutOnPurpose(): void
+    {
+        $tables = array_column($this->testConnection()->execute('SHOW TABLES')->fetchAll('num'), 0);
+
+        $this->assertSame(
+            [],
+            array_values(array_diff($tables, BackupRepository::TABLES, self::LEFT_OUT)),
+            'Add the new table to BackupRepository::TABLES, or to LEFT_OUT here if the indexer rebuilds it.',
+        );
+        $this->assertSame([], array_values(array_diff(BackupRepository::TABLES, $tables)));
     }
 
     /**
