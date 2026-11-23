@@ -432,7 +432,7 @@ fi
 # The account of the samba container: its name comes first, because the checks replay its creation. It takes
 # the numbers of the owner of the share, so that it writes wherever the clone's owner does: the workstations
 # copy their reports into wpkg/logs.
-samba_user="" samba_uid="" samba_gid="" fix_logs=false
+samba_user="" samba_uid="" samba_gid="" fix_logs=false samba_account_changed=false
 samba_logs=services/samba/share/wpkg/logs
 # USER_1 is "name;password;uid;wpkg;gid", or "name;password" before the numbers.
 saved_user_1=$(env_get "$samba_env" USER_1)
@@ -724,7 +724,9 @@ if enabled samba; then
         chown -hR "$samba_uid:$samba_gid" "$samba_logs"
         echo "Gave $samba_logs to the uid $samba_uid, the Samba account."
     fi
-    env_set "$samba_env" USER_1 "$samba_user;$samba_password;$samba_uid;wpkg;$samba_gid"
+    samba_user_1="$samba_user;$samba_password;$samba_uid;wpkg;$samba_gid"
+    [ "$samba_user_1" = "$saved_user_1" ] || samba_account_changed=true
+    env_set "$samba_env" USER_1 "$samba_user_1"
 fi
 if enabled windows-vm; then
     env_set "$vm_env" PASSWORD "$vm_password"
@@ -747,12 +749,15 @@ up_services=(wpkg)
 enabled mysql && up_services+=(mysql)
 enabled samba && up_services+=(samba)
 step "Starting ${up_services[*]}"
+# The dperson/samba image keeps /etc and /var/lib/samba in anonymous volumes, which Compose reattaches to the
+# container it recreates when USER_1 changes: the previous account would stay usable and its uid would block the
+# creation of the new one. Removing the container with its anonymous volumes lets the entrypoint build the account
+# from samba.env alone, and leaves no dangling volume behind.
+if [ "$samba_account_changed" = true ]; then
+    docker compose rm --stop --force --volumes samba
+fi
 # --remove-orphans removes the container of a disabled component; its volume and storage folder stay.
-# --renew-anon-volumes: the dperson/samba image keeps /etc and /var/lib/samba in anonymous volumes, which Compose
-# reattaches to the container it recreates when USER_1 changes. The account of the previous USER_1 would stay in
-# them, usable, and its uid would block the creation of the new one, whereas the entrypoint rebuilds the account
-# from samba.env at every start. No other service of this stack keeps anything in an anonymous volume.
-docker compose up -d --wait --remove-orphans --renew-anon-volumes "${up_services[@]}"
+docker compose up -d --wait --remove-orphans "${up_services[@]}"
 
 step "Creating the database tables"
 docker compose exec -T -u www-data wpkg bin/cake migrations migrate
