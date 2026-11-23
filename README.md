@@ -182,6 +182,7 @@ Limites :
 
 - Taille maximale : `PHP_UPLOAD_MAX_FILESIZE` et `PHP_POST_MAX_SIZE` de `services/wpkg/wpkg.env` (16M par défaut, voir Configuration). L'export de la base de démonstration (`DemoSeed`, 82 lignes) pèse 11 Ko. Au-delà de `PHP_UPLOAD_MAX_FILESIZE`, la page affiche l'erreur ; au-delà de `PHP_POST_MAX_SIZE`, PHP ignore toute la requête et le navigateur affiche une erreur 403 (jeton CSRF absent).
 - L'import et la réinitialisation exigent des tables InnoDB, seules à pouvoir annuler une transaction. Sur une base reprise de l'ancienne application, ils s'arrêtent avec un message si une table utilise un autre moteur : `ALTER TABLE <table> ENGINE=InnoDB`.
+- `DemoSeed` ne recharge pas la démonstration après une réinitialisation : le plugin Migrations a noté dans la table `cake_seeds` que ce seed a déjà tourné, la réinitialisation ne vide pas cette table, et la commande se termine sans erreur ni donnée. Ajouter `--force` à la commande du chapitre Démarrage.
 - Un dump de l'ancienne application PHP 5 ne s'importe pas ici : suivre la procédure de migration plus bas.
 - Pas de sauvegarde planifiée ni de stockage côté serveur : le fichier est téléchargé par le navigateur.
 
