@@ -125,11 +125,19 @@ class PackageChecksTable extends Table
     /**
      * Deletes a check and its descendants.
      *
+     * A check without lft or rght, as legacy databases hold, sits outside the nested set: it has no gap to close
+     * and the Tree behavior would build an invalid query for it, so only its row is deleted. Its children, if
+     * any, are then orphans that the database cleanup removes.
+     *
      * @param \App\Model\Entity\PackageCheck $check Check.
      * @return bool
      */
     public function deleteInPackage(PackageCheck $check): bool
     {
+        if ($check->get('lft') === null || $check->get('rght') === null) {
+            return $this->deleteAll(['id' => $check->get('id')]) === 1;
+        }
+
         $this->scopeToPackage((int)$check->get('package_id'));
 
         return $this->delete($check);

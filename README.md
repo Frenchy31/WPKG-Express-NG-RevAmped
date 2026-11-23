@@ -168,6 +168,28 @@ Les postes sont regroupés sous la première entrée d'hôte active qui les reco
 
 Un rapport de plus de 24 h porte le badge « Stale » : le poste n'a pas tourné depuis. Un clic sur le nom du poste affiche son journal complet.
 
+## Nettoyage de la base
+
+Le schéma n'a aucune clé étrangère. Une base reprise de l'ancienne application peut donc contenir des lignes qui pointent vers des enregistrements disparus. L'application refuse désormais de supprimer ou de désactiver un profile dont un autre profile dépend, comme pour les packages : les versions précédentes laissaient la ligne où il était la dépendance. Ces lignes orphelines n'atteignent jamais les flux XML, qui ne suivent que les enregistrements existants : les supprimer ne change aucun flux.
+
+La section **Nettoyage de la base** de la page **Administration** compte les lignes orphelines de chaque table, sans rien modifier :
+
+| Table | Colonnes vérifiées | Ligne orpheline si |
+|---|---|---|
+| `exit_codes` | `package_action_id` | l'action n'existe pas, ou son package n'existe pas |
+| `package_actions` | `package_id` | le package n'existe pas |
+| `package_checks` | `package_id`, `parent_id` | le package n'existe pas, ou le parent n'existe pas dans le même package ; les checks placés sous un check orphelin sont comptés et supprimés avec lui |
+| `variables` | `ref_id` | le package, le profile ou le host désigné par `ref_type` n'existe pas |
+| `hosts_profiles` | `host_id`, `profile_id` | le host ou le profile n'existe pas |
+| `packages_profiles` | `package_id`, `profile_id` | le package ou le profile n'existe pas |
+| `packages_packages` | `package_id`, `dependency_id` | l'un des deux packages n'existe pas |
+| `profiles_profiles` | `profile_id`, `dependency_id` | l'un des deux profiles n'existe pas |
+| `hosts` | `mainprofile_id` | le profile n'existe pas : le host est listé, jamais supprimé |
+
+Le bouton **Nettoyer** supprime ces lignes après confirmation, dans une seule transaction : si une suppression échoue, aucune table n'est modifiée. La page de résultat indique le nombre de lignes supprimées dans chaque table. Les checks passent par l'arbre imbriqué (`deleteInPackage()`) pour que leurs positions `lft` et `rght` restent cohérentes ; un check sans `lft` ni `rght`, hors de l'arbre, est supprimé seul. Les hosts sans profile principal existant restent en place et sont listés avec un lien vers leur formulaire : choisir un profile principal sur chacun.
+
+Les doublons dans les tables de liaison et la table `host_reports`, reconstruite par l'indexeur, ne sont pas concernés. Sauvegarder la base avant un nettoyage : la suppression est définitive.
+
 ## Tests
 
 ```shell
