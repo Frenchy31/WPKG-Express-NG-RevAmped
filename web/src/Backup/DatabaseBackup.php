@@ -122,12 +122,21 @@ class DatabaseBackup
      * Deletes every row of the business tables, in one transaction.
      *
      * @return void
-     * @throws \App\Backup\BackupException When a table cannot be rolled back.
+     * @throws \App\Backup\BackupException When a table cannot be rolled back or the database rejects a deletion.
      */
     public function reset(): void
     {
         $this->assertTransactional();
-        $this->repository->transactional(fn() => $this->repository->deleteAll());
+
+        try {
+            $this->repository->transactional(fn() => $this->repository->deleteAll());
+        } catch (QueryException $exception) {
+            throw new BackupException(
+                __('The database could not be emptied: {0}', $exception->getPrevious()?->getMessage() ?? ''),
+                0,
+                $exception,
+            );
+        }
     }
 
     /**

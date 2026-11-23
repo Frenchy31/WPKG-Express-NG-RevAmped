@@ -33,6 +33,9 @@ msgstr "Les colonnes de la table « {0} » du fichier diffèrent de celles de 
 msgid "The database rejected the file: {0}"
 msgstr "La base a refusé le fichier : {0}"
 
+msgid "The database could not be emptied: {0}"
+msgstr "La base n'a pas pu être vidée : {0}"
+
 msgid "The table \"{0}\" uses the {1} storage engine, which cannot undo a failed operation. Convert it to InnoDB first."
 msgstr "La table « {0} » utilise le moteur de stockage {1}, qui ne peut pas annuler une opération échouée. Convertissez-la d'abord en InnoDB."
 

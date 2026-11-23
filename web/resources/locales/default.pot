@@ -38,6 +38,9 @@ msgstr ""
 msgid "The database rejected the file: {0}"
 msgstr ""
 
+msgid "The database could not be emptied: {0}"
+msgstr ""
+
 msgid "The table \"{0}\" uses the {1} storage engine, which cannot undo a failed operation. Convert it to InnoDB first."
 msgstr ""
 

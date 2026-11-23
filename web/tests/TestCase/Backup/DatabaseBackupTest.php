@@ -15,6 +15,7 @@ use Cake\Database\Exception\QueryException;
 use Cake\I18n\I18n;
 use Cake\TestSuite\TestCase;
 use DateTimeImmutable;
+use PDOException;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
@@ -460,6 +461,41 @@ class DatabaseBackupTest extends TestCase
 
         $this->assertSame($snapshot, $this->snapshot());
         $this->assertGreaterThan(1, count($snapshot['exit_codes']), 'The tables before `variables` hold rows to undo.');
+    }
+
+    /**
+     * A failure in the middle of a reset undoes the deletions already made, and is reported as an error.
+     *
+     * @return void
+     */
+    public function testDatabaseErrorUndoesTheWholeReset(): void
+    {
+        $repository = new class ($this->testConnection()) extends BackupRepository {
+            /**
+             * @inheritDoc
+             */
+            public function deleteAll(): void
+            {
+                parent::deleteAll();
+
+                throw new QueryException('DELETE FROM `variables`', new PDOException('Lock wait timeout exceeded'));
+            }
+        };
+        $snapshot = $this->snapshot();
+
+        try {
+            (new DatabaseBackup($repository))->reset();
+            $this->fail('A failed reset was reported as done.');
+        } catch (BackupException $exception) {
+            $this->assertSame(
+                'The database could not be emptied: Lock wait timeout exceeded',
+                $exception->getMessage(),
+            );
+            $this->assertInstanceOf(QueryException::class, $exception->getPrevious());
+        }
+
+        $this->assertSame($snapshot, $this->snapshot());
+        $this->assertGreaterThan(0, $this->rowCount());
     }
 
     /**
