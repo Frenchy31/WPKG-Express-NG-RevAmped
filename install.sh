@@ -29,6 +29,10 @@
 # A password left empty (or without a terminal and without its variable) is generated and printed once.
 # A password already saved is kept unless its variable is set. No password is ever put on a command line.
 # Running the script again keeps every saved value, then rebuilds and restarts the stack.
+#
+# The Samba account takes the uid and gid of the owner of services/samba/share, so that it writes the reports
+# of the workstations into wpkg/logs whoever cloned the repository: USER_1 in samba.env holds
+# "administrateur;password;uid;wpkg;gid".
 set -euo pipefail
 
 export LC_ALL=C
@@ -250,6 +254,16 @@ valid_locale() {
     esac
 }
 
+# check_samba_ids UID GID: replays in a throwaway container what the entrypoint of dperson/samba does for
+# USER_1. The entrypoint ignores a failure and starts without the account, so a number that the image already
+# uses (uid 33 is xfs, gid 100 is users) or refuses (above 256000) must be caught here. On failure $reason
+# holds the message of the failing command.
+check_samba_ids() {
+    reason=$(docker run --rm --entrypoint sh dperson/samba -c \
+        'addgroup --gid "$2" wpkg 2>&1 && adduser -D -H -G wpkg -u "$1" administrateur 2>&1' sh "$1" "$2") \
+        || { reason=${reason:-"docker could not run the dperson/samba image"}; return 1; }
+}
+
 # Written unquoted in wpkg.env: quotes, '$', '#', '\' and spaces could change the value Compose reads.
 valid_admin_user() {
     case $1 in
@@ -393,6 +407,26 @@ if [ "$want_vm" = yes ]; then
     fi
 fi
 
+# The account of the samba container takes the numbers of the owner of the share, so that it writes wherever
+# the clone's owner does: the workstations copy their reports into wpkg/logs.
+samba_uid="" samba_gid=""
+if [ "$want_samba" = yes ]; then
+    step "Checking the Samba share"
+    read -r samba_uid samba_gid <<< "$(stat -c '%u %g' services/samba/share)"
+    ids_ok=true
+    check_samba_ids "$samba_uid" "$samba_gid" || ids_ok=false
+    # Only the name of the group matters to Samba: take the uid when the gid is refused (100 is the group
+    # "users" of the image, and the primary group of every account on some distributions).
+    if [ "$ids_ok" = false ] && [ "${reason%%:*}" = addgroup ] && [ "$samba_gid" != "$samba_uid" ]; then
+        printf 'Note: the image refuses the gid %s of the share (%s): the group wpkg gets the gid %s.\n' \
+            "$samba_gid" "$reason" "$samba_uid"
+        samba_gid=$samba_uid
+        ids_ok=true
+        check_samba_ids "$samba_uid" "$samba_gid" || ids_ok=false
+    fi
+    [ "$ids_ok" = true ] || fail "The dperson/samba image cannot create the Samba account with the uid $samba_uid and the gid $samba_gid ($reason). The uid comes from the owner of services/samba/share: clone the repository with a regular account whose numbers the image accepts."
+fi
+
 step "Choosing the server"
 saved_url=$(env_get "$wpkg_env" APP_FULL_BASE_URL)
 saved_name=${saved_url#http://}
@@ -494,9 +528,11 @@ fi
 # Samba account.
 samba_password=""
 if [ "$want_samba" = yes ]; then
+    # USER_1 is "administrateur;password;uid;wpkg;gid", or "administrateur;password" before the numbers.
     saved_user_1=$(env_get "$samba_env" USER_1)
-    samba_password=${saved_user_1#*;}
-    [ "$saved_user_1" != "$samba_password" ] || samba_password=""
+    samba_password=""
+    case $saved_user_1 in *";"*) samba_password=${saved_user_1#*;} ;; esac
+    samba_password=${samba_password%%;*}
     if [ -n "${WPKG_SAMBA_PASSWORD:-}" ]; then
         collect_password samba_password WPKG_SAMBA_PASSWORD "Samba password" strict generate
     elif [ -z "$samba_password" ]; then
@@ -632,7 +668,7 @@ if enabled mysql; then
     fi
 fi
 if enabled samba; then
-    env_set "$samba_env" USER_1 "administrateur;$samba_password"
+    env_set "$samba_env" USER_1 "administrateur;$samba_password;$samba_uid;wpkg;$samba_gid"
 fi
 if enabled windows-vm; then
     env_set "$vm_env" PASSWORD "$vm_password"

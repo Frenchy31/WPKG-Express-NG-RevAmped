@@ -5,6 +5,8 @@ services:
     # USER_1 is the test-only account matching smb.conf's "valid users = administrateur".
     # dperson/samba's entrypoint creates this user/password on every start regardless of the
     # custom smb.conf mounted below. Change/remove for anything beyond local testing.
+    # Its uid and gid are those of the owner of ./services/samba/share (install.sh sets them), so that it can
+    # write into wpkg/logs.
     env_file: services/samba/samba.env
     ports:
       - "139:139"
