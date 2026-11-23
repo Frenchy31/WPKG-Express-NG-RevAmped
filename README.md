@@ -168,6 +168,8 @@ La section **Base de données** de la page **Administration** (`/admin`) exporte
 
 Les trois actions exigent l'administrateur connecté, une requête `POST` et le jeton CSRF.
 
+Le fichier exporté contient toutes les commandes et variables des paquets, donc les éventuels mots de passe qu'elles portent : le protéger comme `services/wpkg/wpkg.env`.
+
 Le fichier n'est jamais exécuté comme du SQL : l'application le lit ligne à ligne, vérifie les noms de tables et de colonnes, et passe les valeurs comme paramètres. L'import refuse, avec un message, un fichier qui :
 
 - ne commence pas par l'en-tête de l'export, par exemple du SQL écrit à la main (`DROP TABLE hosts;`) ;
