@@ -6,6 +6,9 @@ namespace App\Test\TestCase\Controller;
 
 use App\Test\Support\AdminIntegrationTestCase;
 use App\Test\Support\DatabaseSnapshotTrait;
+use Cake\Cache\Cache;
+use Cake\Core\Configure;
+use Cake\I18n\I18n;
 use Laminas\Diactoros\Stream;
 use Laminas\Diactoros\UploadedFile;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -17,7 +20,18 @@ class DatabaseControllerTest extends AdminIntegrationTestCase
 {
     use DatabaseSnapshotTrait;
 
+    private const string NBSP = "\u{a0}";
+
     private const string TOO_LARGE = 'The file is larger than the upload limit of {limit}.';
+
+    /**
+     * @inheritDoc
+     */
+    protected function tearDown(): void
+    {
+        I18n::setLocale((string)Configure::read('App.defaultLocale'));
+        parent::tearDown();
+    }
 
     /**
      * The three actions, which change or reveal the whole database.
@@ -296,6 +310,39 @@ class DatabaseControllerTest extends AdminIntegrationTestCase
                 $page,
             );
         }
+    }
+
+    /**
+     * The section, its warning and the messages are translated, with the French punctuation rules.
+     *
+     * @return void
+     */
+    public function testFrenchInterface(): void
+    {
+        // The catalogue is cached for a year: one cached before these messages existed would hide them.
+        Cache::clear('_cake_translations_');
+        I18n::clear();
+        $this->cookie('wpkg_lang', 'fr');
+        $nbsp = self::NBSP;
+
+        $this->get('/admin');
+        $this->assertResponseContains('<h2>Base de données</h2>');
+        $this->assertResponseContains(
+            '<div class="message warning">Les packages absents des nouveaux flux seront désinstallés des postes '
+            . 'à leur prochaine exécution.</div>',
+        );
+        $this->assertResponseContains(
+            'data-confirm-message="Remplacer tout le contenu de la base par ce fichier' . $nbsp . '? Les packages',
+        );
+        $this->assertResponseContains('data-confirm-message="Vider la base' . $nbsp . '? Les packages');
+
+        $file = "-- WPKG Express NG database export\n-- Format: 1\n-- Schema version: " . $this->schemaVersion()
+            . "\nDROP TABLE hosts;\n";
+        $this->post('/database/import', ['backup' => $this->upload($file)]);
+        $this->assertFlashMessage("La ligne 4 ne fait pas partie d'un export de cette application.");
+
+        $this->post('/database/reset');
+        $this->assertFlashMessage('La base a été vidée.');
     }
 
     /**
