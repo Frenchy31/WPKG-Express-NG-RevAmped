@@ -10,13 +10,13 @@ Windows disk image under KVM and exposes it like any other container.
 
 ## One-time setup
 
-Nothing manual: `USER_1` (`administrateur;<password>;<uid>;wpkg;<gid>`) in `services/samba/samba.env`
-makes the `samba` container create the "administrateur" Samba user referenced in
-`services/samba/smb.conf`'s `valid users` automatically on every start. `./install.sh` sets
-the password, and writes it to `services/windows-vm/oem/smb-credentials.bat` (git-ignored, mode 600),
-which `services/windows-vm/oem/install.bat` loads with `call`: the password is no longer in a
-versioned script. `install.bat` only runs on the first boot of Windows: after changing the
-Samba password, run `net use` again in the VM.
+Nothing manual: `USER_1` (`<name>;<password>;<uid>;wpkg;<gid>`) in `services/samba/samba.env`
+makes the `samba` container create the Samba account on every start (its name is `WPKG_SAMBA_USER`,
+`administrateur` by default), and `services/samba/smb.conf`'s `valid users = @wpkg` lets in its group.
+`./install.sh` sets the name and the password, and writes them to `services/windows-vm/oem/smb-credentials.bat`
+(git-ignored, mode 600), which `services/windows-vm/oem/install.bat` loads with `call`: the password is no
+longer in a versioned script. `install.bat` only runs on the first boot of Windows: after changing the
+Samba account name or password, run `net use` again in the VM.
 
 ## Bring it up
 
@@ -69,7 +69,7 @@ run, open an elevated `cmd.exe` on the desktop (noVNC, RDP, or `sendkey` on the 
 `/run/shm/monitor.sock` inside the container) and run:
 
 ```
-net use Z: \\172.19.0.4\wpkg <Samba password> /user:administrateur /persistent:yes
+net use Z: \\172.19.0.4\wpkg <Samba password> /user:<Samba account> /persistent:yes
 cscript //NoLogo Z:\wpkg\wpkg.js /synchronize /noreboot /debug > Z:\wpkg\logs\run.txt 2>&1
 ```
 

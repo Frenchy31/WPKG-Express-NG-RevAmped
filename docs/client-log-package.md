@@ -31,7 +31,7 @@ WPKG Express NG lit ce dossier. Chaque exécution écrase les fichiers de la pr�
 
   Sans ces paramètres, `wpkg.js` utilise ses valeurs par défaut : le dossier système (`%SystemRoot%\system32`) pour `wpkg.xml` et `%TEMP%` pour le log. Adapter les commandes ci-dessous en cas d'autres chemins.
 - La variable `SOFTWARE` pointe vers le dossier `software` du partage, par exemple dans le profile de base. Le dossier `logs` se trouve à côté : `%SOFTWARE%\..\logs`.
-- Le compte qui exécute WPKG sur les postes doit pouvoir écrire dans le dossier `logs` du partage. Avec la pile locale, `./install.sh` y veille : le compte Samba `administrateur` prend l'UID et le GID du propriétaire de `services/samba/share` (voir `README.md`).
+- Le compte qui exécute WPKG sur les postes doit pouvoir écrire dans le dossier `logs` du partage. Avec la pile locale, `./install.sh` y veille : le compte Samba (`administrateur` par défaut, voir `WPKG_SAMBA_USER` dans `README.md`) prend l'UID et le GID du propriétaire de `services/samba/share`.
 
 ## Définition du package
 
