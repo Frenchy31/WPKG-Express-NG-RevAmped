@@ -49,6 +49,10 @@ class DatabaseControllerTest extends AdminIntegrationTestCase
             $this->_response->getHeaderLine('Content-Disposition'),
         );
         $this->assertHeaderContains('Cache-Control', 'no-store');
+        $this->assertSame(
+            (string)strlen((string)$this->_response->getBody()),
+            $this->_response->getHeaderLine('Content-Length'),
+        );
         $this->assertResponseContains("-- WPKG Express NG database export\n-- Format: 1\n-- Schema version: ");
         $this->assertResponseContains('CREATE TABLE `hosts` (');
         $this->assertResponseContains("INSERT INTO `hosts` (`id`,`enabled`,`name`");

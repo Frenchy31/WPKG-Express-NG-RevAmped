@@ -27,12 +27,14 @@ class DatabaseController extends AppController
         $this->request->allowMethod('post');
 
         $now = DateTime::now();
+        $file = $this->backup()->export($now);
 
         return $this->response
             ->withHeader('Content-Type', 'application/sql; charset=UTF-8')
+            ->withHeader('Content-Length', (string)$file->getSize())
             ->withDownload('wpkg-express-ng-' . $now->format('Ymd-His') . '.sql')
             ->withDisabledCache()
-            ->withBody($this->backup()->export($now));
+            ->withBody($file);
     }
 
     /**
