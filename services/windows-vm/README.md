@@ -12,7 +12,9 @@ Windows disk image under KVM and exposes it like any other container.
 
 Nothing manual: `USER_1` (`<name>;<password>;<uid>;wpkg;<gid>`) in `services/samba/samba.env`
 makes the `samba` container create the Samba account on every start (its name is `WPKG_SAMBA_USER`,
-`administrateur` by default), and `services/samba/smb.conf`'s `valid users = @wpkg` lets in its group.
+`administrateur` by default), and `services/samba/smb.conf`'s `valid users = @wpkg` lets in its group. The
+account owns nothing: it writes `wpkg/logs` through that group and can only read the rest of the share, which
+is all the VM needs (`wpkg.js` runs from `Z:\wpkg` and copies its log into `Z:\wpkg\logs`).
 `./install.sh` sets the name and the password, and writes them to `services/windows-vm/oem/smb-credentials.bat`
 (git-ignored, mode 600), which `services/windows-vm/oem/install.bat` loads with `call`: the password is no
 longer in a versioned script. `install.bat` only runs on the first boot of Windows: after changing the

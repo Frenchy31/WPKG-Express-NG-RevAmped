@@ -6,8 +6,9 @@ services:
     # whatever its name.
     # dperson/samba's entrypoint creates this user/password on every start regardless of the
     # custom smb.conf mounted below. Change/remove for anything beyond local testing.
-    # Its uid and gid are those of the owner of ./services/samba/share (install.sh sets them), so that it can
-    # write into wpkg/logs.
+    # Its uid is dedicated, never the one of the owner of ./services/samba/share (install.sh picks it), and its
+    # group wpkg has the gid of the group of that folder: the account writes wpkg/logs through the group, and
+    # nowhere else.
     # The image keeps /etc and /var/lib/samba in anonymous volumes, which Compose reattaches to a recreated
     # container: the account of the previous USER_1 would stay. After editing samba.env by hand, run
     # docker compose rm --stop --force --volumes samba, then docker compose up -d samba (install.sh does).
