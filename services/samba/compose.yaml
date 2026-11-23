@@ -7,6 +7,9 @@ services:
     # custom smb.conf mounted below. Change/remove for anything beyond local testing.
     # Its uid and gid are those of the owner of ./services/samba/share (install.sh sets them), so that it can
     # write into wpkg/logs.
+    # The image keeps /etc and /var/lib/samba in anonymous volumes, which Compose reattaches to a recreated
+    # container: the account of the previous USER_1 would stay. After editing samba.env by hand, run
+    # docker compose up -d --renew-anon-volumes samba (install.sh does).
     env_file: services/samba/samba.env
     ports:
       - "139:139"

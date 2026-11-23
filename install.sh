@@ -711,7 +711,11 @@ enabled mysql && up_services+=(mysql)
 enabled samba && up_services+=(samba)
 step "Starting ${up_services[*]}"
 # --remove-orphans removes the container of a disabled component; its volume and storage folder stay.
-docker compose up -d --wait --remove-orphans "${up_services[@]}"
+# --renew-anon-volumes: the dperson/samba image keeps /etc and /var/lib/samba in anonymous volumes, which Compose
+# reattaches to the container it recreates when USER_1 changes. The account of the previous USER_1 would stay in
+# them, usable, and its uid would block the creation of the new one, whereas the entrypoint rebuilds the account
+# from samba.env at every start. No other service of this stack keeps anything in an anonymous volume.
+docker compose up -d --wait --remove-orphans --renew-anon-volumes "${up_services[@]}"
 
 step "Creating the database tables"
 docker compose exec -T -u www-data wpkg bin/cake migrations migrate
