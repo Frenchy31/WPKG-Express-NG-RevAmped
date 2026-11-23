@@ -38,12 +38,12 @@
 # account nor group of this host has), and the group of that owner, wpkg in the container: USER_1 in samba.env
 # holds "name;password;uid;wpkg;gid", and smb.conf lets in the group wpkg, never a name. The script sets wpkg/logs
 # to the mode 2775 (setgid, group-writable) and makes the files it holds group-writable; the rest of the share
-# stays as cloned, read-only for the account. Run as the owner of the clone, it needs no root. Entries of
-# wpkg/logs that it cannot repair (another owner, another group) make it print the chown to run as root.
-# When root owns the share, or the image refuses the group of the owner (100 is the group "users" of the image),
-# run this script as root: it gives wpkg/logs to the account and to a dedicated group of the same number.
-# Renaming the account removes the old one: the workstations that use it lose access to the share until their
-# credentials are updated.
+# stays as cloned, read-only for the account (the script checks that the account can read it). Run as the owner of
+# the clone, it needs no root. Entries of wpkg/logs that it cannot repair (another owner, another group) make it
+# print the chown to run as root. When root owns the share, or the image refuses the group of the owner (100 is
+# the group "users" of the image), run this script as root: it gives wpkg/logs to the account and to a dedicated
+# group of the same number. Renaming the account removes the old one: the workstations that use it lose access
+# to the share until their credentials are updated.
 set -euo pipefail
 
 export LC_ALL=C
@@ -502,6 +502,17 @@ if [ "$want_samba" = yes ]; then
                 ;;
         esac
         fail "The $samba_image image cannot create the Samba account '$samba_user' with the uid $samba_uid and the gid $samba_gid ($reason)."
+    fi
+    # The account no longer owns the tree: it reads it through the group of the clone, or as "other". A clone made
+    # with the umask 077 has neither, and the workstations could not read wpkg.js nor the packages.
+    unreadable=$(find services/samba/share -path "$samba_logs" -prune -o \( \
+        \( -type d ! \( \( -gid "$samba_gid" -perm -g=rx \) -o -perm -o=rx \) \) -o \
+        \( -type f ! \( \( -gid "$samba_gid" -perm -g=r \) -o -perm -o=r \) \) \) -print -quit)
+    if [ -n "$unreadable" ]; then
+        read_bits=g+rX
+        [ "$samba_gid" = "$share_gid" ] || read_bits=o+rX
+        fail "$unreadable cannot be read by the Samba account, which does not own the share: it reads through the group of the clone, or as 'other'. A restrictive umask made the clone. As its owner, make the share readable, then run this script again:
+  chmod -R $read_bits $(printf '%q' "$PWD/services/samba/share")"
     fi
     # wpkg/logs: the group of the account, setgid, group-writable files and folders. Only root can give an entry to
     # another owner or group; the owner can only make it group-writable.
