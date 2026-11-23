@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Test\TestCase\Controller;
 
 use App\Cleanup\DatabaseCleanup;
+use App\Model\Table\PackageChecksTable;
 use App\Test\Support\AdminIntegrationTestCase;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
+use Cake\Event\EventInterface;
+use Cake\Event\EventManager;
 use DOMDocument;
 use DOMXPath;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -165,6 +168,37 @@ class DatabaseCleanupControllerTest extends AdminIntegrationTestCase
         $this->post('/database-cleanup/run');
 
         $this->assertResponseCode(403);
+        $this->assertSame(36, $this->rowsToDelete());
+    }
+
+    /**
+     * A failed cleanup deletes nothing and sends back to the Admin page with the reason.
+     *
+     * @return void
+     */
+    public function testFailedCleanupShowsTheReasonAndDeletesNothing(): void
+    {
+        $this->insertOrphans();
+        // The request builds its own table instances: only the global manager sees their events.
+        $refuseCheckDelete = function (EventInterface $event): void {
+            if ($event->getSubject() instanceof PackageChecksTable) {
+                $event->setResult(false);
+                $event->stopPropagation();
+            }
+        };
+        EventManager::instance()->on('Model.beforeDelete', ['priority' => 1], $refuseCheckDelete);
+        try {
+            $this->post('/database-cleanup/run');
+        } finally {
+            EventManager::instance()->off('Model.beforeDelete', $refuseCheckDelete);
+        }
+
+        $this->assertRedirect('/admin');
+        $this->assertFlashElement('flash/error');
+        $this->assertMatchesRegularExpression(
+            '/^Package check \d+ could not be deleted\.$/',
+            (string)$this->_requestSession->read('Flash.flash.0.message'),
+        );
         $this->assertSame(36, $this->rowsToDelete());
     }
 

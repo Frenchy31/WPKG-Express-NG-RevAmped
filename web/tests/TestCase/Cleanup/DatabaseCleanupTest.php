@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Cleanup;
 
+use App\Cleanup\CleanupException;
 use App\Cleanup\DatabaseCleanup;
 use App\Cleanup\OrphanTable;
 use App\Feed\HostsFeed;
@@ -16,7 +17,6 @@ use Cake\Event\EventInterface;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\TestSuite\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
-use RuntimeException;
 
 /**
  * Detection and deletion of the rows pointing to records that do not exist.
@@ -362,7 +362,7 @@ class DatabaseCleanupTest extends TestCase
         try {
             $this->cleanup->clean();
             $this->fail('The cleanup must fail when a check cannot be deleted.');
-        } catch (RuntimeException $exception) {
+        } catch (CleanupException $exception) {
             $this->assertSame('Package check 401 could not be deleted.', $exception->getMessage());
         }
 

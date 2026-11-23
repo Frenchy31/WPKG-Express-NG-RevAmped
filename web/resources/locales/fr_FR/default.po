@@ -1264,3 +1264,9 @@ msgstr "Lignes supprimées"
 
 msgid "Back to Admin"
 msgstr "Retour à l'administration"
+
+msgid "The database rejected the cleanup: {0}"
+msgstr "La base de données a refusé le nettoyage : {0}"
+
+msgid "Package check {0} could not be deleted."
+msgstr "Le package check {0} n'a pas pu être supprimé."

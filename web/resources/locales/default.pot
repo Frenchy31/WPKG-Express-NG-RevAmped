@@ -1270,3 +1270,9 @@ msgstr ""
 msgid "Back to Admin"
 msgstr ""
 
+
+msgid "The database rejected the cleanup: {0}"
+msgstr ""
+
+msgid "Package check {0} could not be deleted."
+msgstr ""

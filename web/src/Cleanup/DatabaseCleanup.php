@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Cleanup;
 
 use Cake\Database\Connection;
+use Cake\Database\Exception\QueryException;
 use Cake\ORM\Locator\LocatorAwareTrait;
-use RuntimeException;
 
 /**
  * Finds and deletes the rows of the link tables that point to records which no longer exist.
@@ -48,11 +48,20 @@ final class DatabaseCleanup
      * Deletes the orphan rows in one transaction: either every table is cleaned, or none.
      *
      * @return array<string, int> Number of rows deleted by table name, in cleanup order.
+     * @throws \App\Cleanup\CleanupException When a row cannot be deleted: nothing is deleted then.
      */
     public function clean(): array
     {
-        /** @var array<string, int> */
-        return $this->connection()->transactional(fn(): array => $this->deleteOrphans());
+        try {
+            /** @var array<string, int> */
+            return $this->connection()->transactional(fn(): array => $this->deleteOrphans());
+        } catch (QueryException $exception) {
+            throw new CleanupException(
+                __('The database rejected the cleanup: {0}', $exception->getPrevious()?->getMessage() ?? ''),
+                0,
+                $exception,
+            );
+        }
     }
 
     /**
@@ -97,7 +106,7 @@ final class DatabaseCleanup
             if ($check->get('lft') === null || $check->get('rght') === null) {
                 $checks->deleteAll(['id' => $checkId]);
             } elseif (!$checks->deleteInPackage($check)) {
-                throw new RuntimeException(sprintf('Package check %d could not be deleted.', $checkId));
+                throw new CleanupException(__('Package check {0} could not be deleted.', $checkId));
             }
         }
 
