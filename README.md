@@ -154,6 +154,35 @@ Les postes sont regroupés sous la première entrée d'hôte active qui les reco
 
 Un rapport de plus de 24 h porte le badge « Stale » : le poste n'a pas tourné depuis. Un clic sur le nom du poste affiche son journal complet.
 
+## Sauvegarde de la base
+
+La section **Base de données** de la page **Administration** (`/admin`) exporte, importe et réinitialise les tables métier : hôtes, profils, paquets, et ce qui en dépend (actions, vérifications, codes de sortie, variables, liens). `host_reports` et `report_index_state` n'en font pas partie : l'indexeur les reconstruit à partir du partage.
+
+**Un import ou une réinitialisation change ce que lisent les postes.** Un paquet absent du nouveau flux est désinstallé à leur prochaine exécution, et une `revision` modifiée déclenche une mise à jour. Les deux actions demandent une confirmation qui le rappelle. Exporter d'abord.
+
+| Action | Effet |
+|---|---|
+| Exporter | Télécharge `wpkg-express-ng-AAAAMMJJ-HHMMSS.sql` : structure et données des tables métier, lues dans une seule transaction (instantané cohérent), avec en en-tête la version du schéma, c'est-à-dire la dernière migration appliquée. |
+| Importer | Remplace tout le contenu des tables métier par celui d'un fichier produit par l'export, en une transaction : à la première erreur la base reste inchangée et l'erreur s'affiche. `hosts.xml`, `profiles.xml` et `packages.xml` sont ensuite identiques à ceux de la base exportée, `package_checks` compris (`lft`, `rght` et `parent_id` sont restitués tels quels). |
+| Réinitialiser | Vide les tables métier, en une transaction. |
+
+Les trois actions exigent l'administrateur connecté, une requête `POST` et le jeton CSRF.
+
+Le fichier n'est jamais exécuté comme du SQL : l'application le lit ligne à ligne, vérifie les noms de tables et de colonnes, et passe les valeurs comme paramètres. L'import refuse, avec un message, un fichier qui :
+
+- ne commence pas par l'en-tête de l'export, par exemple du SQL écrit à la main (`DROP TABLE hosts;`) ;
+- vient d'une autre version de schéma que la base : un export fait avant une migration n'est plus importable après, donc exporter de nouveau après chaque `migrations migrate` ;
+- est tronqué ou modifié : la dernière ligne annonce le nombre de lignes, son absence ou un autre total est une erreur ;
+- vise une autre table que les onze tables métier, ou d'autres colonnes que celles de la base ;
+- contient des lignes que la base refuse, par exemple un identifiant en double.
+
+Limites :
+
+- Taille maximale : `PHP_UPLOAD_MAX_FILESIZE` et `PHP_POST_MAX_SIZE` de `services/wpkg/wpkg.env` (16M par défaut, voir Configuration). L'export de la base de démonstration (`DemoSeed`, 82 lignes) pèse 11 Ko. Au-delà de `PHP_UPLOAD_MAX_FILESIZE`, la page affiche l'erreur ; au-delà de `PHP_POST_MAX_SIZE`, PHP ignore toute la requête et le navigateur affiche une erreur 403 (jeton CSRF absent).
+- L'import et la réinitialisation exigent des tables InnoDB, seules à pouvoir annuler une transaction. Sur une base reprise de l'ancienne application, ils s'arrêtent avec un message si une table utilise un autre moteur : `ALTER TABLE <table> ENGINE=InnoDB`.
+- Un dump de l'ancienne application PHP 5 ne s'importe pas ici : suivre la procédure de migration plus bas.
+- Pas de sauvegarde planifiée ni de stockage côté serveur : le fichier est téléchargé par le navigateur.
+
 ## Tests
 
 ```shell
