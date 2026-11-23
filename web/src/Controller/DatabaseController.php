@@ -10,7 +10,6 @@ use App\Backup\DatabaseBackup;
 use Cake\Datasource\ConnectionManager;
 use Cake\Http\Response;
 use Cake\I18n\DateTime;
-use Cake\I18n\Number;
 use Psr\Http\Message\UploadedFileInterface;
 
 /**
@@ -110,7 +109,7 @@ class DatabaseController extends AppController
             UPLOAD_ERR_NO_FILE => __('Select the file to import.'),
             UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => __(
                 'The file is larger than the upload limit of {0}.',
-                Number::toReadableSize(ini_parse_quantity((string)ini_get('upload_max_filesize'))),
+                (string)ini_get('upload_max_filesize'),
             ),
             default => __('The file could not be uploaded.'),
         };

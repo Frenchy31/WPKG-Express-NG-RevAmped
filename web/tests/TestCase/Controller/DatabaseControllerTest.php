@@ -6,7 +6,6 @@ namespace App\Test\TestCase\Controller;
 
 use App\Test\Support\AdminIntegrationTestCase;
 use App\Test\Support\DatabaseSnapshotTrait;
-use Cake\I18n\Number;
 use Laminas\Diactoros\Stream;
 use Laminas\Diactoros\UploadedFile;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -188,8 +187,7 @@ class DatabaseControllerTest extends AdminIntegrationTestCase
 
         $this->assertRedirect(['controller' => 'Admin', 'action' => 'index']);
         $this->assertFlashElement('flash/error');
-        $limit = Number::toReadableSize(ini_parse_quantity((string)ini_get('upload_max_filesize')));
-        $this->assertFlashMessage(str_replace('{limit}', $limit, $message));
+        $this->assertFlashMessage(str_replace('{limit}', (string)ini_get('upload_max_filesize'), $message));
         $this->assertSame($snapshot, $this->snapshot());
     }
 
