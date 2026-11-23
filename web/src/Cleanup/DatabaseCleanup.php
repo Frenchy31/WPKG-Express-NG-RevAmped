@@ -101,11 +101,7 @@ final class DatabaseCleanup
             if ($check === null) {
                 continue;
             }
-            // Without lft and rght the check is outside the nested set: no gap to close, and the Tree
-            // behavior builds an invalid query for it.
-            if ($check->get('lft') === null || $check->get('rght') === null) {
-                $checks->deleteAll(['id' => $checkId]);
-            } elseif (!$checks->deleteInPackage($check)) {
+            if (!$checks->deleteInPackage($check)) {
                 throw new CleanupException(__('Package check {0} could not be deleted.', $checkId));
             }
         }
